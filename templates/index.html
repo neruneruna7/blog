@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="{{ site.language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ site.title }}</title>
+  <meta name="description" content="{{ site.description }}">
+  <link rel="stylesheet" href="/assets/main.css">
+</head>
+<body>
+  <header><h1>{{ site.title }}</h1><p>{{ site.description }}</p></header>
+  <main>
+    {% for article in articles %}
+    <article>
+      <h2><a href="/articles/{{ article.config.slug }}/">{{ article.config.title }}</a></h2>
+      <p>{{ article.config.description }}</p>
+      <time datetime="{{ article.config.published_at.to_rfc3339() }}">{{ article.config.published_at.date_naive() }}</time>
+    </article>
+    {% endfor %}
+  </main>
+</body>
+</html>
