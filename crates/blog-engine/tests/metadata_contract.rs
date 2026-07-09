@@ -4,7 +4,8 @@ use std::path::{Path, PathBuf};
 use blog_engine::article::ArticleMeta;
 use blog_engine::config::load_site_config;
 use blog_engine::error::BlogEngineError;
-use blog_engine::{build, load_normalized_articles};
+use blog_engine::typst_compile::TypstRunner;
+use blog_engine::{build, build_with_typst_runner, load_normalized_articles};
 use serde_json::{json, Value};
 use tempfile::TempDir;
 
@@ -14,6 +15,44 @@ fn fixture(name: &str) -> PathBuf {
         .join("fixtures")
         .join(name)
         .join("typst-src")
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FakeTypstRunner;
+
+impl TypstRunner for FakeTypstRunner {
+    fn compile(
+        &self,
+        _slug: &str,
+        _input_path: &Path,
+        output_path: &Path,
+    ) -> Result<(), BlogEngineError> {
+        fs::write(
+            output_path,
+            "<!DOCTYPE html><html><head></head><body><h2>Hello</h2><p>Generated body</p></body></html>",
+        )
+        .expect("fake runner should write HTML");
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FailingTypstRunner;
+
+impl TypstRunner for FailingTypstRunner {
+    fn compile(
+        &self,
+        slug: &str,
+        input_path: &Path,
+        output_path: &Path,
+    ) -> Result<(), BlogEngineError> {
+        Err(BlogEngineError::typst_compile_error(
+            slug,
+            input_path,
+            output_path,
+            "synthetic typst failure",
+        ))
+    }
 }
 
 #[test]
@@ -122,7 +161,8 @@ fn invalid_slug_is_rejected() {
 fn article_meta_json_is_written_under_slug_directory() {
     let output = TempDir::new().expect("temp dir should be created");
 
-    build(fixture("valid-single"), output.path()).expect("build should succeed");
+    build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
+        .expect("build should succeed");
 
     let meta_path = output
         .path()
@@ -139,8 +179,10 @@ fn generated_json_is_deterministic() {
     let first = TempDir::new().expect("temp dir should be created");
     let second = TempDir::new().expect("temp dir should be created");
 
-    build(fixture("valid-multiple"), first.path()).expect("first build should succeed");
-    build(fixture("valid-multiple"), second.path()).expect("second build should succeed");
+    build_with_typst_runner(fixture("valid-multiple"), first.path(), &FakeTypstRunner)
+        .expect("first build should succeed");
+    build_with_typst_runner(fixture("valid-multiple"), second.path(), &FakeTypstRunner)
+        .expect("second build should succeed");
 
     assert_eq!(
         fs::read_to_string(first.path().join("article-index.json"))
@@ -163,7 +205,8 @@ fn id_and_slug_remain_separate_fields() {
 fn build_writes_site_and_article_index_json() {
     let output = TempDir::new().expect("temp dir should be created");
 
-    build(fixture("valid-single"), output.path()).expect("build should succeed");
+    build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
+        .expect("build should succeed");
 
     assert_eq!(
         read_json(output.path().join("site.json"))["baseUrl"],
@@ -173,6 +216,173 @@ fn build_writes_site_and_article_index_json() {
         read_json(output.path().join("article-index.json"))[0]["slug"],
         "hello-typst"
     );
+}
+
+#[test]
+fn build_writes_article_body_html() {
+    let output = TempDir::new().expect("temp dir should be created");
+
+    build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
+        .expect("build should succeed");
+
+    assert!(output
+        .path()
+        .join("articles")
+        .join("hello-typst")
+        .join("body.html")
+        .is_file());
+}
+
+#[test]
+fn body_html_is_not_empty() {
+    let output = TempDir::new().expect("temp dir should be created");
+
+    build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
+        .expect("build should succeed");
+
+    let body = read_text(
+        output
+            .path()
+            .join("articles")
+            .join("hello-typst")
+            .join("body.html"),
+    );
+    assert!(!body.trim().is_empty());
+}
+
+#[test]
+fn body_html_does_not_contain_document_level_tags() {
+    let output = TempDir::new().expect("temp dir should be created");
+
+    build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
+        .expect("build should succeed");
+
+    let body = read_text(
+        output
+            .path()
+            .join("articles")
+            .join("hello-typst")
+            .join("body.html"),
+    )
+    .to_lowercase();
+    assert!(!body.contains("<!doctype html"));
+    assert!(!body.contains("<html"));
+    assert!(!body.contains("<head"));
+    assert!(!body.contains("<body"));
+}
+
+#[test]
+fn missing_main_typ_is_rejected() {
+    let output = TempDir::new().expect("temp dir should be created");
+    let error =
+        build_with_typst_runner(fixture("missing-main-typ"), output.path(), &FakeTypstRunner)
+            .expect_err("missing main.typ should be rejected");
+
+    assert!(matches!(error, BlogEngineError::MissingMainTyp { .. }));
+}
+
+#[test]
+fn typst_compile_failure_is_rejected() {
+    let output = TempDir::new().expect("temp dir should be created");
+    let error =
+        build_with_typst_runner(fixture("invalid-typst"), output.path(), &FailingTypstRunner)
+            .expect_err("typst failure should be rejected");
+
+    assert!(matches!(error, BlogEngineError::TypstCompile { .. }));
+}
+
+#[test]
+fn existing_site_json_output_remains_unchanged() {
+    let output = TempDir::new().expect("temp dir should be created");
+
+    build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
+        .expect("build should succeed");
+
+    assert_eq!(
+        read_json(output.path().join("site.json")),
+        json!({
+            "title": "neru7 blog",
+            "description": "Typst-based technical blog",
+            "language": "ja",
+            "baseUrl": "http://localhost:4321"
+        })
+    );
+}
+
+#[test]
+fn existing_article_index_json_output_remains_unchanged() {
+    let output = TempDir::new().expect("temp dir should be created");
+
+    build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
+        .expect("build should succeed");
+
+    assert_eq!(
+        read_json(output.path().join("article-index.json")),
+        json!([{
+            "id": "01JZQ2EXAMPLE0000000000000",
+            "slug": "hello-typst",
+            "title": "Hello Typst",
+            "description": "Typstでブログ記事を書く最小例",
+            "publishedAt": "2026-07-09T00:00:00+09:00",
+            "updatedAt": null,
+            "tags": ["typst", "rust"],
+            "url": "/articles/hello-typst/",
+            "ogpImage": null
+        }])
+    );
+}
+
+#[test]
+fn existing_meta_json_output_remains_unchanged() {
+    let output = TempDir::new().expect("temp dir should be created");
+
+    build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
+        .expect("build should succeed");
+
+    assert_eq!(
+        read_json(
+            output
+                .path()
+                .join("articles")
+                .join("hello-typst")
+                .join("meta.json")
+        ),
+        json!({
+            "id": "01JZQ2EXAMPLE0000000000000",
+            "slug": "hello-typst",
+            "title": "Hello Typst",
+            "description": "Typstでブログ記事を書く最小例",
+            "publishedAt": "2026-07-09T00:00:00+09:00",
+            "updatedAt": null,
+            "tags": ["typst", "rust"],
+            "url": "/articles/hello-typst/",
+            "ogpImage": null
+        })
+    );
+}
+
+#[test]
+fn real_typst_conversion_is_env_gated() {
+    if std::env::var("BLOG_ENGINE_RUN_TYPST_INTEGRATION")
+        .ok()
+        .as_deref()
+        != Some("1")
+    {
+        return;
+    }
+
+    let output = TempDir::new().expect("temp dir should be created");
+    build(fixture("valid-single"), output.path()).expect("real typst build should succeed");
+
+    let body = read_text(
+        output
+            .path()
+            .join("articles")
+            .join("hello-typst")
+            .join("body.html"),
+    );
+    assert!(!body.trim().is_empty());
+    assert!(!body.to_lowercase().contains("<html"));
 }
 
 fn single_article(fixture_name: &str) -> ArticleMeta {
@@ -198,4 +408,8 @@ fn assert_validation_error(fixture_name: &str, expected_message: &str) {
 fn read_json(path: impl AsRef<Path>) -> Value {
     let content = fs::read_to_string(path).expect("json file should exist");
     serde_json::from_str(&content).expect("json should be valid")
+}
+
+fn read_text(path: impl AsRef<Path>) -> String {
+    fs::read_to_string(path).expect("text file should exist")
 }

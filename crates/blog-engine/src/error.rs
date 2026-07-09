@@ -63,6 +63,64 @@ pub enum BlogEngineError {
     Validation { message: String },
 
     /// なぜ実装するのか:
+    /// - 記事本文の `main.typ` が存在しない入力違反を区別するため。
+    ///
+    /// 期待する動作:
+    /// - slugと期待した入力パスを含めて報告する。
+    ///
+    /// 使い方の概要:
+    /// - Typst本文生成の前提チェックで返す。
+    #[error("missing main.typ for article {slug} at {input_path}")]
+    MissingMainTyp { slug: String, input_path: PathBuf },
+
+    /// なぜ実装するのか:
+    /// - Typst CLIの失敗をI/Oや本文検証失敗と区別するため。
+    ///
+    /// 期待する動作:
+    /// - slug、入力パス、出力パス、stderrを含めて報告する。
+    ///
+    /// 使い方の概要:
+    /// - Typst subprocessが非ゼロ終了した場合に返す。
+    #[error("Typst compilation failed for article {slug}: input={input_path}, output={output_path}, stderr={stderr}")]
+    TypstCompile {
+        slug: String,
+        input_path: PathBuf,
+        output_path: PathBuf,
+        stderr: String,
+    },
+
+    /// なぜ実装するのか:
+    /// - 生成HTMLが埋め込み可能な本文fragmentではない状態を明示するため。
+    ///
+    /// 期待する動作:
+    /// - slugと検証対象の出力パスを含めて報告する。
+    ///
+    /// 使い方の概要:
+    /// - HTML正規化後の空文字または禁止タグ検出で返す。
+    #[error("invalid body HTML for article {slug} at {output_path}: {message}")]
+    InvalidBodyHtml {
+        slug: String,
+        output_path: PathBuf,
+        message: String,
+    },
+
+    /// なぜ実装するのか:
+    /// - `body.html` の書き込み失敗を、一般I/Oではなく本文生成境界の失敗として示すため。
+    ///
+    /// 期待する動作:
+    /// - slug、出力パス、OS由来のI/Oエラーを同時に報告する。
+    ///
+    /// 使い方の概要:
+    /// - 正規化済み本文HTML fragmentの保存に失敗した場合に返す。
+    #[error("failed to write body.html for article {slug} at {output_path}: {source}")]
+    BodyHtmlWrite {
+        slug: String,
+        output_path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
+
+    /// なぜ実装するのか:
     /// - 記事設定探索時のディレクトリ走査失敗を扱うため。
     ///
     /// 期待する動作:
@@ -75,6 +133,23 @@ pub enum BlogEngineError {
 }
 
 impl BlogEngineError {
+    /// なぜ実装するのか:
+    /// - 外部の `TypstRunner` 実装がTypst変換失敗を同じ型で返せるようにするため。
+    ///
+    /// 期待する動作:
+    /// - slug、入力パス、出力パス、stderrを保持する `TypstCompile` エラーを作る。
+    ///
+    /// 使い方の概要:
+    /// - カスタムrunnerやテストrunnerでTypst変換失敗を表現するときに使う。
+    pub fn typst_compile_error(
+        slug: impl Into<String>,
+        input_path: impl Into<PathBuf>,
+        output_path: impl Into<PathBuf>,
+        stderr: impl Into<String>,
+    ) -> Self {
+        Self::typst_compile(slug, input_path, output_path, stderr)
+    }
+
     pub(crate) fn io(path: impl Into<PathBuf>, source: std::io::Error) -> Self {
         Self::Io {
             path: path.into(),
@@ -92,6 +167,54 @@ impl BlogEngineError {
     pub(crate) fn validation(message: impl Into<String>) -> Self {
         Self::Validation {
             message: message.into(),
+        }
+    }
+
+    pub(crate) fn missing_main_typ(
+        slug: impl Into<String>,
+        input_path: impl Into<PathBuf>,
+    ) -> Self {
+        Self::MissingMainTyp {
+            slug: slug.into(),
+            input_path: input_path.into(),
+        }
+    }
+
+    pub(crate) fn typst_compile(
+        slug: impl Into<String>,
+        input_path: impl Into<PathBuf>,
+        output_path: impl Into<PathBuf>,
+        stderr: impl Into<String>,
+    ) -> Self {
+        Self::TypstCompile {
+            slug: slug.into(),
+            input_path: input_path.into(),
+            output_path: output_path.into(),
+            stderr: stderr.into(),
+        }
+    }
+
+    pub(crate) fn invalid_body_html(
+        slug: impl Into<String>,
+        output_path: impl Into<PathBuf>,
+        message: impl Into<String>,
+    ) -> Self {
+        Self::InvalidBodyHtml {
+            slug: slug.into(),
+            output_path: output_path.into(),
+            message: message.into(),
+        }
+    }
+
+    pub(crate) fn body_html_write(
+        slug: impl Into<String>,
+        output_path: impl Into<PathBuf>,
+        source: std::io::Error,
+    ) -> Self {
+        Self::BodyHtmlWrite {
+            slug: slug.into(),
+            output_path: output_path.into(),
+            source,
         }
     }
 }

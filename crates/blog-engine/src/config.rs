@@ -33,6 +33,12 @@ pub struct SiteConfig {
     base_url: String,
 }
 
+#[derive(Debug, Clone)]
+pub(crate) struct ArticleConfigFile {
+    pub(crate) config: ArticleConfig,
+    pub(crate) article_dir: PathBuf,
+}
+
 /// なぜ実装するのか:
 /// - サイト設定をファイル境界から読み込み、出力契約へ変換するため。
 ///
@@ -58,6 +64,17 @@ pub fn load_site_config(source_root: impl AsRef<Path>) -> Result<SiteOutput, Blo
 pub fn load_article_configs(
     source_root: impl AsRef<Path>,
 ) -> Result<Vec<ArticleConfig>, BlogEngineError> {
+    load_article_config_files(source_root).map(|files| {
+        files
+            .into_iter()
+            .map(|file| file.config)
+            .collect::<Vec<ArticleConfig>>()
+    })
+}
+
+pub(crate) fn load_article_config_files(
+    source_root: impl AsRef<Path>,
+) -> Result<Vec<ArticleConfigFile>, BlogEngineError> {
     let articles_root = source_root.as_ref().join("articles");
     if !articles_root.exists() {
         return Ok(Vec::new());
@@ -79,7 +96,18 @@ pub fn load_article_configs(
     paths.sort();
     paths
         .into_iter()
-        .map(|path| read_toml::<ArticleConfig>(&path))
+        .map(|path| {
+            let config = read_toml::<ArticleConfig>(&path)?;
+            let article_dir = path
+                .parent()
+                .expect("ArticleConfig.toml path must have a parent directory")
+                .to_path_buf();
+
+            Ok(ArticleConfigFile {
+                config,
+                article_dir,
+            })
+        })
         .collect()
 }
 

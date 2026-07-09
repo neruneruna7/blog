@@ -8,13 +8,14 @@
 //! - 読み込んだ記事設定を `normalize_articles` に渡す。
 
 use std::collections::HashSet;
+use std::path::PathBuf;
 use std::sync::LazyLock;
 
 use chrono::{DateTime, FixedOffset};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-use crate::config::validate_non_empty;
+use crate::config::{validate_non_empty, ArticleConfigFile};
 use crate::error::BlogEngineError;
 
 static SLUG_REGEX: LazyLock<Regex> = LazyLock::new(|| {
@@ -63,6 +64,13 @@ pub struct ArticleMeta {
     pub ogp_image: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ArticleSource {
+    pub(crate) meta: ArticleMeta,
+    pub(crate) article_dir: PathBuf,
+    pub(crate) main_typ_path: PathBuf,
+}
+
 /// なぜ実装するのか:
 /// - 複数記事の一意性検証と決定的な並び順を一箇所に集約するため。
 ///
@@ -74,14 +82,49 @@ pub struct ArticleMeta {
 pub fn normalize_articles(
     configs: Vec<ArticleConfig>,
 ) -> Result<Vec<ArticleMeta>, BlogEngineError> {
-    let mut seen_ids = HashSet::new();
-    let mut seen_slugs = HashSet::new();
     let mut articles = configs
         .into_iter()
         .map(validate_article)
         .collect::<Result<Vec<_>, BlogEngineError>>()?;
 
-    for article in &articles {
+    validate_unique_articles(&articles)?;
+    sort_articles(&mut articles);
+
+    Ok(articles)
+}
+
+pub(crate) fn normalize_article_sources(
+    files: Vec<ArticleConfigFile>,
+) -> Result<Vec<ArticleSource>, BlogEngineError> {
+    let mut sources = files
+        .into_iter()
+        .map(|file| {
+            let meta = validate_article(file.config)?;
+            let main_typ_path = file.article_dir.join("main.typ");
+
+            Ok(ArticleSource {
+                meta,
+                article_dir: file.article_dir,
+                main_typ_path,
+            })
+        })
+        .collect::<Result<Vec<_>, BlogEngineError>>()?;
+
+    let metas = sources
+        .iter()
+        .map(|source| source.meta.clone())
+        .collect::<Vec<ArticleMeta>>();
+    validate_unique_articles(&metas)?;
+    sources.sort_by(|left, right| compare_articles(&left.meta, &right.meta));
+
+    Ok(sources)
+}
+
+fn validate_unique_articles(articles: &[ArticleMeta]) -> Result<(), BlogEngineError> {
+    let mut seen_ids = HashSet::new();
+    let mut seen_slugs = HashSet::new();
+
+    for article in articles {
         if !seen_ids.insert(article.id.clone()) {
             return Err(BlogEngineError::validation(format!(
                 "article id must be unique: {}",
@@ -96,17 +139,21 @@ pub fn normalize_articles(
         }
     }
 
-    articles.sort_by(|left, right| {
-        let left_published_at = parse_validated_rfc3339(&left.published_at);
-        let right_published_at = parse_validated_rfc3339(&right.published_at);
+    Ok(())
+}
 
-        right_published_at
-            .cmp(&left_published_at)
-            .then_with(|| left.slug.cmp(&right.slug))
-            .then_with(|| left.id.cmp(&right.id))
-    });
+fn sort_articles(articles: &mut [ArticleMeta]) {
+    articles.sort_by(compare_articles);
+}
 
-    Ok(articles)
+fn compare_articles(left: &ArticleMeta, right: &ArticleMeta) -> std::cmp::Ordering {
+    let left_published_at = parse_validated_rfc3339(&left.published_at);
+    let right_published_at = parse_validated_rfc3339(&right.published_at);
+
+    right_published_at
+        .cmp(&left_published_at)
+        .then_with(|| left.slug.cmp(&right.slug))
+        .then_with(|| left.id.cmp(&right.id))
 }
 
 /// 記事単体の値検証と、出力専用フィールドの補完を行う。
