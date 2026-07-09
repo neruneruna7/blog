@@ -1,0 +1,33 @@
+---
+import "../styles/main.css";
+import type { SiteConfig } from "../lib/articles";
+
+type Props = {
+  site: SiteConfig;
+  title?: string;
+  description?: string;
+};
+
+const { site, title = site.title, description = site.description } = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="page-shell">
+        <a class="site-title" href="/">{site.title}</a>
+        <p class="site-description">{site.description}</p>
+      </div>
+    </header>
+    <main class="page-shell">
+      <slot />
+    </main>
+  </body>
+</html>

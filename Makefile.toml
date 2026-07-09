@@ -11,6 +11,32 @@ description = "Run Rust tests for the content engine."
 command = "cargo"
 args = ["test", "-p", "blog-engine"]
 
+[tasks.build-site]
+description = "Astroをビルド"
+cwd = "frontend"
+command = "pnpm"
+args = ["run", "build"]
+
+[tasks.test-site]
+description = "Run frontend build-level tests."
+cwd = "frontend"
+command = "pnpm"
+args = ["run", "test"]
+
+[tasks.run-site]
+description = "Astro開発サーバーを起動"
+cwd = "frontend"
+command = "pnpm"
+args = ["run", "dev"]
+
+[tasks.build]
+description = "Generate content and build Astro static site."
+dependencies = ["build-content", "build-site"]
+
+[tasks.test]
+description = "Run Rust and frontend tests."
+dependencies = ["test-content", "test-site"]
+
 [tasks.fmt]
 description = "Format Rust code."
 command = "cargo"

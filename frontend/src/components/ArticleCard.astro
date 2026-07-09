@@ -1,0 +1,23 @@
+---
+import type { ArticleMeta } from "../lib/articles";
+
+type Props = {
+  article: ArticleMeta;
+  language: string;
+};
+
+const { article, language } = Astro.props;
+---
+
+<article class="article-card">
+  <a class="article-card-link" href={article.url}>
+    <h2>{article.title}</h2>
+    <p>{article.description}</p>
+    <time datetime={article.publishedAt}>
+      {new Intl.DateTimeFormat(language).format(new Date(article.publishedAt))}
+    </time>
+    <ul class="tag-list" aria-label="Tags">
+      {article.tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+  </a>
+</article>

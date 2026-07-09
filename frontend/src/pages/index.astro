@@ -1,0 +1,22 @@
+---
+import ArticleCard from "../components/ArticleCard.astro";
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { getArticles, getSiteConfig } from "../lib/articles";
+
+const site = await getSiteConfig();
+const articles = await getArticles();
+---
+
+<SiteLayout site={site}>
+  <section class="home-header">
+    <h1>{site.title}</h1>
+    <p>{site.description}</p>
+  </section>
+
+  <section class="article-list-section" aria-labelledby="article-list-heading">
+    <h2 id="article-list-heading">Articles</h2>
+    <div class="article-card-grid">
+      {articles.map((article) => <ArticleCard article={article} language={site.language} />)}
+    </div>
+  </section>
+</SiteLayout>

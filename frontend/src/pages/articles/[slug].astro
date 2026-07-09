@@ -1,0 +1,27 @@
+---
+import ArticleLayout from "../../layouts/ArticleLayout.astro";
+import { getArticleHtml, getArticleMeta, getArticles, getSiteConfig } from "../../lib/articles";
+
+export async function getStaticPaths() {
+  const articles = await getArticles();
+  return articles.map((article) => ({
+    params: { slug: article.slug },
+  }));
+}
+
+const site = await getSiteConfig();
+const article = await getArticleMeta(Astro.params.slug);
+const bodyHtml = await getArticleHtml(article.slug);
+---
+
+<ArticleLayout site={site} article={article}>
+  <!--
+    なぜ実装するのか:
+    - Rustエンジンが生成したTypst由来の本文HTML断片を記事本文として埋め込むため.
+    期待する動作:
+    - generated/articles/<slug>/body.html の内容だけを静的HTMLとして出力する.
+    使い方の概要:
+    - 任意の外部HTMLではなく, Rustエンジンが検証済みの生成物だけを set:html に渡す.
+  -->
+  <div set:html={bodyHtml} />
+</ArticleLayout>
