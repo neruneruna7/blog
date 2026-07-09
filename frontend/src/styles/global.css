@@ -1,13 +1,50 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+/* UI用sansを残す. shadcnの一部UIで使う余地を残すためである. */
 @import "@fontsource-variable/geist";
+
+/* Japanese serif stack */
+@import "@fontsource/kaisei-decol/400.css";
+@import "@fontsource/kaisei-decol/500.css";
+@import "@fontsource/shippori-mincho/400.css";
+@import "@fontsource/shippori-mincho/500.css";
+@import "@fontsource/shippori-mincho/600.css";
+@import "@fontsource/hina-mincho/400.css";
+@import "@fontsource-variable/noto-serif-jp";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+  /*
+  * Typography tokens
+  *
+  * logo: サイト名, ロゴ.
+  * heading: 記事タイトル, セクション見出し.
+  * body: 長文本文.
+  * decor: 装飾見出し, 短い導入文, quote見出し.
+  * sans: UI補助用. 本文には使わない.
+  */
+  --font-logo: "Kaisei Decol", "Shippori Mincho", serif;
+  --font-heading: "Shippori Mincho", "Noto Serif JP Variable", serif;
+  --font-body: "Noto Serif JP Variable", "Shippori Mincho", serif;
+  --font-decor: "Hina Mincho", "Shippori Mincho", serif;
+  --font-sans: "Geist Variable", system-ui, sans-serif;
+
+    /*
+     * Gem tokens
+     *
+     * shadcnのsemantic tokenとは別に, 独自コンポーネント用の宝石色を公開する.
+     * 例: bg-gem-phos, text-gem-violet, border-gem-aqua.
+     */
+    --color-gem-phos: var(--gem-phos);
+    --color-gem-aqua: var(--gem-aqua);
+    --color-gem-violet: var(--gem-violet);
+    --color-gem-gold: var(--gem-gold);
+    --color-crystal-surface: var(--crystal-surface);
+    --color-crystal-line: var(--crystal-line);
+
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,6 +76,10 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+
+    /*
+     * 宝石的な硬質さを出すため, 既定より少し小さめにする.
+     */
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -49,82 +90,156 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    /*
+     * Light theme
+     *
+     * 公式サイトの白い余白, 青空, 薄い水色, 淡い黄光を抽象化した配色.
+     * 背景は純白ではなく, ごく薄い青磁色に寄せる.
+     */
+    --background: oklch(0.985 0.015 205);
+    --foreground: oklch(0.235 0.035 235);
+
+    --card: oklch(0.998 0.006 205 / 0.88);
+    --card-foreground: var(--foreground);
+
+    --popover: oklch(0.998 0.006 205 / 0.94);
+    --popover-foreground: var(--foreground);
+
+    --primary: oklch(0.76 0.115 184);
+    --primary-foreground: oklch(0.145 0.035 230);
+
+    --secondary: oklch(0.935 0.036 200);
+    --secondary-foreground: oklch(0.255 0.035 235);
+
+    --muted: oklch(0.948 0.018 220);
+    --muted-foreground: oklch(0.50 0.028 235);
+
+    --accent: oklch(0.89 0.075 96);
+    --accent-foreground: oklch(0.28 0.040 90);
+
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+
+    --border: oklch(0.82 0.040 210 / 0.62);
+    --input: oklch(0.82 0.040 210 / 0.70);
+    --ring: oklch(0.75 0.125 184);
+
+    --chart-1: oklch(0.76 0.115 184);
+    --chart-2: oklch(0.80 0.085 220);
+    --chart-3: oklch(0.78 0.090 295);
+    --chart-4: oklch(0.86 0.080 96);
+    --chart-5: oklch(0.62 0.060 235);
+
+    --radius: 0.5rem;
+
+    --gem-phos: oklch(0.76 0.115 184);
+    --gem-aqua: oklch(0.82 0.085 210);
+    --gem-violet: oklch(0.79 0.090 295);
+    --gem-gold: oklch(0.89 0.075 96);
+    --crystal-surface: oklch(0.998 0.006 205 / 0.74);
+    --crystal-line: oklch(0.82 0.040 210 / 0.52);
+
+    --sidebar: oklch(0.974 0.018 205);
+    --sidebar-foreground: var(--foreground);
+    --sidebar-primary: var(--primary);
+    --sidebar-primary-foreground: var(--primary-foreground);
+    --sidebar-accent: oklch(0.935 0.036 200);
+    --sidebar-accent-foreground: var(--secondary-foreground);
+    --sidebar-border: var(--border);
+    --sidebar-ring: var(--ring);
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+  /*
+    * Dark theme
+    *
+    * 夜の結晶洞窟寄り. 黒ではなく, 青紫の低明度にする.
+    */
+  --background: oklch(0.155 0.022 245);
+  --foreground: oklch(0.93 0.014 220);
+
+  --card: oklch(0.205 0.026 245 / 0.82);
+  --card-foreground: var(--foreground);
+
+  --popover: oklch(0.19 0.024 245 / 0.94);
+  --popover-foreground: var(--foreground);
+
+  --primary: oklch(0.78 0.110 184);
+  --primary-foreground: oklch(0.12 0.025 230);
+
+  --secondary: oklch(0.27 0.030 250);
+  --secondary-foreground: oklch(0.91 0.016 225);
+
+  --muted: oklch(0.245 0.024 250);
+  --muted-foreground: oklch(0.70 0.020 230);
+
+  --accent: oklch(0.78 0.090 96);
+  --accent-foreground: oklch(0.12 0.025 245);
+
+  --destructive: oklch(0.704 0.191 22.216);
+
+  --border: oklch(0.46 0.045 235 / 0.54);
+  --input: oklch(0.50 0.045 235 / 0.58);
+  --ring: oklch(0.76 0.115 184);
+
+  --chart-1: oklch(0.78 0.110 184);
+  --chart-2: oklch(0.76 0.085 220);
+  --chart-3: oklch(0.74 0.090 295);
+  --chart-4: oklch(0.80 0.080 96);
+  --chart-5: oklch(0.66 0.055 235);
+
+  --gem-phos: oklch(0.78 0.110 184);
+  --gem-aqua: oklch(0.76 0.090 215);
+  --gem-violet: oklch(0.74 0.090 295);
+  --gem-gold: oklch(0.80 0.080 96);
+  --crystal-surface: oklch(0.22 0.026 245 / 0.70);
+  --crystal-line: oklch(0.56 0.055 225 / 0.46);
+
+  --sidebar: oklch(0.19 0.024 245);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.27 0.030 250);
+  --sidebar-accent-foreground: var(--secondary-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
+
+  html {
+    @apply font-body;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     @apply bg-background text-foreground;
-    }
-  html {
-    @apply font-sans;
-    }
+    min-height: 100vh;
+    background:
+      radial-gradient(
+        circle at 18% 0%,
+        oklch(0.90 0.070 195 / 0.34),
+        transparent 34rem
+      ),
+      radial-gradient(
+        circle at 100% 8%,
+        oklch(0.92 0.065 96 / 0.26),
+        transparent 30rem
+      ),
+      linear-gradient(
+        180deg,
+        var(--background),
+        oklch(0.965 0.020 215)
+      );
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    color: var(--primary-foreground);
+    background: oklch(0.78 0.110 184 / 0.42);
+  }
 }
