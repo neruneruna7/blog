@@ -1,0 +1,61 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ArticleMetaList } from "@/components/site/ArticleMetaList";
+import { TagList } from "@/components/site/TagList";
+import type { ArticleMeta, SiteConfig } from "@/lib/articles";
+
+import "@/styles/article-body.css";
+
+type Props = {
+  site: SiteConfig;
+  article: ArticleMeta;
+};
+
+const { site, article } = Astro.props;
+---
+
+<BaseLayout
+  site={site}
+  title={`${article.title} | ${site.title}`}
+  description={article.description}
+>
+  <article class="py-12 md:py-16">
+    <header class="mx-auto max-w-4xl">
+      <div class="mb-4 flex items-center gap-3">
+        <Badge variant="secondary" className="font-decor tracking-[0.2em]">
+          Article
+        </Badge>
+      </div>
+
+      <h1
+        class="font-heading text-4xl leading-tight tracking-tight text-balance md:text-5xl"
+      >
+        {article.title}
+      </h1>
+
+      <p class="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+        {article.description}
+      </p>
+
+      <div class="mt-6">
+        <ArticleMetaList site={site} article={article} />
+      </div>
+
+      {
+        article.tags.length > 0 && (
+          <div class="mt-6">
+            <TagList tags={article.tags} />
+          </div>
+        )
+      }
+    </header>
+
+    <Separator className="my-10" />
+
+    <div class="mx-auto max-w-4xl">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

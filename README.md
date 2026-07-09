@@ -29,3 +29,9 @@ Astro:
 
 Optional real Typst integration test:
 - BLOG_ENGINE_RUN_TYPST_INTEGRATION=1 cargo test -p blog-engine
+
+- UI primitiveは原則 shadcn/ui を使う.
+- スタイリングは原則 Tailwind utility class を使う.
+- サイト固有componentは src/components/site に置く.
+- shadcn由来componentは src/components/ui に置く.
+- 記事本文HTMLはRust生成物だけを埋め込む.
