@@ -1,47 +1,46 @@
 ---
-import ArticleCard from "../components/ArticleCard.astro";
-import SiteLayout from "../layouts/SiteLayout.astro";
-import { getArticles, getSiteConfig } from "../lib/articles";
+import ArticleCard from "@/components/ArticleCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import { getArticles, getSiteConfig } from "@/lib/articles";
 
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 const site = await getSiteConfig();
 const articles = await getArticles();
 ---
 
-<SiteLayout site={site}>
-    <section class="home-header">
-        <h1>{site.title}</h1>
-        <p>{site.description}</p>
-    </section>
-
-    <section
-        class="article-list-section"
-        aria-labelledby="article-list-heading"
+<BaseLayout site={site}>
+  <section class="py-12 md:py-16">
+    <p
+      class="mb-3 font-decorative text-sm tracking-[0.24em] text-muted-foreground"
     >
-        <h2 id="article-list-heading">Articles</h2>
-        <div class="article-card-grid">
-            {
-                articles.map((article) => (
-                    <ArticleCard article={article} language={site.language} />
-                ))
-            }
-        </div>
-        <Card className="max-w-sm">
-            <CardHeader>
-                <CardTitle>Project Overview</CardTitle>
-                <CardDescription>
-                    Track progress and recent activity for your Astro app.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                Your design system is ready. Start building your next component.
-            </CardContent>
-        </Card>
-    </section>
-</SiteLayout>
+      Typst Blog Engine
+    </p>
+    <h1
+      class="m-0 max-w-3xl font-heading text-4xl leading-tight tracking-tight md:text-5xl"
+    >
+      {site.title}
+    </h1>
+    <p class="mt-4 max-w-2xl text-muted-foreground">
+      {site.description}
+    </p>
+  </section>
+
+  <section class="pb-14" aria-labelledby="article-list-heading">
+    <div class="mb-5 flex items-end justify-between gap-4">
+      <h2 id="article-list-heading" class="m-0 font-heading text-2xl">
+        Articles
+      </h2>
+      <p class="m-0 text-sm text-muted-foreground">
+        {articles.length} entries
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        articles.map((article) => (
+          <ArticleCard article={article} language={site.language} />
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

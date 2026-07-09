@@ -1,0 +1,34 @@
+---
+import "@/styles/global.css";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import type { SiteConfig } from "@/lib/articles";
+
+type Props = {
+  site: SiteConfig;
+  title?: string;
+  description?: string;
+};
+
+const {
+  site,
+  title = site.title,
+  description = site.description,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+
+  <body class="min-h-svh bg-background text-foreground antialiased">
+    <SiteHeader site={site} />
+    <main class="mx-auto w-[min(100%-2rem,64rem)]">
+      <slot />
+    </main>
+  </body>
+</html>
