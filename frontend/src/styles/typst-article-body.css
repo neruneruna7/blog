@@ -78,7 +78,14 @@ typstから作られた記事HTMLに対して当てられるHTML
 
 .article-body .web-link-card__content { display: grid; gap: 0.35rem; padding: 1rem 1.1rem; min-width: 0; }
 .article-body .web-link-card__title { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.article-body .web-link-card__description { display: -webkit-box; overflow: hidden; color: color-mix(in oklab, var(--foreground) 72%, transparent); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.article-body .web-link-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
 .article-body .web-link-card__site { color: color-mix(in oklab, var(--foreground) 58%, transparent); font-size: 0.85em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .article-body .web-link-card__image { grid-column: 2; grid-row: 1; width: 100%; height: 100%; object-fit: cover; }
 .article-body .web-link-card--fallback { display: block; padding: 1rem 1.1rem; overflow-wrap: anywhere; }
