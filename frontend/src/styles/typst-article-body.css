@@ -13,7 +13,12 @@ typstから作られた記事HTMLに対して当てられるHTML
   overflow-wrap: anywhere;
 }
 
-.article-body > h2 {
+/*
+通常のh2と，Typstのbibliographyが生成する参考文献見出しに，
+同一のセクション見出しスタイルを適用する．
+*/
+.article-body > h2,
+.article-body > section[role="doc-bibliography"] > h2 {
   margin: var(--article-section-gap) 0 0;
   padding-top: 1.4rem;
   border-top: 1px solid color-mix(
@@ -29,7 +34,12 @@ typstから作られた記事HTMLに対して当てられるHTML
   letter-spacing: 0.06em;
 }
 
-.article-body > h2:first-child {
+/*
+記事の最初にh2または参考文献セクションが置かれた場合は，
+上部の余白を除去する．
+*/
+.article-body > h2:first-child,
+.article-body > section[role="doc-bibliography"]:first-child > h2 {
   margin-top: 0;
 }
 
