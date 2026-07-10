@@ -1,6 +1,6 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
 import ArticleHeader from "@/components/site/ArticleHeader.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
 import type { ArticleMeta, SiteConfig } from "@/lib/articles";
 
 import "@/styles/typst-article-body.css";
@@ -21,9 +21,7 @@ const { site, article } = Astro.props;
   <article>
     <ArticleHeader site={site} article={article} />
 
-    <div
-      class="mx-auto max-w-4xl border-t border-foreground/10 pt-12 pb-20 md:pt-16 md:pb-28"
-    >
+    <div class="mx-auto max-w-4xl pb-20 md:pb-28">
       <slot />
     </div>
   </article>

@@ -15,299 +15,100 @@ const dateFormatter = new Intl.DateTimeFormat(site.language, {
 });
 
 const publishedAt = dateFormatter.format(new Date(article.publishedAt));
-const updatedAt = article.updatedAt
-  ? dateFormatter.format(new Date(article.updatedAt))
-  : null;
 ---
 
-<header class="article-header">
-  <div class="article-header__light" aria-hidden="true"></div>
+<header class="article-header relative isolate overflow-hidden">
+  <!-- 右上から差し込む静的な光 -->
+  <div
+    class="article-header__light pointer-events-none absolute inset-0 z-0"
+    aria-hidden="true"
+  >
+  </div>
 
-  <div class="article-header__ornament" aria-hidden="true">
-    <span class="article-header__diamond article-header__diamond--top"></span>
-    <span class="article-header__line article-header__line--top-left"></span>
-    <span class="article-header__line article-header__line--top-right"></span>
-    <span class="article-header__facet article-header__facet--left"></span>
-    <span class="article-header__facet article-header__facet--right"></span>
+  <div
+    class="relative z-10 mx-auto w-full max-w-2xl px-1 pt-12 pb-20 md:pt-16 md:pb-24"
+  >
+    <!-- 記事タイトル -->
+    <h1
+      class="font-heading m-0 text-center text-[clamp(2.25rem,5.5vw,4rem)] leading-[1.35] font-medium tracking-[0.06em] text-balance text-black"
+    >
+      {article.title}
+    </h1>
 
-    <div class="article-header__title-frame">
-      <h1>{article.title}</h1>
+    <!-- 二本の黒い横線 -->
+    <div class="mt-5 space-y-3" aria-hidden="true">
+      <div class="h-0.5 w-full bg-black"></div>
+      <div class="h-0.5 w-full bg-black"></div>
     </div>
 
-    <span class="article-header__line article-header__line--bottom-left"></span>
-    <span class="article-header__line article-header__line--bottom-right"></span>
-    <span class="article-header__diamond article-header__diamond--bottom"></span>
-  </div>
-
-  <div class="article-header__metadata">
-    <dl class="article-header__dates">
-      <div>
-        <dt>Published</dt>
-        <dd>
-          <time datetime={article.publishedAt}>{publishedAt}</time>
-        </dd>
-      </div>
-
-      {
-        article.updatedAt && updatedAt && (
-          <div>
-            <dt>Updated</dt>
-            <dd>
-              <time datetime={article.updatedAt}>{updatedAt}</time>
-            </dd>
-          </div>
-        )
-      }
-    </dl>
-
+    <!-- 記事説明 -->
     {
-      article.tags.length > 0 && (
-        <ul class="article-header__tags" aria-label="Tags">
-          {article.tags.map((tag) => <li>{tag}</li>)}
-        </ul>
+      article.description && (
+        <p class="font-body mx-auto mt-20 max-w-xl text-center text-base leading-8 text-black/70">
+          {article.description}
+        </p>
       )
     }
-  </div>
 
-  {
-    article.description && (
-      <p class="article-header__description">{article.description}</p>
-    )
-  }
+    <!-- タグと公開日 -->
+    <div
+      class="mt-14 grid grid-cols-1 gap-6 font-sans text-sm text-black/80 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+    >
+      <div class="min-w-0">
+        {
+          article.tags.length > 0 && (
+            <ul
+              class="m-0 flex list-none flex-wrap gap-x-4 gap-y-2 p-0"
+              aria-label="タグ"
+            >
+              {article.tags.map((tag, index) => (
+                <li class="flex items-center gap-4">
+                  <span>{tag}</span>
+
+                  {index < article.tags.length - 1 && (
+                    <span class="text-black/35" aria-hidden="true"></span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      <time
+        class="justify-self-start tracking-[0.08em] tabular-nums sm:justify-self-end"
+        datetime={article.publishedAt}
+      >
+        <span class="sr-only">公開日，</span>
+        {publishedAt}
+      </time>
+    </div>
+  </div>
 </header>
 
 <style>
-  .article-header {
-    position: relative;
-    isolation: isolate;
-    padding-block: clamp(5rem, 12vw, 9rem) clamp(3.5rem, 8vw, 6rem);
-    text-align: center;
-    overflow: hidden;
-  }
-
+  /*
+   * なぜ実装するのか:
+   * 記事ヘッダーの右上に静的な光源を置き，
+   * 無彩色の背景へ奥行きを与えるためである．
+   *
+   * 期待する動作:
+   * アニメーションせず，右上だけが背景より淡く明るく見える．
+   */
   .article-header__light {
-    position: absolute;
-    z-index: -1;
-    inset: 0;
-    pointer-events: none;
     background:
       radial-gradient(
-        circle at 91% 2%,
-        rgb(255 255 255 / 92%) 0,
-        rgb(255 255 255 / 58%) 13rem,
-        rgb(255 255 255 / 18%) 27rem,
-        transparent 43rem
+        ellipse at 94% 0%,
+        rgb(255 255 255 / 94%) 0%,
+        rgb(255 255 255 / 62%) 16%,
+        rgb(255 255 255 / 24%) 35%,
+        transparent 62%
       ),
       linear-gradient(
         135deg,
-        transparent 48%,
-        rgb(255 255 255 / 16%) 67%,
-        transparent 84%
+        transparent 52%,
+        rgb(255 255 255 / 14%) 71%,
+        transparent 88%
       );
-  }
-
-  .article-header__ornament {
-    position: relative;
-    width: min(100%, 56rem);
-    min-height: clamp(13rem, 27vw, 20rem);
-    margin-inline: auto;
-    display: grid;
-    place-items: center;
-    padding: clamp(3.5rem, 8vw, 6rem) clamp(1.25rem, 5vw, 4.5rem);
-  }
-
-  .article-header__title-frame {
-    position: relative;
-    width: min(100%, 47rem);
-  }
-
-  .article-header__title-frame::before,
-  .article-header__title-frame::after {
-    position: absolute;
-    top: 50%;
-    width: clamp(1.5rem, 7vw, 5rem);
-    height: 1px;
-    content: "";
-    background: color-mix(in oklab, var(--foreground) 24%, transparent);
-  }
-
-  .article-header__title-frame::before {
-    right: calc(100% + clamp(0.75rem, 2vw, 1.5rem));
-  }
-
-  .article-header__title-frame::after {
-    left: calc(100% + clamp(0.75rem, 2vw, 1.5rem));
-  }
-
-  h1 {
-    margin: 0;
-    font-family: var(--font-heading);
-    font-size: clamp(2.25rem, 6vw, 4.75rem);
-    font-weight: 500;
-    line-height: 1.35;
-    letter-spacing: 0.035em;
-    text-wrap: balance;
-  }
-
-  .article-header__line,
-  .article-header__facet,
-  .article-header__diamond {
-    position: absolute;
-    display: block;
-    border-color: color-mix(in oklab, var(--foreground) 22%, transparent);
-  }
-
-  .article-header__line {
-    width: clamp(4rem, 16vw, 11rem);
-    height: 1px;
-    background: color-mix(in oklab, var(--foreground) 21%, transparent);
-  }
-
-  .article-header__line--top-left {
-    top: 2.25rem;
-    left: 12%;
-  }
-
-  .article-header__line--top-right {
-    top: 2.25rem;
-    right: 12%;
-  }
-
-  .article-header__line--bottom-left {
-    bottom: 2.25rem;
-    left: 18%;
-  }
-
-  .article-header__line--bottom-right {
-    right: 18%;
-    bottom: 2.25rem;
-  }
-
-  .article-header__facet {
-    top: 50%;
-    width: clamp(2.75rem, 8vw, 5.25rem);
-    height: clamp(4rem, 11vw, 7rem);
-    border-block: 1px solid;
-    transform: translateY(-50%) skewY(-22deg);
-  }
-
-  .article-header__facet--left {
-    left: 2%;
-    border-left: 1px solid;
-  }
-
-  .article-header__facet--right {
-    right: 2%;
-    border-right: 1px solid;
-    transform: translateY(-50%) skewY(22deg);
-  }
-
-  .article-header__diamond {
-    width: 0.75rem;
-    aspect-ratio: 1;
-    border: 1px solid;
-    transform: rotate(45deg);
-  }
-
-  .article-header__diamond--top {
-    top: 1.9rem;
-    left: 50%;
-  }
-
-  .article-header__diamond--bottom {
-    bottom: 1.9rem;
-    left: 50%;
-  }
-
-  .article-header__metadata {
-    display: grid;
-    justify-items: center;
-    gap: 1.25rem;
-    margin-top: clamp(1.5rem, 4vw, 2.5rem);
-    font-family: var(--font-sans);
-    color: var(--muted-foreground);
-  }
-
-  .article-header__dates {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1rem 2.5rem;
-    margin: 0;
-  }
-
-  .article-header__dates > div {
-    display: flex;
-    align-items: baseline;
-    gap: 0.65rem;
-  }
-
-  .article-header__dates dt {
-    font-size: 0.68rem;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .article-header__dates dd {
-    margin: 0;
-    font-size: 0.82rem;
-    letter-spacing: 0.08em;
-  }
-
-  .article-header__tags {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem 1.35rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-  }
-
-  .article-header__tags li {
-    position: relative;
-  }
-
-  .article-header__tags li + li::before {
-    position: absolute;
-    right: calc(100% + 0.62rem);
-    content: "◇";
-    font-size: 0.46rem;
-    color: color-mix(in oklab, var(--foreground) 34%, transparent);
-  }
-
-  .article-header__description {
-    width: min(100%, 40rem);
-    margin: 2rem auto 0;
-    color: var(--muted-foreground);
-    font-size: 0.95rem;
-    line-height: 1.9;
-    text-wrap: pretty;
-  }
-
-  @media (max-width: 40rem) {
-    .article-header__ornament {
-      padding-inline: 0.5rem;
-    }
-
-    .article-header__facet {
-      opacity: 0.65;
-    }
-
-    .article-header__facet--left {
-      left: -1rem;
-    }
-
-    .article-header__facet--right {
-      right: -1rem;
-    }
-
-    .article-header__title-frame::before,
-    .article-header__title-frame::after {
-      display: none;
-    }
   }
 </style>
