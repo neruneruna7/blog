@@ -1,0 +1,102 @@
+name: Build and deploy Cloudflare Pages
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10.11.1"
+  CARGO_MAKE_VERSION: "0.37.24"
+  TYPST_VERSION: "0.15.0"
+
+jobs:
+  build:
+    name: Check and build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-make
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-make@${{ env.CARGO_MAKE_VERSION }}
+
+      - name: Set up Typst
+        uses: typst-community/setup-typst@v5
+        with:
+          typst-version: ${{ env.TYPST_VERSION }}
+
+      - name: Show tool versions
+        run: |
+          node --version
+          pnpm --version
+          rustc --version
+          cargo --version
+          makers --version
+          typst --version
+
+      - name: Install frontend dependencies
+        run: pnpm --dir frontend install --frozen-lockfile
+
+      - name: Check Rust code
+        run: makers check
+
+      # makers testはbuild-contentに依存していないため，
+      # frontendのテストより先に生成物を作る．
+      - name: Generate content
+        run: makers build-content
+
+      # frontend/package.jsonのtestはAstroビルドと成果物検証を行う．
+      - name: Test and build frontend
+        run: makers test-site
+
+      - name: Verify deployment output
+        run: |
+          test -f generated/site.json
+          test -f generated/article-index.json
+          test -f frontend/dist/index.html
+
+      - name: Deploy to Cloudflare Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy frontend/dist
+            --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
