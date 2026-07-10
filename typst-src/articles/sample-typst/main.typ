@@ -1,29 +1,87 @@
 
-#import "@preview/numbly:0.1.0": numbly
-// #set heading(numbering: numbly("{1}.", default: "1.1"))
-#set heading(numbering: none)
+// #import "@preview/numbly:0.1.0": numbly
+// // #set heading(numbering: numbly("{1}.", default: "1.1"))
+// #set heading(numbering: none)
 
-// --- Font & Language Settings ---
-#show heading: set text(lang: "ja", font: "Harano Aji Gothic")
-#show outline: set text(lang: "ja", font: "Harano Aji Gothic")
-#set text(lang: "ja", font: "Harano Aji Gothic")
-// #show math.equation: set text(lang: "ja",font: "Harano Aji Gothic")
-#show math.equation: set text(lang: "en", font: "New Computer Modern Math")
+// // --- Font & Language Settings ---
+// #show heading: set text(lang: "ja", font: "Harano Aji Gothic")
+// #show outline: set text(lang: "ja", font: "Harano Aji Gothic")
+// #set text(lang: "ja", font: "Harano Aji Gothic")
+// // #show math.equation: set text(lang: "ja",font: "Harano Aji Gothic")
+// #show math.equation: set text(lang: "en", font: "New Computer Modern Math")
 
-// 数式中の日本語テキストを日本語フォントにするためのヘルパー関数
-#let jatext(it) = text(font: "Harano Aji Gothic", it)
+// // 数式中の日本語テキストを日本語フォントにするためのヘルパー関数
+// #let jatext(it) = text(font: "Harano Aji Gothic", it)
 
-#set par(
-  first-line-indent: (
-    amount: 1em,
-    all: true,
-  ),
-)
-#set page(
-  paper: "a4",
-  margin: 25mm,
-)
+// #set par(
+//   first-line-indent: (
+//     amount: 1em,
+//     all: true,
+//   ),
+// )
+// #set page(
+//   paper: "a4",
+//   margin: 25mm,
+// )
+//
 
+#let link-card(
+  url,
+  title: none,
+  description: none,
+  image: none,
+) = context {
+  if target() == "html" {
+    block(
+      html.article(
+        class: "article-link-card",
+      )[
+        #html.a(
+          href: url,
+          rel: "noopener",
+          class: "article-link-card__link",
+        )[
+          #html.div(class: "article-link-card__body")[
+            #if title != none {
+              html.h3(class: "article-link-card__title")[#title]
+            }
+
+            #if description != none {
+              html.p(class: "article-link-card__description")[
+                #description
+              ]
+            }
+
+            #html.span(class: "article-link-card__url")[
+              #url
+            ]
+          ]
+
+          #if image != none {
+            html.img(
+              src: image,
+              alt: "",
+              class: "article-link-card__image",
+            )
+          }
+        ]
+      ],
+    )
+  } else {
+    block[
+      #if title != none {
+        strong(title)
+      } else {
+        url
+      }
+
+      #linebreak()
+      #link(url)[#url]
+    ]
+  }
+}
+
+= はじめに
 #align(center)[
   #text(size: 14pt, weight: "bold")[2026年度 レポート]
   \
@@ -40,7 +98,9 @@
 == 見出し2
 
 #table(
+  stroke: 1pt,
   columns: 3,
+
   [a], [b], [c]
 )
 
@@ -60,3 +120,23 @@
 === 見出し3
 あああああ
 感じ漢字凹凸
+
+$
+  alpha + beta = X
+$
+#link-card("github.com/neruneruna7/blog/tree/feat/astro-react-rust-typst")
+
+#html.elem(
+  "div",
+  attrs: (
+    style: "
+      width: 320px;
+      height: 160px;
+      background-color: #5b8def;
+      border: 2px solid #315ca8;
+      border-radius: 12px;
+    ",
+    role: "img",
+    "aria-label": "青色の長方形",
+  ),
+)
