@@ -8,6 +8,7 @@
 //! - ビルド処理から `write_article_body_html` を記事ごとに呼び出す。
 
 use std::fs;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -93,10 +94,25 @@ impl TypstRunner for CliTypstRunner {
                 )
             })?;
 
+        // 成功した時の処理．
+        // 成功でも何かしらメッセージが返ってくる場合があるので，それを出力
         if output.status.success() {
+            let stdout = io::stdout();
+            let mut stdout = stdout.lock();
+
+            write_typst_messages(&output.stdout, &output.stderr, &mut stdout).map_err(
+                |source| {
+                    BlogEngineError::typst_compile(
+                        slug,
+                        input_path,
+                        output_path,
+                        format!("failed to write typst CLI messages: {source}"),
+                    )
+                },
+            )?;
+
             return Ok(());
         }
-
         let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
 
         Err(BlogEngineError::typst_compile(
@@ -110,6 +126,20 @@ impl TypstRunner for CliTypstRunner {
             },
         ))
     }
+}
+
+/// Typst CLIが返したメッセージを呼び出し元の標準出力へ中継する。
+///
+/// Typstはコンパイル成功時のwarningやhintもstderrへ出力するため，
+/// stdoutとstderrの両方を対象とする。
+fn write_typst_messages(
+    command_stdout: &[u8],
+    command_stderr: &[u8],
+    writer: &mut impl Write,
+) -> io::Result<()> {
+    writer.write_all(command_stdout)?;
+    writer.write_all(command_stderr)?;
+    writer.flush()
 }
 
 /// なぜ実装するのか:
