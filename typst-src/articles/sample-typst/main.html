@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>/* Alignment */
+mtable.right-align mtd,
+mtable mtd.right-align,
+mtable.left-align mtd.right-align,
+mtable.aligned mtd:nth-child(odd) {
+  justify-items: end;
+  text-align: right;
+}
+mtable.cases mtd,
+mtable.left-align mtd,
+mtable mtd.left-align,
+mtable.aligned mtd:nth-child(even),
+math:is(:not([display])) > mtable.multiline-equation mtd {
+  justify-items: start;
+  text-align: left;
+}
+mtable.cases mtd,
+mtable.aligned mtd,
+mtable mtd.flushed,
+mtable mtd.left-flush {
+  padding-left: 0;
+}
+mtable.cases mtd,
+mtable.aligned mtd,
+mtable mtd.flushed,
+mtable mtd.right-flush {
+  padding-right: 0;
+}
+
+/* Tables */
+mtable {
+  math-style: inherit;
+}
+mtd {
+  math-depth: auto-add;
+  math-style: compact;
+  math-shift: compact;
+}
+
+/* Equations */
+mtable.multiline-equation mtd {
+  math-depth: inherit;
+  math-style: inherit;
+  math-shift: inherit;
+  padding: 0;
+}
+math > mtable.multiline-equation mtr:not(:last-child) mtd {
+  padding-bottom: 0.5em;
+}
+
+/* Fractions */
+mfrac {
+  padding-inline: 0;
+  margin-inline: 0.1em;
+}
+
+/* Accents */
+mover[accent="true" i] > :first-child {
+  font-feature-settings: "dtls";
+}
+mover.dotted[accent="true" i] > :first-child {
+  font-feature-settings: "dtls" 0;
+}
+
+/* Other rules for scriptlevel, displaystyle and math-shift */
+munder > :nth-child(2),
+munderover > :nth-child(2) {
+  math-shift: compact
+}
+munder[accentunder="true" i] > :not(:first-child),
+mover[accent="true" i] > :not(:first-child) {
+  math-depth: inherit;
+  math-style: inherit;
+  math-shift: inherit;
+}</style></head><body><h2>はじめに</h2><h2>課題</h2><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim aeque doleamus animo, cum corpore dolemus, fieri tamen permagna accessio potest, si aliquod aeternum et infinitum impendere malum nobis opinemur. Quod idem licet transferre in voluptatem, ut postea variari voluptas distinguique possit, augeri amplificarique non possit. At etiam Athenis, ut e patre audiebam facete et urbane Stoicos irridente, statua est in quo a nobis philosophia defensa et collaudata est, cum id, quod maxime placeat, facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet, ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum defuturum, quas natura non depravata desiderat. Et quem ad me accedis, saluto: 'chaere,' inquam, 'Tite!' lictores, turma omnis chorusque: 'chaere, Tite!' hinc hostis mi Albucius, hinc inimicus. Sed iure Mucius. Ego autem mirari satis non queo unde hoc sit tam insolens domesticarum rerum fastidium. Non est omnino hic docendi locus; sed ita prorsus existimo, neque eum Torquatum, qui hoc primus cognomen invenerit, aut torquem illum hosti detraxisse, ut aliquam ex eo est consecutus? – Laudem et caritatem, quae sunt vitae sine metu degendae praesidia firmissima. – Filium morte multavit. – Si sine causa, nollem me ab eo delectari, quod ista Platonis, Aristoteli, Theophrasti orationis ornamenta neglexerit. Nam illud quidem physici, credere aliquid esse minimum, quod profecto numquam putavisset, si a Polyaeno, familiari suo, geometrica discere maluisset quam illum etiam ipsum dedocere. Sol Democrito magnus videtur, quippe homini erudito in geometriaque perfecto, huic pedalis fortasse; tantum enim esse omnino in nostris poetis aut inertissimae segnitiae est aut fastidii delicatissimi. Mihi quidem videtur, inermis ac nudus est. Tollit definitiones, nihil de dividendo ac partiendo docet, non quo ignorare vos arbitrer, sed ut ratione et via.</p><h3>見出し2</h3><table><tr><td>a</td><td>b</td><td>c</td></tr></table><figure><table><tr><td>a</td><td>b</td><td>c</td></tr></table><figcaption>Table 1: 表1</figcaption></figure><img src="data:image/png;base64,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" width="389" height="389" style="display: block"><h4>見出し3</h4><p>あああああ 感じ漢字凹凸</p><math display="block"><mi>𝛼</mi><mo>+</mo><mi>𝛽</mi><mo>=</mo><mi>𝑋</mi></math><article class="article-link-card"><a href="github.com/neruneruna7/blog/tree/feat/astro-react-rust-typst" rel="noopener" class="article-link-card__link"><div class="article-link-card__body"><p><span class="article-link-card__url">github.com/neruneruna7/blog/tree/feat/astro-react-rust-typst</span></p></div></a></article><div style="
+      width: 320px;
+      height: 160px;
+      background-color: #5b8def;
+      border: 2px solid #315ca8;
+      border-radius: 12px;
+    " role="img" aria-label="青色の長方形"></div></body></html>

@@ -1,0 +1,3 @@
+= Invalid Typst
+
+#let broken = 

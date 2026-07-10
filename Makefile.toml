@@ -1,0 +1,60 @@
+[config]
+default_to_workspace = false
+
+[tasks.build-content]
+description = "Generate intermediate content files under generated/."
+command = "cargo"
+args = ["run", "-p", "blog-engine", "--", "build"]
+
+[tasks.test-content]
+description = "Run Rust tests for the content engine."
+command = "cargo"
+args = ["test", "-p", "blog-engine"]
+
+[tasks.build-site]
+description = "Astroをビルド"
+cwd = "frontend"
+command = "pnpm"
+args = ["run", "build"]
+
+[tasks.test-site]
+description = "Run frontend build-level tests."
+cwd = "frontend"
+command = "pnpm"
+args = ["run", "test"]
+
+[tasks.run-site]
+description = "Astro開発サーバーを起動"
+cwd = "frontend"
+command = "pnpm"
+args = ["run", "dev"]
+
+[tasks.build]
+description = "Generate content and build Astro static site."
+dependencies = ["build-content", "build-site"]
+
+[tasks.test]
+description = "Run Rust and frontend tests."
+dependencies = ["test-content", "test-site"]
+
+[tasks.fmt]
+description = "Format Rust code."
+command = "cargo"
+args = ["fmt", "--all"]
+
+[tasks.clippy]
+description = "Run Rust lints."
+command = "cargo"
+args = ["clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
+
+[tasks.check]
+clear = true
+description = "Run formatting, linting, and tests."
+dependencies = ["fmt", "clippy", "test-content"]
+
+[tasks.clean]
+clear = true
+description = "Remove generated outputs."
+script = '''
+rm -rf generated
+'''
