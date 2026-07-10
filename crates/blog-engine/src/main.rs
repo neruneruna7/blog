@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use anyhow::{bail, Context, Result};
+use anyhow::Result;
 use clap::{Args, Parser, Subcommand};
 
 #[derive(Debug, Parser)]
