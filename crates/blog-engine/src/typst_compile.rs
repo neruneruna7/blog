@@ -8,7 +8,7 @@
 //! - ビルド処理から `write_article_body_html` を記事ごとに呼び出す。
 
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::article::ArticleSource;
@@ -40,16 +40,40 @@ pub trait TypstRunner {
 }
 
 /// なぜ実装するのか:
-/// - リポジトリにTypst crateを追加せず、導入済みCLIを低リスクな変換境界として使うため。
+/// - Typst CLIへプロジェクトルートを明示的に渡すため。
 ///
 /// 期待する動作:
-/// - `typst compile --features html <input> <output>` を実行し、stderrを失敗文脈に含める。
+/// - すべてのTypstコンパイルで同一のプロジェクトルートを使用する。
+/// - 記事から共通モジュールや共通アセットへ安全にアクセスできる。
 ///
 /// 使い方の概要:
-/// - `build` の既定runnerとして利用する。
-#[derive(Debug, Clone, Copy, Default)]
-pub struct CliTypstRunner;
+/// - `CliTypstRunner::new("typst-src")` のように生成する。
+#[derive(Debug, Clone)]
+pub struct CliTypstRunner {
+    project_root: PathBuf,
+}
 
+impl CliTypstRunner {
+    pub fn new(project_root: impl Into<PathBuf>) -> Self {
+        Self {
+            project_root: project_root.into(),
+        }
+    }
+    fn command(&self, input_path: &Path, output_path: &Path) -> Command {
+        let mut command = Command::new("typst");
+
+        command
+            .arg("compile")
+            .arg("--features")
+            .arg("html")
+            .arg("--root")
+            .arg(&self.project_root)
+            .arg(input_path)
+            .arg(output_path);
+
+        command
+    }
+}
 impl TypstRunner for CliTypstRunner {
     fn compile(
         &self,
@@ -57,12 +81,8 @@ impl TypstRunner for CliTypstRunner {
         input_path: &Path,
         output_path: &Path,
     ) -> Result<(), BlogEngineError> {
-        let output = Command::new("typst")
-            .arg("compile")
-            .arg("--features")
-            .arg("html")
-            .arg(input_path)
-            .arg(output_path)
+        let output = self
+            .command(input_path, output_path)
             .output()
             .map_err(|source| {
                 BlogEngineError::typst_compile(
@@ -78,6 +98,7 @@ impl TypstRunner for CliTypstRunner {
         }
 
         let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+
         Err(BlogEngineError::typst_compile(
             slug,
             input_path,

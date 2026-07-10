@@ -33,9 +33,11 @@ pub fn build(
     source_root: impl AsRef<Path>,
     output_root: impl AsRef<Path>,
 ) -> Result<(), BlogEngineError> {
-    build_with_typst_runner(source_root, output_root, &CliTypstRunner)
-}
+    let source_root = source_root.as_ref();
+    let runner = CliTypstRunner::new(source_root);
 
+    build_with_typst_runner(source_root, output_root, &runner)
+}
 /// なぜ実装するのか:
 /// - 本番ではTypst CLIを使い、テストでは外部バイナリに依存しないrunnerを注入するため。
 ///
