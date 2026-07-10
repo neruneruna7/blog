@@ -13,10 +13,10 @@ export function SiteHeader({ site }: SiteHeaderProps) {
           className="w-fit font-site text-xl font-semibold tracking-wide no-underline"
         >
           {site.title}
+          <p className="m-0 text-sm text-muted-foreground">
+            {site.description}
+          </p>
         </a>
-        <p className="m-0 text-sm text-muted-foreground">
-          {site.description}
-        </p>
       </div>
     </header>
   );

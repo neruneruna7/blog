@@ -93,13 +93,13 @@
     /*
      * Light theme
      *
-     * 公式サイトの白い余白, 青空, 薄い水色, 淡い黄光を抽象化した配色.
-     * 背景は純白ではなく, ごく薄い青磁色に寄せる.
+     * 無彩色の広い余白を基礎とし, 光と宝石色は局所的な装飾に限定する.
+     * rgb(240 240 240)を基準背景とする.
      */
-    --background: oklch(0.985 0.015 205);
+    --background: rgb(240 240 240);
     --foreground: oklch(0.235 0.035 235);
 
-    --card: oklch(0.998 0.006 205 / 0.88);
+    --card: var(--background);
     --card-foreground: var(--foreground);
 
     --popover: oklch(0.998 0.006 205 / 0.94);
@@ -219,23 +219,7 @@
   body {
     @apply bg-background text-foreground;
     min-height: 100vh;
-    background:
-      radial-gradient(
-        circle at 18% 0%,
-        oklch(0.90 0.070 195 / 0.34),
-        transparent 34rem
-      ),
-      radial-gradient(
-        circle at 100% 8%,
-        oklch(0.92 0.065 96 / 0.26),
-        transparent 30rem
-      ),
-      linear-gradient(
-        180deg,
-        var(--background),
-        oklch(0.965 0.020 215)
-      );
-    background-attachment: fixed;
+    background: var(--background);
   }
 
   ::selection {

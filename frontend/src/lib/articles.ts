@@ -1,6 +1,19 @@
 import { readFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
 
-const generatedRoot = new URL("../../../../generated/", import.meta.url);
+/**
+ * Astroはfrontendディレクトリをカレントディレクトリとして実行される.
+ *
+ * frontendの1階層上にあるgeneratedを，絶対パスとして解決する.
+ */
+const generatedRoot = resolve(process.cwd(), "..", "generated");
+
+/**
+ * generated配下のファイルパスを構築する.
+ */
+function generatedPath(...segments: string[]): string {
+  return join(generatedRoot, ...segments);
+}
 
 /**
  * なぜ実装するのか:
@@ -52,7 +65,7 @@ export type ArticleMeta = {
  * - ページやレイアウトのfrontmatterでawaitして利用する.
  */
 export async function getSiteConfig(): Promise<SiteConfig> {
-  const value = await readJson(new URL("site.json", generatedRoot));
+  const value = await readJson(generatedPath("site.json"));
   return asSiteConfig(value, "generated/site.json");
 }
 
@@ -67,7 +80,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
  * - トップページの記事カード一覧と `getStaticPaths` で利用する.
  */
 export async function getArticles(): Promise<ArticleMeta[]> {
-  const value = await readJson(new URL("article-index.json", generatedRoot));
+  const value = await readJson(generatedPath("article-index.json"));
+
   if (!Array.isArray(value)) {
     throw new Error("generated/article-index.json must be an array.");
   }
@@ -88,11 +102,14 @@ export async function getArticles(): Promise<ArticleMeta[]> {
  * - 記事詳細ページの静的生成時にslugからメタデータを取得する.
  */
 export async function getArticleMeta(slug: string): Promise<ArticleMeta> {
-  const value = await readJson(new URL(`articles/${slug}/meta.json`, generatedRoot));
+  const value = await readJson(
+    generatedPath("articles", slug, "meta.json"),
+  );
+
   return asArticleMeta(value, `generated/articles/${slug}/meta.json`);
 }
 
-/**
+ /**
  * なぜ実装するのか:
  * - Astroビルド時にRust生成済みの本文HTML断片を読み込むため.
  *
@@ -103,13 +120,15 @@ export async function getArticleMeta(slug: string): Promise<ArticleMeta> {
  * - 記事ページで `set:html` に渡して静的HTMLへ埋め込む.
  */
 export async function getArticleHtml(slug: string): Promise<string> {
-  return readFile(new URL(`articles/${slug}/body.html`, generatedRoot), "utf8");
+  return readFile(
+    generatedPath("articles", slug, "body.html"),
+    "utf8",
+  );
 }
 
-async function readJson(path: URL): Promise<unknown> {
+async function readJson(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8")) as unknown;
 }
-
 function asSiteConfig(value: unknown, source: string): SiteConfig {
   if (!isRecord(value)) {
     throw new Error(`${source} must be an object.`);
