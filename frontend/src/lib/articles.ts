@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-const generatedRoot = new URL("../../../generated/", import.meta.url);
+const generatedRoot = new URL("../../../../generated/", import.meta.url);
 
 /**
  * なぜ実装するのか:
