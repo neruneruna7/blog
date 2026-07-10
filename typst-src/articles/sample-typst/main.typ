@@ -24,6 +24,9 @@
 //   margin: 25mm,
 // )
 //
+//
+
+#import "../../commons/components/blog-rect.typ": *
 
 #let link-card(
   url,
@@ -101,13 +104,13 @@
   stroke: 1pt,
   columns: 3,
 
-  [a], [b], [c]
+  [a], [b], [c],
 )
 
 #figure(caption: "表1")[
   #table(
     columns: 3,
-    [a], [b], [c]
+    [a], [b], [c],
   )
 ]
 
@@ -126,17 +129,5 @@ $
 $
 #link-card("github.com/neruneruna7/blog/tree/feat/astro-react-rust-typst")
 
-#html.elem(
-  "div",
-  attrs: (
-    style: "
-      width: 320px;
-      height: 160px;
-      background-color: #5b8def;
-      border: 2px solid #315ca8;
-      border-radius: 12px;
-    ",
-    role: "img",
-    "aria-label": "青色の長方形",
-  ),
-)
+
+#blog-rect()
