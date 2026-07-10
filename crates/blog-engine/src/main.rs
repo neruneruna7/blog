@@ -1,37 +1,45 @@
 use std::path::PathBuf;
 
 use anyhow::{bail, Context, Result};
+use clap::{Args, Parser, Subcommand};
+
+#[derive(Debug, Parser)]
+#[command(
+    name = "blog-engine",
+    version,
+    about = "Typstブログコンテンツを生成するCLI",
+    arg_required_else_help = true
+)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Typstソースからブログ用の中間生成物を構築する。
+    Build(BuildArgs),
+}
+
+#[derive(Debug, Args)]
+struct BuildArgs {
+    /// Typstプロジェクトルート兼コンテンツ入力ルート。
+    #[arg(long, default_value = "typst-src", value_name = "DIR")]
+    source: PathBuf,
+
+    /// JSONおよびHTMLの出力ルート。
+    #[arg(long, default_value = "generated", value_name = "DIR")]
+    output: PathBuf,
+}
 
 fn main() -> Result<()> {
-    let mut args = std::env::args().skip(1);
-    let command = args.next().unwrap_or_else(|| "build".to_string());
+    let cli = Cli::parse();
 
-    if command != "build" {
-        bail!("unsupported command: {command}");
-    }
-
-    let mut source = PathBuf::from("typst-src");
-    let mut output = PathBuf::from("generated");
-
-    while let Some(arg) = args.next() {
-        match arg.as_str() {
-            "--source" => {
-                source = args
-                    .next()
-                    .map(PathBuf::from)
-                    .context("--source requires a path")?;
-            }
-            "--output" => {
-                output = args
-                    .next()
-                    .map(PathBuf::from)
-                    .context("--output requires a path")?;
-            }
-            unknown => bail!("unsupported argument: {unknown}"),
+    match cli.command {
+        Commands::Build(args) => {
+            blog_engine::build(args.source, args.output)?;
         }
     }
-
-    blog_engine::build(source, output)?;
 
     Ok(())
 }
