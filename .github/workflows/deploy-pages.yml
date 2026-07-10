@@ -66,23 +66,23 @@ jobs:
           pnpm --version
           rustc --version
           cargo --version
-          makers --version
+          cargo make --version
           typst --version
 
       - name: Install frontend dependencies
         run: pnpm --dir frontend install --frozen-lockfile
 
       - name: Check Rust code
-        run: makers check
+        run: cargo make check
 
-      # makers testはbuild-contentに依存していないため，
+      # cargo make testはbuild-contentに依存していないため，
       # frontendのテストより先に生成物を作る．
       - name: Generate content
-        run: makers build-content
+        run: cargo make build-content
 
       # frontend/package.jsonのtestはAstroビルドと成果物検証を行う．
       - name: Test and build frontend
-        run: makers test-site
+        run: cargo make test-site
 
       - name: Verify deployment output
         run: |
