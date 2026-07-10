@@ -23,10 +23,10 @@
 //   paper: "a4",
 //   margin: 25mm,
 // )
-//
-//
 
 #import "../../commons/components/index.typ": *
+
+#set text(lang: "ja")
 
 #let link-card(
   url,
@@ -135,3 +135,8 @@ $
 aaa
 
 #web-link-card("https://zenn.dev/avaintelligence/articles/b7d4743a448485#%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB")
+
+参照 @AGIC 参照 @cpa 参照 @guo2026gradient-inversion
+
+
+#bibliography("refs.yml", full: true)

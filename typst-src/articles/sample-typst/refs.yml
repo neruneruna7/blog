@@ -1,0 +1,77 @@
+AGIC:
+  type: article
+  title: "{AGIC}: Approximate Gradient Inversion Attack on Federated Learning"
+  author:
+    - "Xu, Jin"
+    - "Hong, Chi"
+    - "Huang, Jiyue"
+    - "Chen, Lydia Y."
+    - "Decouchant, Jérémie"
+  date: 2022
+  page-range: 12-22
+  serial-number:
+    doi: "10.1109/SRDS55811.2022.00012"
+  parent:
+    type: proceedings
+    title: "2022 41st International Symposium on Reliable Distributed Systems ({SRDS})"
+
+cpa:
+  type: article
+  title: "Cocktail Party Attack: Breaking Aggregation-Based Privacy in Federated Learning Using Independent Component Analysis"
+  author:
+    - "Kariyappa, Sanjay"
+    - "Guo, Chuan"
+    - "Maeng, Kiwan"
+    - "Xiong, Wenjie"
+    - "Suh, G. Edward"
+    - "Qureshi, Moinuddin K."
+    - "Lee, Hsien-Hsin S."
+  date: 2023
+  page-range: 15884-15899
+  url: "https://proceedings.mlr.press/v202/kariyappa23a.html"
+  parent:
+    type: proceedings
+    title: "Proceedings of the 40th International Conference on Machine Learning"
+    volume: 202
+    publisher: PMLR
+    parent:
+      type: book
+      title: "Proceedings of Machine Learning Research"
+
+guo2026gradient-inversion:
+  type: article
+  title: "Exploring the Vulnerabilities of Federated Learning: A Deep Dive Into Gradient Inversion Attacks"
+  author:
+    - Guo, Pengxin
+    - Wang, Runxi
+    - Zeng, Shuang
+    - Zhu, Jinjing
+    - Jiang, Haoning
+    - Wang, Yanran
+    - Zhou, Yuyin
+    - Wang, Feifei
+    - Xiong, Hui
+    - Qu, Liangqiong
+  date: 2026
+  parent:
+    type: periodical
+    title: "IEEE Transactions on Pattern Analysis and Machine Intelligence"
+    volume: 48
+    issue: 4
+  page-range: 4810-4826
+  serial-number:
+    doi: "10.1109/TPAMI.2025.3646639"
+  keyword:
+    - Training
+    - Privacy
+    - Image reconstruction
+    - Servers
+    - Protocols
+    - Image resolution
+    - Data models
+    - Data privacy
+    - Vectors
+    - Systematic literature review
+    - Federated Learning
+    - Data Privacy
+    - Gradient Inversion Attacks
