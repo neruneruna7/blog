@@ -1,0 +1,65 @@
+/*
+typstから作られた記事HTMLに対して当てられるHTML
+*/
+.article-body {
+  --article-text-width: 42rem;
+  --article-section-gap: clamp(4.5rem, 9vw, 7rem);
+  --article-subsection-gap: clamp(3rem, 6vw, 4.5rem);
+  --article-paragraph-gap: 1.15em;
+
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 0.96rem + 0.18vw, 1.075rem);
+  line-height: 2;
+  overflow-wrap: anywhere;
+}
+
+.article-body > h2 {
+  margin: var(--article-section-gap) 0 0;
+  padding-top: 1.4rem;
+  border-top: 1px solid color-mix(
+    in oklab,
+    var(--foreground) 40%,
+    transparent
+  );
+
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 1.45rem + 1.2vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+}
+
+.article-body > h2:first-child {
+  margin-top: 0;
+}
+
+.article-body h3 {
+  margin: var(--article-subsection-gap) 0 0;
+  padding-inline-start: 1rem;
+  border-inline-start: 2px solid var(--foreground);
+
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 1.22rem + 0.5vw, 1.7rem);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.article-body h4 {
+  margin: 2.5rem 0 0;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.article-body p {
+  margin: 0;
+}
+
+.article-body p + p {
+  margin-top: var(--article-paragraph-gap);
+}
+
+.article-body :is(h2, h3, h4) + p {
+  margin-top: 1.5rem;
+}
