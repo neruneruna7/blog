@@ -121,6 +121,17 @@ pub enum BlogEngineError {
     },
 
     /// なぜ実装するのか:
+    /// - ローカルHTML変換の不変条件違反を外部取得失敗と区別するため。
+    ///
+    /// 期待する動作:
+    /// - HTML rewriterの初期化・変換失敗を明示して返す。
+    ///
+    /// 使い方の概要:
+    /// - `html_postprocess` の内部失敗を変換して返す。
+    #[error("HTML postprocess error: {message}")]
+    HtmlPostprocess { message: String },
+
+    /// なぜ実装するのか:
     /// - 記事設定探索時のディレクトリ走査失敗を扱うため。
     ///
     /// 期待する動作:
@@ -215,6 +226,12 @@ impl BlogEngineError {
             slug: slug.into(),
             output_path: output_path.into(),
             source,
+        }
+    }
+
+    pub(crate) fn html_postprocess(message: impl Into<String>) -> Self {
+        Self::HtmlPostprocess {
+            message: message.into(),
         }
     }
 }

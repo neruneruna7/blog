@@ -4,6 +4,6 @@
 
 // #import "article.typ": article
 // #import "callout.typ": callout
-// #import "link-card.typ": link-card
+#import "web-link-card.typ": web-link-card
 
 #import "blog-rect.typ": blog-rect

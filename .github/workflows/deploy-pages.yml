@@ -50,6 +50,14 @@ jobs:
       - name: Cache Rust build
         uses: Swatinem/rust-cache@v2
 
+      - name: Cache web link card metadata
+        uses: actions/cache@v4
+        with:
+          path: .cache/blog-engine/web-link-cards
+          key: web-link-cards-v1-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            web-link-cards-v1-${{ runner.os }}-
+
       - name: Install cargo-make
         uses: taiki-e/install-action@v2
         with:
