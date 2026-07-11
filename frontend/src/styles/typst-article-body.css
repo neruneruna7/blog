@@ -11,6 +11,9 @@ typstから作られた記事HTMLに対して当てられるHTML
   font-size: clamp(1rem, 0.96rem + 0.18vw, 1.075rem);
   line-height: 2;
   overflow-wrap: anywhere;
+
+  --article-list-indent: 1.8em;
+   --article-list-item-gap: 0.45em;
 }
 
 /*
@@ -104,4 +107,87 @@ typstから作られた記事HTMLに対して当てられるHTML
 @media (max-width: 36rem) {
   .article-body .web-link-card { grid-template-columns: 1fr; }
   .article-body .web-link-card__image { grid-column: 1; grid-row: auto; max-height: 12rem; }
+}
+
+
+/*
+ * Typstの数値なしリストを表示する．
+ *
+ * Tailwind Preflightがulのlist-styleをnoneにするため，
+ * 記事本文の範囲に限定して箇条書きを復元する．
+ */
+.article-body ul {
+  list-style-type: disc;
+}
+
+/*
+ * Typstの数値ありリストを表示する．
+ *
+ * Tailwind Preflightがolのlist-styleをnoneにするため，
+ * 記事本文の範囲に限定して連番を復元する．
+ */
+.article-body ol {
+  list-style-type: decimal;
+}
+
+/*
+ * リスト共通のレイアウトを定義する．
+ *
+ * padding-inline-startを使うことで，物理方向のmargin-leftに依存せず，
+ * リストマーカーを本文領域内に配置する．
+ */
+.article-body :where(ul, ol) {
+  margin-block: 1.35em;
+  padding-inline-start: var(--article-list-indent);
+  list-style-position: outside;
+}
+
+/* 同一階層の項目間に，段落より小さい間隔を設ける． */
+.article-body :where(ul, ol) > li + li {
+  margin-block-start: var(--article-list-item-gap);
+}
+
+/* マーカーと本文の間に最低限の余白を設ける． */
+.article-body :where(ul, ol) > li {
+  padding-inline-start: 0.25em;
+}
+
+/*
+ * ネストしたリストの余白を抑える．
+ *
+ * Typstは，本文を含むリスト項目を
+ * <li><p>...</p><ul>...</ul></li>
+ * のように出力する場合がある．
+ */
+.article-body li > :where(ul, ol) {
+  margin-block: 0.5em 0;
+}
+
+/* li内部のpに，通常段落用の上下余白を持ち込まない． */
+.article-body li > p {
+  margin-block: 0;
+}
+
+/* ネスト階層をマーカー形状で区別する． */
+.article-body ul ul {
+  list-style-type: circle;
+}
+
+.article-body ul ul ul {
+  list-style-type: square;
+}
+
+/* マーカーを本文色より少し弱くする． */
+.article-body :where(ul, ol) > li::marker {
+  color: color-mix(
+    in oklab,
+    var(--foreground) 68%,
+    transparent
+  );
+}
+
+/* 数字の視認性を揃える． */
+.article-body ol > li::marker {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }

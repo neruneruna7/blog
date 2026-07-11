@@ -74,6 +74,7 @@ Aichi Tech Day，以下テックデイは，子供向けのイベントっぽい
 公開用に一部改変したマニュアルは，元のnote記事からダウンロードできます．
 
 #web-link-card("https://note.com/neruneruna7/n/n167c13847939")
+// #link("articles/aichi-tech-day-202/assets/aichi-tech-day-manual-pub.pdf")
 
 == 日本医師会「気道異物除去の手順」
 
