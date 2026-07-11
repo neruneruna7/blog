@@ -6,6 +6,11 @@ description = "Generate intermediate content files under generated/."
 command = "cargo"
 args = ["run", "-p", "blog-engine", "--", "build"]
 
+[tasks.new-article]
+description = "Create a new Typst article skeleton."
+command = "cargo"
+args = ["run", "-p", "blog-engine", "--", "new", "${@}"]
+
 [tasks.test-content]
 description = "Run Rust tests for the content engine."
 command = "cargo"
@@ -58,3 +63,27 @@ description = "Remove generated outputs."
 script = '''
 rm -rf generated
 '''
+
+[tasks.watch-content]
+description = "typst-src内の変更を監視し，コンテンツを再生成する．"
+command = "watchexec"
+args = [
+  "--watch",
+  "typst-src",
+
+  "--debounce",
+  "200ms",
+
+  "--on-busy-update",
+  "queue",
+
+  "--postpone",
+
+  "--",
+  "cargo",
+  "run",
+  "-p",
+  "blog-engine",
+  "--",
+  "build",
+]

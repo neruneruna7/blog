@@ -14,6 +14,7 @@ use std::process::Command;
 
 use crate::article::ArticleSource;
 use crate::error::BlogEngineError;
+use crate::html_postprocess::{process_html, PostprocessContext};
 
 /// なぜ実装するのか:
 /// - Typst実行境界を本番CLIとテスト用runnerで差し替えられるようにするため。
@@ -154,6 +155,7 @@ pub(crate) fn write_article_body_html(
     output_root: impl AsRef<Path>,
     article: &ArticleSource,
     runner: &impl TypstRunner,
+    postprocess_context: &PostprocessContext,
 ) -> Result<(), BlogEngineError> {
     debug_assert_eq!(article.main_typ_path, article.article_dir.join("main.typ"));
 
@@ -178,6 +180,7 @@ pub(crate) fn write_article_body_html(
         .map_err(|source| BlogEngineError::io(&full_html_path, source))?;
     let body_html_path = article_output_dir.join("body.html");
     let fragment = normalize_body_fragment(&full_html);
+    let fragment = process_html(fragment, postprocess_context)?;
     validate_body_fragment(&fragment, &article.meta.slug, &body_html_path)?;
     fs::write(&body_html_path, format!("{fragment}\n")).map_err(|source| {
         BlogEngineError::body_html_write(&article.meta.slug, &body_html_path, source)

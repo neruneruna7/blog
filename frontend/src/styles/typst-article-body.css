@@ -1,0 +1,193 @@
+/*
+typstから作られた記事HTMLに対して当てられるHTML
+*/
+.article-body {
+  --article-text-width: 42rem;
+  --article-section-gap: clamp(4.5rem, 9vw, 7rem);
+  --article-subsection-gap: clamp(3rem, 6vw, 4.5rem);
+  --article-paragraph-gap: 1.15em;
+
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 0.96rem + 0.18vw, 1.075rem);
+  line-height: 2;
+  overflow-wrap: anywhere;
+
+  --article-list-indent: 1.8em;
+   --article-list-item-gap: 0.45em;
+}
+
+/*
+通常のh2と，Typstのbibliographyが生成する参考文献見出しに，
+同一のセクション見出しスタイルを適用する．
+*/
+.article-body > h2,
+.article-body > section[role="doc-bibliography"] > h2 {
+  margin: var(--article-section-gap) 0 0;
+  padding-top: 1.4rem;
+  border-top: 1px solid color-mix(
+    in oklab,
+    var(--foreground) 40%,
+    transparent
+  );
+
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 1.45rem + 1.2vw, 2.5rem);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+}
+
+/*
+記事の最初にh2または参考文献セクションが置かれた場合は，
+上部の余白を除去する．
+*/
+.article-body > h2:first-child,
+.article-body > section[role="doc-bibliography"]:first-child > h2 {
+  margin-top: 0;
+}
+
+.article-body h3 {
+  margin: var(--article-subsection-gap) 0 0;
+  padding-inline-start: 1rem;
+  border-inline-start: 2px solid var(--foreground);
+
+  font-family: var(--font-heading);
+  font-size: clamp(1.35rem, 1.22rem + 0.5vw, 1.7rem);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.article-body h4 {
+  margin: 2.5rem 0 0;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.article-body p {
+  margin: 0;
+}
+
+.article-body p + p {
+  margin-top: var(--article-paragraph-gap);
+}
+
+.article-body :is(h2, h3, h4) + p {
+  margin-top: 1.5rem;
+}
+
+.article-body .web-link-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(7rem, 11rem);
+  margin: 2rem 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--foreground) 30%, transparent);
+  border-radius: 0.75rem;
+  color: inherit;
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.article-body .web-link-card__content { display: grid; gap: 0.35rem; padding: 1rem 1.1rem; min-width: 0; }
+.article-body .web-link-card__title { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.article-body .web-link-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.article-body .web-link-card__site { color: color-mix(in oklab, var(--foreground) 58%, transparent); font-size: 0.85em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.article-body .web-link-card__image { grid-column: 2; grid-row: 1; width: 100%; height: 100%; object-fit: cover; }
+.article-body .web-link-card--fallback { display: block; padding: 1rem 1.1rem; overflow-wrap: anywhere; }
+.article-body .web-link-card:focus-visible { outline: 3px solid var(--foreground); outline-offset: 3px; }
+
+@media (max-width: 36rem) {
+  .article-body .web-link-card { grid-template-columns: 1fr; }
+  .article-body .web-link-card__image { grid-column: 1; grid-row: auto; max-height: 12rem; }
+}
+
+
+/*
+ * Typstの数値なしリストを表示する．
+ *
+ * Tailwind Preflightがulのlist-styleをnoneにするため，
+ * 記事本文の範囲に限定して箇条書きを復元する．
+ */
+.article-body ul {
+  list-style-type: disc;
+}
+
+/*
+ * Typstの数値ありリストを表示する．
+ *
+ * Tailwind Preflightがolのlist-styleをnoneにするため，
+ * 記事本文の範囲に限定して連番を復元する．
+ */
+.article-body ol {
+  list-style-type: decimal;
+}
+
+/*
+ * リスト共通のレイアウトを定義する．
+ *
+ * padding-inline-startを使うことで，物理方向のmargin-leftに依存せず，
+ * リストマーカーを本文領域内に配置する．
+ */
+.article-body :where(ul, ol) {
+  margin-block: 1.35em;
+  padding-inline-start: var(--article-list-indent);
+  list-style-position: outside;
+}
+
+/* 同一階層の項目間に，段落より小さい間隔を設ける． */
+.article-body :where(ul, ol) > li + li {
+  margin-block-start: var(--article-list-item-gap);
+}
+
+/* マーカーと本文の間に最低限の余白を設ける． */
+.article-body :where(ul, ol) > li {
+  padding-inline-start: 0.25em;
+}
+
+/*
+ * ネストしたリストの余白を抑える．
+ *
+ * Typstは，本文を含むリスト項目を
+ * <li><p>...</p><ul>...</ul></li>
+ * のように出力する場合がある．
+ */
+.article-body li > :where(ul, ol) {
+  margin-block: 0.5em 0;
+}
+
+/* li内部のpに，通常段落用の上下余白を持ち込まない． */
+.article-body li > p {
+  margin-block: 0;
+}
+
+/* ネスト階層をマーカー形状で区別する． */
+.article-body ul ul {
+  list-style-type: circle;
+}
+
+.article-body ul ul ul {
+  list-style-type: square;
+}
+
+/* マーカーを本文色より少し弱くする． */
+.article-body :where(ul, ol) > li::marker {
+  color: color-mix(
+    in oklab,
+    var(--foreground) 68%,
+    transparent
+  );
+}
+
+/* 数字の視認性を揃える． */
+.article-body ol > li::marker {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

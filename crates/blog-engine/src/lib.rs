@@ -10,6 +10,8 @@
 pub mod article;
 pub mod config;
 pub mod error;
+pub mod html_postprocess;
+pub mod new_article;
 pub mod output;
 pub mod typst_compile;
 
@@ -35,8 +37,14 @@ pub fn build(
 ) -> Result<(), BlogEngineError> {
     let source_root = source_root.as_ref();
     let runner = CliTypstRunner::new(source_root);
+    let postprocess_context = html_postprocess::PostprocessContext::production();
 
-    build_with_typst_runner(source_root, output_root, &runner)
+    build_with_typst_runner_and_postprocess_context(
+        source_root,
+        output_root,
+        &runner,
+        &postprocess_context,
+    )
 }
 /// なぜ実装するのか:
 /// - 本番ではTypst CLIを使い、テストでは外部バイナリに依存しないrunnerを注入するため。
@@ -51,6 +59,29 @@ pub fn build_with_typst_runner(
     output_root: impl AsRef<Path>,
     runner: &impl TypstRunner,
 ) -> Result<(), BlogEngineError> {
+    let postprocess_context = html_postprocess::PostprocessContext::production();
+    build_with_typst_runner_and_postprocess_context(
+        source_root,
+        output_root,
+        runner,
+        &postprocess_context,
+    )
+}
+
+/// なぜ実装するのか:
+/// - Typst実行とHTML後処理の外部境界を個別にテスト可能にするため。
+///
+/// 期待する動作:
+/// - Typst変換後の本文fragmentを、指定された後処理文脈で変換してから検証・保存する。
+///
+/// 使い方の概要:
+/// - 通常は `build_with_typst_runner` を使い、後処理を差し替えるテストだけで使う。
+pub fn build_with_typst_runner_and_postprocess_context(
+    source_root: impl AsRef<Path>,
+    output_root: impl AsRef<Path>,
+    runner: &impl TypstRunner,
+    postprocess_context: &html_postprocess::PostprocessContext,
+) -> Result<(), BlogEngineError> {
     let source_root = source_root.as_ref();
     let output_root = output_root.as_ref();
 
@@ -64,7 +95,7 @@ pub fn build_with_typst_runner(
     write_site_output(output_root, &site)?;
     write_article_outputs(output_root, &articles)?;
     for article in &article_sources {
-        write_article_body_html(output_root, article, runner)?;
+        write_article_body_html(output_root, article, runner, postprocess_context)?;
     }
 
     Ok(())
