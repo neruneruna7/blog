@@ -189,7 +189,7 @@ fn validate_article(config: ArticleConfig) -> Result<ArticleMeta, BlogEngineErro
 }
 
 /// slugの許可文字と区切り規則を検証する。
-fn validate_slug(slug: &str) -> Result<(), BlogEngineError> {
+pub(crate) fn validate_slug(slug: &str) -> Result<(), BlogEngineError> {
     if !SLUG_REGEX.is_match(slug) {
         return Err(BlogEngineError::validation(format!(
             "article.slug is invalid: {slug}"

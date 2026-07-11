@@ -22,6 +22,31 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum BlogEngineError {
     /// なぜ実装するのか:
+    /// - OSの乱数源を使えない失敗を記事作成の入力検証失敗と区別するため。
+    ///
+    /// 期待する動作:
+    /// - 乱数取得に失敗した理由を保持して呼び出し側へ返す。
+    ///
+    /// 使い方の概要:
+    /// - 新規記事のslug生成時にOS乱数源が失敗した場合に返す。
+    #[error("failed to obtain random bytes: {source}")]
+    RandomSource {
+        #[source]
+        source: getrandom::Error,
+    },
+
+    /// なぜ実装するのか:
+    /// - 新規記事の確定先が既存記事を上書きしないことを明示するため。
+    ///
+    /// 期待する動作:
+    /// - 競合した確定先パスを含めて作成を拒否する。
+    ///
+    /// 使い方の概要:
+    /// - stagingディレクトリを確定先へ移動する直前の存在確認で返す。
+    #[error("article path already exists: {path}")]
+    ArticlePathExists { path: PathBuf },
+
+    /// なぜ実装するのか:
     /// - ファイル読み書きに失敗したパスを保持するため。
     ///
     /// 期待する動作:
@@ -144,6 +169,17 @@ pub enum BlogEngineError {
 }
 
 impl BlogEngineError {
+    /// なぜ実装するのか:
+    /// - OS乱数源の失敗を公開エラー型へ安全に変換するため。
+    ///
+    /// 期待する動作:
+    /// - 乱数APIが返したエラー原因を失わずに保持する。
+    ///
+    /// 使い方の概要:
+    /// - slug生成処理から呼び出す。
+    pub(crate) fn random_source_error(source: getrandom::Error) -> Self {
+        Self::RandomSource { source }
+    }
     /// なぜ実装するのか:
     /// - 外部の `TypstRunner` 実装がTypst変換失敗を同じ型で返せるようにするため。
     ///

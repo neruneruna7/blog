@@ -6,6 +6,11 @@ description = "Generate intermediate content files under generated/."
 command = "cargo"
 args = ["run", "-p", "blog-engine", "--", "build"]
 
+[tasks.new-article]
+description = "Create a new Typst article skeleton."
+command = "cargo"
+args = ["run", "-p", "blog-engine", "--", "new", "${@}"]
+
 [tasks.test-content]
 description = "Run Rust tests for the content engine."
 command = "cargo"

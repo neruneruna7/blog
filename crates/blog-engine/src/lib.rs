@@ -11,6 +11,7 @@ pub mod article;
 pub mod config;
 pub mod error;
 pub mod html_postprocess;
+pub mod new_article;
 pub mod output;
 pub mod typst_compile;
 
