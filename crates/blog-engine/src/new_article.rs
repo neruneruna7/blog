@@ -69,6 +69,7 @@ struct NewArticleConfig<'a> {
 ///
 /// 期待する動作:
 /// - 入力を検証し、完全な記事雛形を一時ディレクトリ経由で確定先へ作成する。
+/// - 新規作成時には生成slugをデフォルトの記事ディレクトリ名として使用する。
 ///
 /// 使い方の概要:
 /// - `create_article("typst-src", NewArticleRequest { .. })` として呼び出す。
@@ -300,7 +301,7 @@ mod tests {
     const SLUG: &str = "0123456789ab";
 
     #[test]
-    fn generates_a_complete_schema_compatible_article_skeleton() {
+    fn creates_a_complete_schema_compatible_article_skeleton() {
         let source = source_root();
         let published_at = fixed_time();
         let created = create_article_with_context(
@@ -312,10 +313,6 @@ mod tests {
         )
         .expect("article should be created");
 
-        assert_eq!(
-            created.article_dir,
-            source.path().join("articles").join(SLUG)
-        );
         assert!(created.article_dir.join("ArticleConfig.toml").is_file());
         assert!(created.article_dir.join("main.typ").is_file());
         assert!(created.article_dir.join("assets/.gitkeep").is_file());
@@ -345,6 +342,24 @@ mod tests {
         assert_eq!(
             load_normalized_articles(source.path()).unwrap()[0].slug,
             SLUG
+        );
+    }
+
+    #[test]
+    fn uses_generated_slug_as_default_article_directory_name() {
+        let source = source_root();
+        let created = create_article_with_context(
+            source.path(),
+            request("記事タイトル", None),
+            fixed_time(),
+            uuid(),
+            || Ok(SLUG.to_owned()),
+        )
+        .expect("article should be created");
+
+        assert_eq!(
+            created.article_dir,
+            source.path().join("articles").join(SLUG)
         );
     }
 

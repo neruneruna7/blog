@@ -21,6 +21,12 @@ Typst CLI:
 - `cargo make build-content` uses `typst compile --features html` to generate `generated/articles/<slug>/body.html`.
 - `body.html` is an intermediate HTML fragment. It is not a final page.
 
+Article source layout:
+- Article configuration is discovered under `typst-src/articles/<directory-name>/ArticleConfig.toml`.
+- The article directory name is a source-layout name independent of the public slug in `ArticleConfig.toml`.
+- Public URLs and generated article output directories are derived from the configured slug.
+- New article creation uses the generated slug as the default directory name.
+
 Astro:
 - `cargo make build-site` builds `frontend/dist/` from the existing files under `generated/`.
 - `cargo make build` runs content generation first, then builds the Astro static site.
