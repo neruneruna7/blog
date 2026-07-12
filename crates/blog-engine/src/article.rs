@@ -64,6 +64,14 @@ pub struct ArticleMeta {
     pub ogp_image: Option<String>,
 }
 
+/// なぜ実装するのか:
+/// - ソース配置と公開記事メタデータを同じ記事として扱いながら、別々に保持するため。
+///
+/// 期待する動作:
+/// - `article_dir` は `ArticleConfig.toml` の親ディレクトリを示し、公開URLと生成出力は `meta.slug` から決まる。
+///
+/// 使い方の概要:
+/// - `normalize_article_sources` が生成し、本文生成処理へ渡す。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct ArticleSource {
     pub(crate) meta: ArticleMeta,

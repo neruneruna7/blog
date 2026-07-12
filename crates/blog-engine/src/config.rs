@@ -54,10 +54,11 @@ pub fn load_site_config(source_root: impl AsRef<Path>) -> Result<SiteOutput, Blo
 }
 
 /// なぜ実装するのか:
-/// - 記事ディレクトリ配下の `ArticleConfig.toml` を一括で読み込むため。
+/// - 記事設定の所在と公開識別子を分離して扱うため。
 ///
 /// 期待する動作:
 /// - `typst-src/articles/**/ArticleConfig.toml` を決定的な順序で読み込む。
+/// - 記事ディレクトリ名はソース配置上の名前として保持し、slugをそこから推測しない。
 ///
 /// 使い方の概要:
 /// - 正規化処理の前段として、入力ルートを渡して呼び出す。

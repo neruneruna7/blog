@@ -148,6 +148,7 @@ fn write_typst_messages(
 ///
 /// 期待する動作:
 /// - `main.typ` の存在、Typst変換、本文fragment正規化、fragment検証、保存を順に行う。
+/// - `main.typ` は `ArticleConfig.toml` の親ディレクトリから読み、出力先は設定済みslugから決める。
 ///
 /// 使い方の概要:
 /// - 正規化済み `ArticleSource` と出力ルート、Typst runnerを渡して呼び出す。

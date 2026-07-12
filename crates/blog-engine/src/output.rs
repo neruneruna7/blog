@@ -54,6 +54,7 @@ pub fn write_site_output(
 ///
 /// 期待する動作:
 /// - `article-index.json` と `articles/<slug>/meta.json` をpretty JSONで生成する。
+/// - 出力ディレクトリ名には、ソース記事ディレクトリ名ではなく設定済みslugを使用する。
 ///
 /// 使い方の概要:
 /// - 正規化済み記事メタデータの一覧を渡して呼び出す。

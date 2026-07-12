@@ -138,5 +138,29 @@ aaa
 
 参照 @AGIC 参照 @cpa 参照 @guo2026gradient-inversion
 
+これは`一行コード`です．
+
+```rs
+fn linear_search<T: PartialEq>(arr: &[T], target: T) -> Option<usize> {
+    for (i, &item) in arr.iter().enumerate() {
+        if item == target {
+            return Some(i);
+        }
+    }
+    None
+}
+```
+
+```rs :linear_search
+fn linear_search<T: PartialEq>(arr: &[T], target: T) -> Option<usize> {
+    for (i, &item) in arr.iter().enumerate() {
+        if item == target {
+            return Some(i);
+        }
+    }
+    None
+}
+```
+
 
 #bibliography("refs.yml", full: true)

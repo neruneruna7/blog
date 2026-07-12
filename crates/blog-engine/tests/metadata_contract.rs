@@ -158,6 +158,27 @@ fn invalid_slug_is_rejected() {
 }
 
 #[test]
+fn builds_article_using_configured_slug_when_directory_name_differs() {
+    let source = fixture("directory-name-differs-from-slug");
+    let output = TempDir::new().expect("temp dir should be created");
+
+    build_with_typst_runner(&source, output.path(), &FakeTypstRunner)
+        .expect("article with a different source directory name should build");
+
+    let article_output = output.path().join("articles").join("0123456789ab");
+    assert!(article_output.join("meta.json").is_file());
+    assert!(article_output.join("body.html").is_file());
+    let meta = read_json(article_output.join("meta.json"));
+    assert_eq!(meta["slug"], "0123456789ab");
+    assert_eq!(meta["url"], "/articles/0123456789ab/");
+    assert!(!output
+        .path()
+        .join("articles")
+        .join("readable-directory-name")
+        .exists());
+}
+
+#[test]
 fn article_meta_json_is_written_under_slug_directory() {
     let output = TempDir::new().expect("temp dir should be created");
 
