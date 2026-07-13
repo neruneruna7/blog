@@ -2,7 +2,7 @@
 //! - メタデータ生成で発生する失敗を型で分類するため。
 //!
 //! 期待する動作:
-//! - I/O、TOML、検証、走査の失敗を呼び出し側へ返す。
+//! - I/O、TOML、検証、走査、Typst OGP描画の失敗を呼び出し側へ返す。
 //!
 //! 使い方の概要:
 //! - ライブラリ公開関数の `Result` エラー型として利用する。
@@ -112,6 +112,121 @@ pub enum BlogEngineError {
         input_path: PathBuf,
         output_path: PathBuf,
         stderr: String,
+    },
+
+    /// なぜ実装するのか:
+    /// - OGP用Typstプロセスを開始できない失敗を、コンパイル失敗と区別するため。
+    ///
+    /// 期待する動作:
+    /// - テンプレート、出力先、OS由来の開始失敗を保持して報告する。
+    ///
+    /// 使い方の概要:
+    /// - `TypstOgpRenderer` の `Command::output` が失敗した場合に返す。
+    #[error("failed to start Typst OGP process: template={template_path}, output={output_path}, source={source}")]
+    OgpTypstProcessStart {
+        template_path: PathBuf,
+        output_path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
+
+    /// なぜ実装するのか:
+    /// - OGP用Typstが非ゼロ終了した失敗を、プロセス開始失敗と区別するため。
+    ///
+    /// 期待する動作:
+    /// - 終了コード、stderr、テンプレート、出力先を保持して報告する。
+    ///
+    /// 使い方の概要:
+    /// - OGP用Typstプロセスがコンパイルに失敗した場合に返す。
+    #[error("Typst OGP compilation failed: template={template_path}, output={output_path}, exit_code={status_code:?}, stderr={stderr}")]
+    OgpTypstCompile {
+        template_path: PathBuf,
+        output_path: PathBuf,
+        status_code: Option<i32>,
+        stderr: String,
+    },
+
+    /// なぜ実装するのか:
+    /// - Typstが成功終了したにもかかわらずPNGを生成しなかった状態を検出するため。
+    ///
+    /// 期待する動作:
+    /// - テンプレート、出力先、期待寸法を含む失敗を返す。
+    ///
+    /// 使い方の概要:
+    /// - Typst終了後の出力ファイル存在確認で返す。
+    #[error("OGP PNG was not generated: template={template_path}, output={output_path}, expected_dimensions={expected_width}x{expected_height}")]
+    OgpOutputMissing {
+        template_path: PathBuf,
+        output_path: PathBuf,
+        expected_width: u32,
+        expected_height: u32,
+    },
+
+    /// なぜ実装するのか:
+    /// - OGPテンプレートの読み込み失敗をTypstプロセス失敗と区別するため。
+    ///
+    /// 期待する動作:
+    /// - テンプレート、出力先、OS由来の読み込み失敗を保持して報告する。
+    ///
+    /// 使い方の概要:
+    /// - OGPハッシュとコンパイル引数を準備する前のテンプレート読み込みで返す。
+    #[error("failed to read OGP template: template={template_path}, output={output_path}, source={source}")]
+    OgpTemplateRead {
+        template_path: PathBuf,
+        output_path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
+
+    /// なぜ実装するのか:
+    /// - 生成PNGを検証するためのファイル読み込み失敗を区別するため。
+    ///
+    /// 期待する動作:
+    /// - テンプレート、出力先、OS由来の読み込み失敗を保持して報告する。
+    ///
+    /// 使い方の概要:
+    /// - Typst終了後にPNGバイト列を読み込めない場合に返す。
+    #[error("failed to read generated OGP PNG: template={template_path}, output={output_path}, source={source}")]
+    OgpOutputRead {
+        template_path: PathBuf,
+        output_path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
+
+    /// なぜ実装するのか:
+    /// - PNGシグネチャまたはIHDRを読めない出力を、寸法不一致と区別するため。
+    ///
+    /// 期待する動作:
+    /// - テンプレート、出力先、期待寸法、不正理由を保持して拒否する。
+    ///
+    /// 使い方の概要:
+    /// - `validate_ogp_png` がPNGヘッダの不変条件に違反した場合に返す。
+    #[error("invalid OGP PNG header: template={template_path}, output={output_path}, expected_dimensions={expected_width}x{expected_height}, reason={message}")]
+    OgpPngInvalid {
+        template_path: PathBuf,
+        output_path: PathBuf,
+        expected_width: u32,
+        expected_height: u32,
+        message: String,
+    },
+
+    /// なぜ実装するのか:
+    /// - 有効なPNGでもOGP契約の寸法でない出力を拒否するため。
+    ///
+    /// 期待する動作:
+    /// - 期待寸法と実寸法、テンプレート、出力先を同時に報告する。
+    ///
+    /// 使い方の概要:
+    /// - IHDRから寸法を読み取った直後の契約検証で返す。
+    #[error("OGP PNG dimensions mismatch: template={template_path}, output={output_path}, expected={expected_width}x{expected_height}, actual={actual_width}x{actual_height}")]
+    OgpPngDimensions {
+        template_path: PathBuf,
+        output_path: PathBuf,
+        expected_width: u32,
+        expected_height: u32,
+        actual_width: u32,
+        actual_height: u32,
     },
 
     /// なぜ実装するのか:
