@@ -13,7 +13,6 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 use walkdir::WalkDir;
 
-use crate::article::ArticleConfig;
 use crate::error::BlogEngineError;
 use crate::output::SiteOutput;
 
@@ -31,6 +30,26 @@ pub struct SiteConfig {
     description: String,
     language: String,
     base_url: String,
+}
+
+/// なぜ実装するのか:
+/// - `ArticleConfig.toml` の入力契約を、検証前の文字列として表すため。
+///
+/// 期待する動作:
+/// - TOMLのsnake_caseフィールドをそのままデコードし、記事ドメインモデルへの変換境界へ渡す。
+/// - 日時文字列の妥当性は、この型ではなく記事の検証処理が判定する。
+///
+/// 使い方の概要:
+/// - `load_article_config_files` がデコードし、`article::normalize_articles` が検証する。
+#[derive(Debug, Clone, Deserialize)]
+pub struct ArticleConfig {
+    pub(crate) id: String,
+    pub(crate) slug: String,
+    pub(crate) title: String,
+    pub(crate) description: String,
+    pub(crate) published_at: String,
+    pub(crate) updated_at: String,
+    pub(crate) tags: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -101,7 +120,12 @@ pub(crate) fn load_article_config_files(
             let config = read_toml::<ArticleConfig>(&path)?;
             let article_dir = path
                 .parent()
-                .expect("ArticleConfig.toml path must have a parent directory")
+                .ok_or_else(|| {
+                    BlogEngineError::validation(format!(
+                        "ArticleConfig.toml path must have a parent directory: {}",
+                        path.display()
+                    ))
+                })?
                 .to_path_buf();
 
             Ok(ArticleConfigFile {

@@ -1,11 +1,13 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use blog_engine::article::ArticleMeta;
+use blog_engine::article::Article;
 use blog_engine::config::load_site_config;
 use blog_engine::error::BlogEngineError;
+use blog_engine::output::ArticleOutput;
 use blog_engine::typst_compile::TypstRunner;
 use blog_engine::{build, build_with_typst_runner, load_normalized_articles};
+use chrono::{DateTime, FixedOffset};
 use serde_json::{json, Value};
 use tempfile::TempDir;
 
@@ -74,7 +76,8 @@ fn valid_site_toml_is_normalized_into_site_json_shape() {
 #[test]
 fn valid_article_config_toml_is_normalized_into_article_metadata_shape() {
     let article = single_article("valid-single");
-    let actual = serde_json::to_value(article).expect("article output should serialize");
+    let actual = serde_json::to_value(ArticleOutput::from(&article))
+        .expect("article output should serialize");
 
     assert_eq!(
         actual,
@@ -98,6 +101,29 @@ fn empty_updated_at_becomes_null() {
 }
 
 #[test]
+fn valid_updated_at_is_stored_as_a_typed_datetime() {
+    let articles =
+        load_normalized_articles(fixture("valid-multiple")).expect("articles should be valid");
+    let article = articles
+        .iter()
+        .find(|article| article.slug == "newer-article")
+        .expect("fixture should contain newer-article");
+    let expected = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-11T00:00:00+09:00")
+        .expect("fixture date should be valid");
+
+    assert_eq!(article.updated_at, Some(expected));
+}
+
+#[test]
+fn published_at_is_stored_as_a_typed_datetime() {
+    let article = single_article("valid-single");
+    let expected = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-09T00:00:00+09:00")
+        .expect("fixture date should be valid");
+
+    assert_eq!(article.published_at, expected);
+}
+
+#[test]
 fn article_url_is_generated_from_slug() {
     assert_eq!(single_article("valid-single").url, "/articles/hello-typst/");
 }
@@ -113,6 +139,46 @@ fn article_index_is_sorted_by_published_at_descending() {
             .map(|article| article.slug.as_str())
             .collect::<Vec<_>>(),
         vec!["newer-article", "hello-typst", "same-date-a"]
+    );
+}
+
+#[test]
+fn same_published_at_is_sorted_by_slug_ascending() {
+    let articles =
+        load_normalized_articles(fixture("valid-multiple")).expect("articles should be valid");
+    let published_at = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-09T00:00:00+09:00")
+        .expect("fixture date should be valid");
+    let same_date_slugs = articles
+        .iter()
+        .filter(|article| article.published_at == published_at)
+        .map(|article| article.slug.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(same_date_slugs, vec!["hello-typst", "same-date-a"]);
+}
+
+#[test]
+fn publication_order_key_uses_id_as_the_final_tie_breaker() {
+    let published_at = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-09T00:00:00+09:00")
+        .expect("fixture date should be valid");
+    let article_with_lower_id = Article {
+        id: "article-a".to_owned(),
+        slug: "same-slug".to_owned(),
+        title: "Article A".to_owned(),
+        description: "Article A".to_owned(),
+        published_at,
+        updated_at: None,
+        tags: Vec::new(),
+        url: "/articles/same-slug/".to_owned(),
+    };
+    let article_with_higher_id = Article {
+        id: "article-b".to_owned(),
+        ..article_with_lower_id.clone()
+    };
+
+    assert!(
+        article_with_lower_id.publication_order_key()
+            < article_with_higher_id.publication_order_key()
     );
 }
 
@@ -406,7 +472,7 @@ fn real_typst_conversion_is_env_gated() {
     assert!(!body.to_lowercase().contains("<html"));
 }
 
-fn single_article(fixture_name: &str) -> ArticleMeta {
+fn single_article(fixture_name: &str) -> Article {
     load_normalized_articles(fixture(fixture_name))
         .expect("articles should be valid")
         .into_iter()

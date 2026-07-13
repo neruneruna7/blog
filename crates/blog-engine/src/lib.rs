@@ -17,7 +17,7 @@ pub mod typst_compile;
 
 use std::path::Path;
 
-use article::{normalize_article_sources, normalize_articles, ArticleMeta};
+use article::{normalize_article_sources, normalize_articles, Article};
 use config::{load_article_config_files, load_article_configs, load_site_config};
 use error::BlogEngineError;
 use output::{write_article_outputs, write_site_output};
@@ -89,8 +89,8 @@ pub fn build_with_typst_runner_and_postprocess_context(
     let article_sources = load_normalized_article_sources(source_root)?;
     let articles = article_sources
         .iter()
-        .map(|source| source.meta.clone())
-        .collect::<Vec<ArticleMeta>>();
+        .map(|source| source.article.clone())
+        .collect::<Vec<Article>>();
 
     write_site_output(output_root, &site)?;
     write_article_outputs(output_root, &articles)?;
@@ -105,13 +105,13 @@ pub fn build_with_typst_runner_and_postprocess_context(
 /// - 記事メタデータの正規化結果を、出力を伴わずにテストできるようにするため。
 ///
 /// 期待する動作:
-/// - ArticleConfig.toml群を読み、検証済みの記事メタデータを公開日時降順で返す。
+/// - ArticleConfig.toml群を読み、日時型を保持する検証済み `Article` を公開順で返す。
 ///
 /// 使い方の概要:
 /// - テストや将来の別出力処理から、記事一覧だけが必要な場合に呼び出す。
 pub fn load_normalized_articles(
     source_root: impl AsRef<Path>,
-) -> Result<Vec<ArticleMeta>, BlogEngineError> {
+) -> Result<Vec<Article>, BlogEngineError> {
     let article_configs = load_article_configs(source_root.as_ref())?;
     normalize_articles(article_configs)
 }

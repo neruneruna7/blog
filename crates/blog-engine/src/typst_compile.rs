@@ -162,7 +162,7 @@ pub(crate) fn write_article_body_html(
 
     if !article.main_typ_path.is_file() {
         return Err(BlogEngineError::missing_main_typ(
-            &article.meta.slug,
+            &article.article.slug,
             &article.main_typ_path,
         ));
     }
@@ -170,21 +170,25 @@ pub(crate) fn write_article_body_html(
     let article_output_dir = output_root
         .as_ref()
         .join("articles")
-        .join(&article.meta.slug);
+        .join(&article.article.slug);
     fs::create_dir_all(&article_output_dir)
         .map_err(|source| BlogEngineError::io(&article_output_dir, source))?;
 
     let full_html_path = article_output_dir.join("body.full.tmp.html");
-    runner.compile(&article.meta.slug, &article.main_typ_path, &full_html_path)?;
+    runner.compile(
+        &article.article.slug,
+        &article.main_typ_path,
+        &full_html_path,
+    )?;
 
     let full_html = fs::read_to_string(&full_html_path)
         .map_err(|source| BlogEngineError::io(&full_html_path, source))?;
     let body_html_path = article_output_dir.join("body.html");
     let fragment = normalize_body_fragment(&full_html);
     let fragment = process_html(fragment, postprocess_context)?;
-    validate_body_fragment(&fragment, &article.meta.slug, &body_html_path)?;
+    validate_body_fragment(&fragment, &article.article.slug, &body_html_path)?;
     fs::write(&body_html_path, format!("{fragment}\n")).map_err(|source| {
-        BlogEngineError::body_html_write(&article.meta.slug, &body_html_path, source)
+        BlogEngineError::body_html_write(&article.article.slug, &body_html_path, source)
     })?;
 
     let _ = fs::remove_file(full_html_path);
