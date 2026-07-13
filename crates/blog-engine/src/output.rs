@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::article::Article;
 use crate::error::BlogEngineError;
+use crate::ogp::OgpImageMeta;
 
 /// なぜ実装するのか:
 /// - `generated/site.json` の安定したJSON契約をRust型で表すため。
@@ -37,10 +38,10 @@ pub struct SiteOutput {
 ///
 /// 期待する動作:
 /// - 日時をRFC3339文字列としてcamelCaseのJSONキーで出力する。
-/// - 既存契約の `ogpImage` をnullで維持し、この型で画像生成や画像検証を行わない。
+/// - 成功済みOGP成果物の構造化メタデータを必須値として保持する。
 ///
 /// 使い方の概要:
-/// - `Article` から変換し、`write_article_outputs` でファイルへ書き出す。
+/// - `Article` と `OgpImageMeta` から構築し、`write_article_outputs` で書き出す。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArticleOutput {
@@ -52,19 +53,20 @@ pub struct ArticleOutput {
     pub updated_at: Option<String>,
     pub tags: Vec<String>,
     pub url: String,
-    pub ogp_image: Option<String>,
+    pub ogp_image: OgpImageMeta,
 }
 
-impl From<&Article> for ArticleOutput {
+impl ArticleOutput {
     /// なぜ実装するのか:
-    /// - ドメインモデルとJSON出力モデルの変換を出力境界へ集約するため。
+    /// - ドメインモデルと成功済みOGP成果物を、最終JSONの一つの契約へ結合するため。
     ///
     /// 期待する動作:
-    /// - `DateTime<FixedOffset>` をRFC3339文字列へ変換し、更新日時のNoneをnullへ対応させる。
+    /// - `DateTime<FixedOffset>` をRFC3339文字列へ変換する。
+    /// - OGPメタデータを省略せず、そのまま記事JSONへ保持する。
     ///
     /// 使い方の概要:
-    /// - `ArticleOutput::from(&article)` として呼び出す。
-    fn from(article: &Article) -> Self {
+    /// - OGP生成が成功した後に `ArticleOutput::from_article` を呼び出す。
+    pub fn from_article(article: &Article, ogp_image: OgpImageMeta) -> Self {
         Self {
             id: article.id.clone(),
             slug: article.slug.clone(),
@@ -74,7 +76,7 @@ impl From<&Article> for ArticleOutput {
             updated_at: article.updated_at.as_ref().map(|date| date.to_rfc3339()),
             tags: article.tags.clone(),
             url: article.url.clone(),
-            ogp_image: None,
+            ogp_image,
         }
     }
 }
@@ -97,27 +99,41 @@ pub fn write_site_output(
 }
 
 /// なぜ実装するのか:
-/// - 記事インデックスと記事別メタデータを同じ契約で書き出すため。
+/// - 記事インデックスと記事別メタデータを、同じOGP付き契約で書き出すため。
 ///
 /// 期待する動作:
 /// - `article-index.json` と `articles/<slug>/meta.json` をpretty JSONで生成する。
 /// - 出力ディレクトリ名には、ソース記事ディレクトリ名ではなく設定済みslugを使用する。
+/// - 記事とOGPメタデータの件数が一致しない場合は書き出さない。
 ///
 /// 使い方の概要:
 /// - 検証済み `Article` の一覧を渡し、内部で `ArticleOutput` へ変換して呼び出す。
 pub fn write_article_outputs(
     output_root: impl AsRef<Path>,
     articles: &[Article],
+    ogp_images: &[OgpImageMeta],
 ) -> Result<(), BlogEngineError> {
     let output_root = output_root.as_ref();
+    if articles.len() != ogp_images.len() {
+        return Err(BlogEngineError::validation(format!(
+            "article and OGP metadata counts must match: articles={}, ogp_images={}",
+            articles.len(),
+            ogp_images.len()
+        )));
+    }
+
     create_dir_all(output_root)?;
-    let article_outputs = articles.iter().map(ArticleOutput::from).collect::<Vec<_>>();
+    let article_outputs = articles
+        .iter()
+        .zip(ogp_images)
+        .map(|(article, ogp_image)| ArticleOutput::from_article(article, ogp_image.clone()))
+        .collect::<Vec<_>>();
     write_json(output_root.join("article-index.json"), &article_outputs)?;
 
-    for article in articles {
+    for (article, ogp_image) in articles.iter().zip(ogp_images) {
         let article_dir = output_root.join("articles").join(&article.slug);
         create_dir_all(&article_dir)?;
-        let output = ArticleOutput::from(article);
+        let output = ArticleOutput::from_article(article, ogp_image.clone());
         write_json(article_dir.join("meta.json"), &output)?;
     }
 

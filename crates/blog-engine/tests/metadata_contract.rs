@@ -4,6 +4,10 @@ use std::path::{Path, PathBuf};
 use blog_engine::article::Article;
 use blog_engine::config::load_site_config;
 use blog_engine::error::BlogEngineError;
+use blog_engine::ogp::{
+    build_ogp_public_path, generate_ogp_content_hash, OgpImageMeta, OgpRenderInput,
+    OgpRenderSettings,
+};
 use blog_engine::output::ArticleOutput;
 use blog_engine::typst_compile::TypstRunner;
 use blog_engine::{build, build_with_typst_runner, load_normalized_articles};
@@ -76,8 +80,11 @@ fn valid_site_toml_is_normalized_into_site_json_shape() {
 #[test]
 fn valid_article_config_toml_is_normalized_into_article_metadata_shape() {
     let article = single_article("valid-single");
-    let actual = serde_json::to_value(ArticleOutput::from(&article))
-        .expect("article output should serialize");
+    let actual = serde_json::to_value(ArticleOutput::from_article(
+        &article,
+        expected_ogp_image_meta(&article),
+    ))
+    .expect("article output should serialize");
 
     assert_eq!(
         actual,
@@ -90,7 +97,7 @@ fn valid_article_config_toml_is_normalized_into_article_metadata_shape() {
             "updatedAt": null,
             "tags": ["typst", "rust"],
             "url": "/articles/hello-typst/",
-            "ogpImage": null
+            "ogpImage": expected_ogp_image()
         })
     );
 }
@@ -414,7 +421,7 @@ fn existing_article_index_json_output_remains_unchanged() {
             "updatedAt": null,
             "tags": ["typst", "rust"],
             "url": "/articles/hello-typst/",
-            "ogpImage": null
+            "ogpImage": expected_ogp_image()
         }])
     );
 }
@@ -443,7 +450,7 @@ fn existing_meta_json_output_remains_unchanged() {
             "updatedAt": null,
             "tags": ["typst", "rust"],
             "url": "/articles/hello-typst/",
-            "ogpImage": null
+            "ogpImage": expected_ogp_image()
         })
     );
 }
@@ -499,4 +506,24 @@ fn read_json(path: impl AsRef<Path>) -> Value {
 
 fn read_text(path: impl AsRef<Path>) -> String {
     fs::read_to_string(path).expect("text file should exist")
+}
+
+fn expected_ogp_image() -> Value {
+    serde_json::to_value(expected_ogp_image_meta(&single_article("valid-single")))
+        .expect("OGP image metadata should serialize")
+}
+
+fn expected_ogp_image_meta(article: &Article) -> OgpImageMeta {
+    let site = load_site_config(fixture("valid-single")).expect("site should be valid");
+    let input = OgpRenderInput::from_models(&site, article);
+    let settings = OgpRenderSettings::new("test-ogp-v1", "test-template", 1200, 630, 72);
+    let content_hash = generate_ogp_content_hash(&input, &settings);
+
+    OgpImageMeta {
+        path: build_ogp_public_path(&article.slug, &content_hash),
+        width: 1200,
+        height: 630,
+        mime_type: "image/png".to_owned(),
+        alt: format!("{} | {}", article.title, site.title),
+    }
 }

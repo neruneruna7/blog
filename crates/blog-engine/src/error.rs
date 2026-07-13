@@ -230,6 +230,34 @@ pub enum BlogEngineError {
     },
 
     /// なぜ実装するのか:
+    /// - 事前計算したハッシュとレンダラが返した成果物識別子の不一致を検出するため。
+    ///
+    /// 期待する動作:
+    /// - 不一致のPNGを記事JSONへ登録せず、ビルドを失敗させる。
+    ///
+    /// 使い方の概要:
+    /// - OGPレンダラの成功結果を最終出力へ登録する直前に返す。
+    #[error(
+        "OGP artifact hash mismatch: output={output_path}, expected={expected}, actual={actual}"
+    )]
+    OgpArtifactHashMismatch {
+        output_path: PathBuf,
+        expected: String,
+        actual: String,
+    },
+
+    /// なぜ実装するのか:
+    /// - レンダラがビルド境界の指定した出力先以外へ書いた成果物を拒否するため。
+    ///
+    /// 期待する動作:
+    /// - 指定した公開集合から外れたPNGをJSONへ登録しない。
+    ///
+    /// 使い方の概要:
+    /// - OGPレンダラの成功結果と期待出力先を比較するときに返す。
+    #[error("OGP artifact path mismatch: expected={expected}, actual={actual}")]
+    OgpArtifactPathMismatch { expected: PathBuf, actual: PathBuf },
+
+    /// なぜ実装するのか:
     /// - 生成HTMLが埋め込み可能な本文fragmentではない状態を明示するため。
     ///
     /// 期待する動作:

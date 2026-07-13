@@ -46,6 +46,24 @@ const IHDR_CHUNK_SIZE: usize = 33;
 /// - 本番では `TypstOgpRenderer` を使い、テストでは必要に応じてこの境界をスタブ化する。
 pub trait OgpRenderer {
     /// なぜ実装するのか:
+    /// - 描画前に成果物の決定的なファイル名を確定し、同一ビルド内の重複描画を避けるため。
+    ///
+    /// 期待する動作:
+    /// - `render` が使用する描画設定と同じ入力から、完全なSHA-256ハッシュを返す。
+    /// - テンプレートや設定を読めない場合はエラーを返し、事前計画できない実装はNoneを返す。
+    ///
+    /// 使い方の概要:
+    /// - ビルド境界が記事slugと結合して出力先を作る前に呼び出す。
+    fn content_hash(
+        &self,
+        input: &OgpRenderInput,
+        output_path: &Path,
+    ) -> Result<Option<String>, BlogEngineError> {
+        let _ = (input, output_path);
+        Ok(None)
+    }
+
+    /// なぜ実装するのか:
     /// - OGP入力からファイルシステム上のPNGを生成する呼び出し境界を固定するため。
     ///
     /// 期待する動作:
@@ -168,14 +186,17 @@ impl TypstOgpRenderer {
         command.arg(&self.template_path).arg(output_path);
         command
     }
-}
 
-impl OgpRenderer for TypstOgpRenderer {
-    fn render(
-        &self,
-        input: &OgpRenderInput,
-        output_path: &Path,
-    ) -> Result<OgpArtifact, BlogEngineError> {
+    /// なぜ実装するのか:
+    /// - ハッシュ計算と実際のTypst描画で同一のテンプレート設定を使うため。
+    ///
+    /// 期待する動作:
+    /// - テンプレート内容とOGPの寸法・解像度・レンダラバージョンを返す。
+    /// - テンプレートを読めない場合は、対象出力先を含むエラーを返す。
+    ///
+    /// 使い方の概要:
+    /// - `content_hash` と `render` の両方から呼び出す。
+    fn render_settings(&self, output_path: &Path) -> Result<OgpRenderSettings, BlogEngineError> {
         let template = fs::read_to_string(&self.template_path).map_err(|source| {
             BlogEngineError::OgpTemplateRead {
                 template_path: self.template_path.clone(),
@@ -183,13 +204,33 @@ impl OgpRenderer for TypstOgpRenderer {
                 source,
             }
         })?;
-        let settings = OgpRenderSettings::new(
+
+        Ok(OgpRenderSettings::new(
             OGP_RENDERER_VERSION,
             template,
             OGP_WIDTH_PX,
             OGP_HEIGHT_PX,
             OGP_PPI,
-        );
+        ))
+    }
+}
+
+impl OgpRenderer for TypstOgpRenderer {
+    fn content_hash(
+        &self,
+        input: &OgpRenderInput,
+        output_path: &Path,
+    ) -> Result<Option<String>, BlogEngineError> {
+        let settings = self.render_settings(output_path)?;
+        Ok(Some(generate_ogp_content_hash(input, &settings)))
+    }
+
+    fn render(
+        &self,
+        input: &OgpRenderInput,
+        output_path: &Path,
+    ) -> Result<OgpArtifact, BlogEngineError> {
+        let settings = self.render_settings(output_path)?;
         let content_hash = generate_ogp_content_hash(input, &settings);
 
         if let Some(parent) = output_path
