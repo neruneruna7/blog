@@ -1,3 +1,13 @@
+/**
+ * なぜ実装するのか:
+ * - Astroの最終成果物に、生成メタデータ・本文・OGP画像がそろっていることを検証するため。
+ *
+ * 期待する動作:
+ * - 各記事のページと本文を確認し、記事JSONが参照するOGP画像がfrontend/distに存在しない場合は失敗する。
+ *
+ * 使い方の概要:
+ * - frontendの `test` スクリプトから、Astroビルド直後に実行する。
+ */
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 
@@ -42,6 +52,19 @@ for (const article of articles) {
       !articleHtml.includes("client:idle") &&
       !articleHtml.includes("client:visible"),
     `${article.slug} page must not require Astro client hydration for article body.`,
+  );
+  assert(
+    typeof article.ogpImage?.path === "string" &&
+      article.ogpImage.path.startsWith("/ogp/articles/"),
+    `${article.slug} must reference an OGP image under /ogp/articles/.`,
+  );
+  assert(
+    !article.ogpImage.path.includes("\\"),
+    `${article.slug} OGP image path must not contain OS-dependent separators.`,
+  );
+  assert(
+    existsSync(new URL(article.ogpImage.path.slice(1), distRoot)),
+    `${article.ogpImage.path} must exist in frontend/dist.`,
   );
 }
 

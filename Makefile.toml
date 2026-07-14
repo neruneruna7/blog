@@ -6,6 +6,13 @@ description = "Generate intermediate content files under generated/."
 command = "cargo"
 args = ["run", "-p", "blog-engine", "--", "build"]
 
+[tasks.assemble-public]
+description = "Assemble frontend and generated public assets."
+dependencies = ["build-content"]
+cwd = "frontend"
+command = "pnpm"
+args = ["run", "assemble-public"]
+
 [tasks.new-article]
 description = "Create a new Typst article skeleton."
 command = "cargo"
@@ -18,9 +25,16 @@ args = ["test", "-p", "blog-engine"]
 
 [tasks.build-site]
 description = "Astroをビルド"
+dependencies = ["assemble-public"]
 cwd = "frontend"
 command = "pnpm"
-args = ["run", "build"]
+args = ["exec", "astro", "build"]
+
+[tasks.frontend-install]
+description = "フロントエンドの依存関係をインストールする"
+cwd = "frontend"
+command = "pnpm"
+args = ["install"]
 
 [tasks.test-site]
 description = "Run frontend build-level tests."
@@ -36,7 +50,7 @@ args = ["run", "dev"]
 
 [tasks.build]
 description = "Generate content and build Astro static site."
-dependencies = ["build-content", "build-site"]
+dependencies = ["build-site"]
 
 [tasks.test]
 description = "Run Rust and frontend tests."
