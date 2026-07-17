@@ -4,10 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm run assemble-public",
     "dev": "astro dev",
+    "assemble-public": "node ./scripts/assemble-public.mjs",
+    "prebuild": "pnpm run assemble-public",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "npm run build && node ./scripts/assert-build.mjs"
+    "test": "npm run build && node --test ./scripts/assemble-public.test.mjs && node ./scripts/assert-build.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",

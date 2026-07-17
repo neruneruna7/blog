@@ -23,6 +23,8 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <!--  子要素の持つ `slot="head"`で指定された要素の内容を挿入する-->
+    <slot name="head" />
   </head>
 
   <body class="min-h-svh bg-background text-foreground antialiased">

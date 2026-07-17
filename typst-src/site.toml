@@ -1,4 +1,6 @@
 title = "彗星記憶連晶"
 description = "neruneruna7のブログ"
 language = "ja"
+# これは，コンテンツビルド時にオプションから渡すこと．
+# ここに書いてあるのは実質ダミー値
 base_url = "http://localhost:4321"

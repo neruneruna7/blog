@@ -34,6 +34,24 @@ export type SiteConfig = {
 
 /**
  * なぜ実装するのか:
+ * - Rustエンジンが確定したOGP PNGと記事メタデータを同じ契約で扱うため.
+ *
+ * 期待する動作:
+ * - 公開パス、寸法、MIME型、代替テキストを必須値として保持する.
+ *
+ * 使い方の概要:
+ * - ArticleMeta.ogpImage として記事一覧・記事詳細で参照する.
+ */
+export type OgpImageMeta = {
+  path: string;
+  width: number;
+  height: number;
+  mimeType: string;
+  alt: string;
+};
+
+/**
+ * なぜ実装するのか:
  * - Rustエンジンが生成した記事メタデータJSONをAstroで型付きに扱うため.
  *
  * 期待する動作:
@@ -51,7 +69,7 @@ export type ArticleMeta = {
   updatedAt: string | null;
   tags: string[];
   url: string;
-  ogpImage: string | null;
+  ogpImage: OgpImageMeta;
 };
 
 /**
@@ -147,6 +165,16 @@ function asSiteConfig(value: unknown, source: string): SiteConfig {
   };
 }
 
+/**
+ * なぜ実装するのか:
+ * - 記事JSONの基本メタデータと必須OGP成果物を、表示処理へ渡す前に検証するため.
+ *
+ * 期待する動作:
+ * - 不正な記事またはOGP構造を検出した場合に、出典を含むエラーを投げる.
+ *
+ * 使い方の概要:
+ * - getArticlesとgetArticleMetaからJSONの各値へ適用する.
+ */
 function asArticleMeta(value: unknown, source: string): ArticleMeta {
   if (!isRecord(value)) {
     throw new Error(`${source} must be an object.`);
@@ -160,7 +188,7 @@ function asArticleMeta(value: unknown, source: string): ArticleMeta {
   assertStringOrNull(value.updatedAt, `${source}.updatedAt`);
   assertStringArray(value.tags, `${source}.tags`);
   assertString(value.url, `${source}.url`);
-  assertStringOrNull(value.ogpImage, `${source}.ogpImage`);
+  const ogpImage = asOgpImageMeta(value.ogpImage, `${source}.ogpImage`);
 
   return {
     id: value.id,
@@ -171,7 +199,37 @@ function asArticleMeta(value: unknown, source: string): ArticleMeta {
     updatedAt: value.updatedAt,
     tags: value.tags,
     url: value.url,
-    ogpImage: value.ogpImage,
+    ogpImage,
+  };
+}
+
+/**
+ * なぜ実装するのか:
+ * - JSONから読み込んだOGP値が、実在ファイルを参照できる構造化契約か検証するため.
+ *
+ * 期待する動作:
+ * - path、寸法、MIME型、altが所定の型でない場合に読み込みを失敗させる.
+ *
+ * 使い方の概要:
+ * - asArticleMetaから記事JSONのogpImageへ適用する.
+ */
+function asOgpImageMeta(value: unknown, source: string): OgpImageMeta {
+  if (!isRecord(value)) {
+    throw new Error(`${source} must be an object.`);
+  }
+
+  assertString(value.path, `${source}.path`);
+  assertNumber(value.width, `${source}.width`);
+  assertNumber(value.height, `${source}.height`);
+  assertString(value.mimeType, `${source}.mimeType`);
+  assertString(value.alt, `${source}.alt`);
+
+  return {
+    path: value.path,
+    width: value.width,
+    height: value.height,
+    mimeType: value.mimeType,
+    alt: value.alt,
   };
 }
 
@@ -182,6 +240,22 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function assertString(value: unknown, field: string): asserts value is string {
   if (typeof value !== "string") {
     throw new Error(`${field} must be a string.`);
+  }
+}
+
+/**
+ * なぜ実装するのか:
+ * - 構造化OGPメタデータの寸法をJSONの数値として検証するため.
+ *
+ * 期待する動作:
+ * - 数値以外を拒否し、NaNや無限大を受け入れない.
+ *
+ * 使い方の概要:
+ * - asOgpImageMetaからwidthとheightへ適用する.
+ */
+function assertNumber(value: unknown, field: string): asserts value is number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`${field} must be a finite number.`);
   }
 }
 

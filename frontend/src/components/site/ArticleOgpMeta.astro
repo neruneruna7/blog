@@ -1,0 +1,39 @@
+---
+import type { ArticleMeta, SiteConfig } from "@/lib/articles";
+
+type Props = {
+  site: SiteConfig;
+  article: ArticleMeta;
+};
+
+const { site, article } = Astro.props;
+const articleUrl = new URL(article.url, site.baseUrl).href;
+const imageUrl = new URL(article.ogpImage.path, site.baseUrl).href;
+---
+
+<!--
+OGPのドキュメント
+https://ogp.me/
+このドキュメントに基づいてメタタグを設定する．
+-->
+<meta property="og:type" content="article" />
+<meta property="og:title" content={article.title} />
+<meta property="og:description" content={article.description} />
+<meta property="og:url" content={articleUrl} />
+<meta property="og:site_name" content={site.title} />
+
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:type" content={article.ogpImage.mimeType} />
+<meta property="og:image:width" content={String(article.ogpImage.width)} />
+<meta property="og:image:height" content={String(article.ogpImage.height)} />
+<meta property="og:image:alt" content={article.ogpImage.alt} />
+
+<meta property="article:published_time" content={article.publishedAt} />
+{
+  article.updatedAt ? (
+    <meta property="article:modified_time" content={article.updatedAt} />
+  ) : null
+}
+{
+  article.tags.map((tag) => <meta property="article:tag" content={tag} />)
+}

@@ -1,11 +1,17 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use blog_engine::article::ArticleMeta;
-use blog_engine::config::load_site_config;
+use blog_engine::article::Article;
+use blog_engine::config::{load_site_config, load_site_config_with_base_url};
 use blog_engine::error::BlogEngineError;
+use blog_engine::ogp::{
+    build_ogp_public_path, generate_ogp_content_hash, OgpImageMeta, OgpRenderInput,
+    OgpRenderSettings,
+};
+use blog_engine::output::ArticleOutput;
 use blog_engine::typst_compile::TypstRunner;
 use blog_engine::{build, build_with_typst_runner, load_normalized_articles};
+use chrono::{DateTime, FixedOffset};
 use serde_json::{json, Value};
 use tempfile::TempDir;
 
@@ -72,9 +78,30 @@ fn valid_site_toml_is_normalized_into_site_json_shape() {
 }
 
 #[test]
+fn command_line_base_url_overrides_site_toml() {
+    let site =
+        load_site_config_with_base_url(fixture("valid-single"), Some("https://blog.example.com"))
+            .expect("base URL override should be valid");
+
+    assert_eq!(site.base_url, "https://blog.example.com");
+}
+
+#[test]
+fn invalid_base_url_override_is_rejected() {
+    let error = load_site_config_with_base_url(fixture("valid-single"), Some("example.com"))
+        .expect_err("relative base URL should be rejected");
+
+    assert!(matches!(error, BlogEngineError::Validation { .. }));
+}
+
+#[test]
 fn valid_article_config_toml_is_normalized_into_article_metadata_shape() {
     let article = single_article("valid-single");
-    let actual = serde_json::to_value(article).expect("article output should serialize");
+    let actual = serde_json::to_value(ArticleOutput::from_article(
+        &article,
+        expected_ogp_image_meta(&article),
+    ))
+    .expect("article output should serialize");
 
     assert_eq!(
         actual,
@@ -87,7 +114,7 @@ fn valid_article_config_toml_is_normalized_into_article_metadata_shape() {
             "updatedAt": null,
             "tags": ["typst", "rust"],
             "url": "/articles/hello-typst/",
-            "ogpImage": null
+            "ogpImage": expected_ogp_image()
         })
     );
 }
@@ -95,6 +122,29 @@ fn valid_article_config_toml_is_normalized_into_article_metadata_shape() {
 #[test]
 fn empty_updated_at_becomes_null() {
     assert_eq!(single_article("valid-single").updated_at, None);
+}
+
+#[test]
+fn valid_updated_at_is_stored_as_a_typed_datetime() {
+    let articles =
+        load_normalized_articles(fixture("valid-multiple")).expect("articles should be valid");
+    let article = articles
+        .iter()
+        .find(|article| article.slug == "newer-article")
+        .expect("fixture should contain newer-article");
+    let expected = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-11T00:00:00+09:00")
+        .expect("fixture date should be valid");
+
+    assert_eq!(article.updated_at, Some(expected));
+}
+
+#[test]
+fn published_at_is_stored_as_a_typed_datetime() {
+    let article = single_article("valid-single");
+    let expected = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-09T00:00:00+09:00")
+        .expect("fixture date should be valid");
+
+    assert_eq!(article.published_at, expected);
 }
 
 #[test]
@@ -113,6 +163,46 @@ fn article_index_is_sorted_by_published_at_descending() {
             .map(|article| article.slug.as_str())
             .collect::<Vec<_>>(),
         vec!["newer-article", "hello-typst", "same-date-a"]
+    );
+}
+
+#[test]
+fn same_published_at_is_sorted_by_slug_ascending() {
+    let articles =
+        load_normalized_articles(fixture("valid-multiple")).expect("articles should be valid");
+    let published_at = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-09T00:00:00+09:00")
+        .expect("fixture date should be valid");
+    let same_date_slugs = articles
+        .iter()
+        .filter(|article| article.published_at == published_at)
+        .map(|article| article.slug.as_str())
+        .collect::<Vec<_>>();
+
+    assert_eq!(same_date_slugs, vec!["hello-typst", "same-date-a"]);
+}
+
+#[test]
+fn publication_order_key_uses_id_as_the_final_tie_breaker() {
+    let published_at = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-09T00:00:00+09:00")
+        .expect("fixture date should be valid");
+    let article_with_lower_id = Article {
+        id: "article-a".to_owned(),
+        slug: "same-slug".to_owned(),
+        title: "Article A".to_owned(),
+        description: "Article A".to_owned(),
+        published_at,
+        updated_at: None,
+        tags: Vec::new(),
+        url: "/articles/same-slug/".to_owned(),
+    };
+    let article_with_higher_id = Article {
+        id: "article-b".to_owned(),
+        ..article_with_lower_id.clone()
+    };
+
+    assert!(
+        article_with_lower_id.publication_order_key()
+            < article_with_higher_id.publication_order_key()
     );
 }
 
@@ -348,7 +438,7 @@ fn existing_article_index_json_output_remains_unchanged() {
             "updatedAt": null,
             "tags": ["typst", "rust"],
             "url": "/articles/hello-typst/",
-            "ogpImage": null
+            "ogpImage": expected_ogp_image()
         }])
     );
 }
@@ -377,7 +467,7 @@ fn existing_meta_json_output_remains_unchanged() {
             "updatedAt": null,
             "tags": ["typst", "rust"],
             "url": "/articles/hello-typst/",
-            "ogpImage": null
+            "ogpImage": expected_ogp_image()
         })
     );
 }
@@ -406,7 +496,7 @@ fn real_typst_conversion_is_env_gated() {
     assert!(!body.to_lowercase().contains("<html"));
 }
 
-fn single_article(fixture_name: &str) -> ArticleMeta {
+fn single_article(fixture_name: &str) -> Article {
     load_normalized_articles(fixture(fixture_name))
         .expect("articles should be valid")
         .into_iter()
@@ -433,4 +523,24 @@ fn read_json(path: impl AsRef<Path>) -> Value {
 
 fn read_text(path: impl AsRef<Path>) -> String {
     fs::read_to_string(path).expect("text file should exist")
+}
+
+fn expected_ogp_image() -> Value {
+    serde_json::to_value(expected_ogp_image_meta(&single_article("valid-single")))
+        .expect("OGP image metadata should serialize")
+}
+
+fn expected_ogp_image_meta(article: &Article) -> OgpImageMeta {
+    let site = load_site_config(fixture("valid-single")).expect("site should be valid");
+    let input = OgpRenderInput::from_models(&site, article);
+    let settings = OgpRenderSettings::new("test-ogp-v1", "test-template", 1200, 630, 72);
+    let content_hash = generate_ogp_content_hash(&input, &settings);
+
+    OgpImageMeta {
+        path: build_ogp_public_path(&article.slug, &content_hash),
+        width: 1200,
+        height: 630,
+        mime_type: "image/png".to_owned(),
+        alt: format!("{} | {}", article.title, site.title),
+    }
 }
