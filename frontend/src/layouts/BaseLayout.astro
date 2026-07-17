@@ -2,6 +2,7 @@
 import "@/styles/global.css";
 import "@/styles/sample.css";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import GoogleAnalytics from "../components/GoogleAnalytics.astro";
 import type { SiteConfig } from "@/lib/articles";
 
 type Props = {
@@ -26,6 +27,7 @@ const {
     <title>{title}</title>
     <!--  子要素の持つ `slot="head"`で指定された要素の内容を挿入する-->
     <slot name="head" />
+    <GoogleAnalytics />
   </head>
 
   <body class="min-h-svh bg-background text-foreground antialiased">
