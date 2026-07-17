@@ -1,5 +1,6 @@
 ---
 import ArticleHeader from "@/components/site/ArticleHeader.astro";
+import ArticleOgpMeta from "@/components/site/ArticleOgpMeta.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import type { ArticleMeta, SiteConfig } from "@/lib/articles";
 
@@ -18,6 +19,8 @@ const { site, article } = Astro.props;
   title={`${article.title} | ${site.title}`}
   description={article.description}
 >
+  <ArticleOgpMeta slot="head" site={site} article={article} />
+
   <article>
     <ArticleHeader site={site} article={article} />
 

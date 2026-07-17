@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm run assemble-public",
     "dev": "astro dev",
     "assemble-public": "node ./scripts/assemble-public.mjs",
     "prebuild": "pnpm run assemble-public",

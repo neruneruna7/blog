@@ -66,6 +66,27 @@ for (const article of articles) {
     existsSync(new URL(article.ogpImage.path.slice(1), distRoot)),
     `${article.ogpImage.path} must exist in frontend/dist.`,
   );
+
+  const articleUrl = new URL(article.url, site.baseUrl).href;
+  const ogpImageUrl = new URL(article.ogpImage.path, site.baseUrl).href;
+  assertMeta(articleHtml, "property", "og:type", "article", article.slug);
+  assertMeta(articleHtml, "property", "og:title", article.title, article.slug);
+  assertMeta(articleHtml, "property", "og:url", articleUrl, article.slug);
+  assertMeta(articleHtml, "property", "og:image", ogpImageUrl, article.slug);
+  assertMeta(
+    articleHtml,
+    "property",
+    "og:image:width",
+    String(article.ogpImage.width),
+    article.slug,
+  );
+  assertMeta(
+    articleHtml,
+    "property",
+    "og:image:height",
+    String(article.ogpImage.height),
+    article.slug,
+  );
 }
 
 async function readJson(path) {
@@ -74,6 +95,27 @@ async function readJson(path) {
 
 function extractText(html) {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function assertMeta(html, attribute, key, content, slug) {
+  const escapedKey = escapeRegExp(escapeHtmlAttribute(key));
+  const escapedContent = escapeRegExp(escapeHtmlAttribute(content));
+  const metaPattern = new RegExp(
+    `<meta\\s+${attribute}="${escapedKey}"\\s+content="${escapedContent}"\\s*\\/?>`,
+  );
+  assert(metaPattern.test(html), `${slug} must contain ${key}=${content}.`);
+}
+
+function escapeHtmlAttribute(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function assert(condition, message) {
