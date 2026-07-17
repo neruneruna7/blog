@@ -1,9 +1,13 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./gem.css";
 
 /* UI用sansを残す. shadcnの一部UIで使う余地を残すためである. */
 @import "@fontsource-variable/geist";
+
+/* 記事中のインラインコードとコードブロックに使う等幅フォント */
+@import "@fontsource-variable/m-plus-1-code/wght.css";
 
 /* Japanese serif stack */
 @import "@fontsource/kaisei-decol/400.css";
@@ -31,6 +35,7 @@
   --font-body: "Noto Serif JP Variable", "Shippori Mincho", serif;
   --font-decor: "Hina Mincho", "Shippori Mincho", serif;
   --font-sans: "Geist Variable", system-ui, sans-serif;
+  --font-code: "M PLUS 1 Code Variable", monospace;
 
     /*
      * Gem tokens

@@ -38,8 +38,8 @@ const publishedAt = new Intl.DateTimeFormat(language).format(
       <ul class="flex flex-wrap gap-2 p-0 m-0 list-none" aria-label="Tags">
         {
           article.tags.map((tag) => (
-            <li class="rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
-              {tag}
+            <li class="inline-flex h-5 w-fit shrink-0 items-center justify-center border border-border bg-muted px-2.5 py-0.5 text-xs whitespace-nowrap text-muted-foreground transform-[skewX(-24deg)]">
+              <span class="inline-block transform-[skewX(18deg)]">{tag}</span>
             </li>
           ))
         }

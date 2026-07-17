@@ -1,0 +1,137 @@
+@layer components {
+  /*
+   * 宝石調の半透明表面。
+   *
+   * なぜ実装するのか:
+   * - 複数のグラデーションと反射を再利用可能な装飾として提供するため。
+   *
+   * 期待する動作:
+   * - gem-phosまたはgem-cinnabarと組み合わせて色を切り替える。
+   * - Tailwindの余白・角丸・サイズ指定で上書きできる。
+   *
+   * 使い方の概要:
+   * - class="gem gem-phos px-4 py-2"
+   */
+  .gem {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    border: 1px solid var(--gem-border);
+    border-radius: 1rem;
+    color: var(--gem-text);
+
+    background:
+      radial-gradient(
+        circle at 22% 16%,
+        hsl(0 0% 100% / 0.96) 0 1.5%,
+        hsl(0 0% 100% / 0.72) 2.5%,
+        transparent 10%
+      ),
+      linear-gradient(
+        118deg,
+        transparent 18%,
+        var(--gem-streak) 35%,
+        transparent 50%
+      ),
+      linear-gradient(
+        150deg,
+        var(--gem-top) 0%,
+        var(--gem-mid) 42%,
+        var(--gem-bottom) 100%
+      );
+
+    background-blend-mode: screen, soft-light, normal;
+
+    box-shadow:
+      inset 0 1px 0 hsl(0 0% 100% / 0.88),
+      inset 0 -1.4rem 2.6rem var(--gem-inner-shadow),
+      0 0.8rem 2rem var(--gem-drop-shadow);
+
+    backdrop-filter: blur(10px) saturate(1.25);
+  }
+
+  .gem::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background:
+      conic-gradient(
+        from 215deg at 68% 42%,
+        transparent 0deg,
+        var(--gem-facet-1) 18deg,
+        transparent 48deg,
+        var(--gem-facet-2) 72deg,
+        transparent 120deg,
+        var(--gem-facet-3) 164deg,
+        transparent 220deg,
+        var(--gem-facet-4) 290deg,
+        transparent 360deg
+      ),
+      linear-gradient(
+        95deg,
+        transparent 0 36%,
+        hsl(0 0% 100% / 0.18) 46%,
+        transparent 58% 100%
+      );
+
+    mix-blend-mode: overlay;
+  }
+
+  .gem::after {
+    content: "";
+    position: absolute;
+    inset: -55% -25%;
+    pointer-events: none;
+    transform: rotate(-10deg);
+
+    background: linear-gradient(
+      104deg,
+      transparent 43%,
+      hsl(0 0% 100% / var(--gem-highlight-opacity, 0.72)) 48%,
+      hsl(0 0% 100% / 0.18) 52%,
+      transparent 58%
+    );
+  }
+
+  /* 緑寄りの薄荷色 */
+  .gem-phos {
+    --gem-top: hsl(154 72% 95% / 0.94);
+    --gem-mid: hsl(156 62% 76% / 0.48);
+    --gem-bottom: hsl(164 52% 52% / 0.42);
+
+    --gem-streak: hsl(150 88% 92% / 0.32);
+
+    --gem-facet-1: hsl(148 100% 92% / 0.24);
+    --gem-facet-2: hsl(162 72% 72% / 0.20);
+    --gem-facet-3: hsl(142 76% 82% / 0.18);
+    --gem-facet-4: hsl(176 60% 68% / 0.12);
+
+    --gem-border: hsl(156 46% 68% / 0.66);
+    --gem-inner-shadow: hsl(164 54% 34% / 0.14);
+    --gem-drop-shadow: hsl(160 42% 30% / 0.13);
+    --gem-text: hsl(166 34% 17%);
+  }
+
+  /* 黒みを抑えた深紅 */
+  .gem-cinnabar {
+    --gem-top: hsl(351 76% 52% / 0.96);
+    --gem-mid: hsl(349 82% 39% / 0.82);
+    --gem-bottom: hsl(346 74% 26% / 0.88);
+
+    --gem-streak: hsl(355 94% 82% / 0.26);
+
+    --gem-facet-1: hsl(356 100% 80% / 0.17);
+    --gem-facet-2: hsl(350 90% 54% / 0.22);
+    --gem-facet-3: hsl(344 78% 34% / 0.25);
+    --gem-facet-4: hsl(5 82% 58% / 0.13);
+
+    --gem-border: hsl(350 74% 50% / 0.72);
+    --gem-inner-shadow: hsl(345 72% 22% / 0.28);
+    --gem-drop-shadow: hsl(346 62% 24% / 0.22);
+    --gem-highlight-opacity: 0.66;
+    --gem-text: hsl(0 0% 98%);
+  }
+}

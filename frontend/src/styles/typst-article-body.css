@@ -17,6 +17,20 @@ typstから作られた記事HTMLに対して当てられるHTML
 }
 
 /*
+ * TypstのgridはHTML出力に対応していないため，my-gridが生成する
+ * divをCSS Gridとして表示する．
+ */
+.article-body .my-grid {
+  display: grid;
+  min-width: 0;
+  margin-block: 1.5em;
+}
+
+.article-body .my-grid__cell {
+  min-width: 0;
+}
+
+/*
 通常のh2と，Typstのbibliographyが生成する参考文献見出しに，
 同一のセクション見出しスタイルを適用する．
 */
@@ -73,13 +87,71 @@ typstから作られた記事HTMLに対して当てられるHTML
   margin-top: var(--article-paragraph-gap);
 }
 
+/* インラインコードとコードブロックで同じ等幅フォントを使う． */
+.article-body :where(code, pre) {
+  font-family: var(--font-code);
+  font-variant-ligatures: none;
+}
+
+/*
+ * Typstのコードブロックを記事本文の幅に収める．
+ *
+ * `code-line`はRustのHTML後処理が元の改行ごとに生成する要素である．
+ * 罫線をこの要素へ適用することで，表示上の折り返しには罫線を追加しない．
+ */
+.article-body pre {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 2rem 0;
+  padding: 0.7rem 1rem;
+  overflow: hidden;
+  border: 1px solid color-mix(
+    in oklab,
+    var(--foreground) 18%,
+    transparent
+  );
+  border-radius: 0.65rem;
+  background: color-mix(
+    in oklab,
+    var(--background) 88%,
+    var(--primary) 12%
+  );
+  color: var(--foreground);
+  line-height: 1.65;
+}
+
+.article-body pre > code {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  tab-size: 2;
+  font-size: 0.88em;
+}
+
+.article-body pre > code > .code-line {
+  display: block;
+  min-height: 1.65em;
+  border-bottom: 1px solid color-mix(
+    in oklab,
+    var(--foreground) 14%,
+    transparent
+  );
+}
+
 .article-body :is(h2, h3, h4) + p {
   margin-top: 1.5rem;
 }
 
 .article-body .web-link-card {
+  --web-link-card-ogp-ratio: 40 / 21;
+
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(7rem, 11rem);
+  /* 1200:630のOGP画像を、画像領域の比率を保ったまま表示する。 */
+  grid-template-columns: minmax(0, 3fr) minmax(12rem, 2fr);
   margin: 2rem 0;
   overflow: hidden;
   border: 1px solid color-mix(in oklab, var(--foreground) 30%, transparent);
@@ -89,7 +161,15 @@ typstから作られた記事HTMLに対して当てられるHTML
   text-decoration: none;
 }
 
-.article-body .web-link-card__content { display: grid; gap: 0.35rem; padding: 1rem 1.1rem; min-width: 0; }
+.article-body .web-link-card__content {
+  display: grid;
+  grid-column: 1;
+  grid-row: 1;
+  gap: 0.35rem;
+  align-content: center;
+  padding: 1rem 1.1rem;
+  min-width: 0;
+}
 .article-body .web-link-card__title { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .article-body .web-link-card__description {
   display: -webkit-box;
@@ -100,13 +180,23 @@ typstから作られた記事HTMLに対して当てられるHTML
   line-clamp: 2;
 }
 .article-body .web-link-card__site { color: color-mix(in oklab, var(--foreground) 58%, transparent); font-size: 0.85em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.article-body .web-link-card__image { grid-column: 2; grid-row: 1; width: 100%; height: 100%; object-fit: cover; }
+.article-body .web-link-card__image {
+  display: block;
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--web-link-card-ogp-ratio);
+  object-fit: contain;
+  align-self: center;
+}
 .article-body .web-link-card--fallback { display: block; padding: 1rem 1.1rem; overflow-wrap: anywhere; }
 .article-body .web-link-card:focus-visible { outline: 3px solid var(--foreground); outline-offset: 3px; }
 
 @media (max-width: 36rem) {
   .article-body .web-link-card { grid-template-columns: 1fr; }
-  .article-body .web-link-card__image { grid-column: 1; grid-row: auto; max-height: 12rem; }
+  .article-body .web-link-card__image { grid-column: 1; grid-row: 1; max-height: none; }
+  .article-body .web-link-card__content { grid-column: 1; grid-row: 2; }
 }
 
 

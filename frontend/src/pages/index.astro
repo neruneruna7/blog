@@ -1,7 +1,6 @@
 ---
 import ArticleCard from "@/components/ArticleCard.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import SiteLayout from "@/layouts/SiteLayout.astro";
 import { getArticles, getSiteConfig } from "@/lib/articles";
 
 const site = await getSiteConfig();
@@ -9,22 +8,6 @@ const articles = await getArticles();
 ---
 
 <BaseLayout site={site}>
-  <!-- <section class="py-12 md:py-16">
-    <p
-      class="mb-3 font-decorative text-sm tracking-[0.24em] text-muted-foreground"
-    >
-      Typst Blog Engine
-    </p>
-    <h1
-      class="m-0 max-w-3xl font-heading text-4xl leading-tight tracking-tight md:text-5xl"
-    >
-      {site.title}
-    </h1>
-    <p class="mt-4 max-w-2xl text-muted-foreground">
-      {site.description}
-    </p>
-  </section> -->
-
   <section class="pb-14" aria-labelledby="article-list-heading">
     <div class="mb-5 flex items-end justify-between gap-4">
       <h2 id="article-list-heading" class="m-4 font-heading text-2xl">記事</h2>

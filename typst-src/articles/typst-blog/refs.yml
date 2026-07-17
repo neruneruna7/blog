@@ -1,0 +1,40 @@
+typst:
+  type: Web
+  title: "Typst: The new foundation for documents"
+  url:
+    value: https://typst.app/
+    date: 2026-07-17
+astro:
+  type: Web
+  title: "Astro"
+  url:
+    value: https://astro.build/
+    date: 2026-07-17
+
+cloudflare:
+  type: Web
+  title: "どこででも接続、保護、構築 | Cloudflare"
+  url:
+    value: https://www.cloudflare.com/ja-jp/
+    date: 2026-07-17
+
+rust:
+  type: Web
+  title: "Rustプログラミング言語"
+  url:
+    value: https://rust-lang.org/ja/
+    date: 2026-07-17
+
+shadcn-ui:
+  type: Web
+  title: "The Foundation for your Design System - shadcn/ui"
+  url:
+    value: https://ui.shadcn.com/
+    date: 2026-07-17
+
+microsoft-word:
+  type: Web
+  title: "Microsoft Word を使用した無料オンライン文書編集 | Microsoft 365"
+  url:
+    value: https://www.microsoft.com/ja-jp/microsoft-365/word
+    date: 2026-07-17

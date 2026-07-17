@@ -5,5 +5,6 @@
 // #import "article.typ": article
 // #import "callout.typ": callout
 #import "web-link-card.typ": web-link-card
+#import "grid.typ": my-grid
 
 #import "blog-rect.typ": blog-rect

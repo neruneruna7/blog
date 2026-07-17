@@ -7,19 +7,19 @@ command = "cargo"
 args = ["run", "-p", "blog-engine", "--", "build", "${@}"]
 
 [tasks.assemble-public]
-description = "Assemble frontend and generated public assets."
+description = "フロントエンドとgenerated配下の公開用アセットを組み立てる"
 dependencies = ["build-content"]
 cwd = "frontend"
 command = "pnpm"
 args = ["run", "assemble-public"]
 
 [tasks.new-article]
-description = "Create a new Typst article skeleton."
+description = "新しいTypst記事の雛形を作成する"
 command = "cargo"
 args = ["run", "-p", "blog-engine", "--", "new", "${@}"]
 
 [tasks.test-content]
-description = "Run Rust tests for the content engine."
+description = "コンテンツエンジンのRustテストを実行する"
 command = "cargo"
 args = ["test", "-p", "blog-engine"]
 
@@ -47,7 +47,7 @@ command = "bash"
 args = ["scripts/verify-fonts.sh"]
 
 [tasks.test-site]
-description = "Run frontend build-level tests."
+description = "フロントエンドのビルドレベルテストを実行する"
 cwd = "frontend"
 command = "pnpm"
 args = ["run", "test"]
@@ -59,31 +59,31 @@ command = "pnpm"
 args = ["run", "dev"]
 
 [tasks.build]
-description = "Generate content and build Astro static site."
+description = "記事コンテンツを生成してAstro静的サイトをビルドする"
 dependencies = ["build-site"]
 
 [tasks.test]
-description = "Run Rust and frontend tests."
+description = "Rustとフロントエンドのテストを実行する"
 dependencies = ["test-content", "test-site"]
 
 [tasks.fmt]
-description = "Format Rust code."
+description = "Rustコードをフォーマットする"
 command = "cargo"
 args = ["fmt", "--all"]
 
 [tasks.clippy]
-description = "Run Rust lints."
+description = "Rustのlintを実行する"
 command = "cargo"
 args = ["clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
 
 [tasks.check]
 clear = true
-description = "Run formatting, linting, and tests."
+description = "フォーマット，lint，テストを実行する"
 dependencies = ["fmt", "clippy", "test-content"]
 
 [tasks.clean]
 clear = true
-description = "Remove generated outputs."
+description = "生成物を削除する"
 script = '''
 rm -rf generated
 '''
