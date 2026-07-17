@@ -36,6 +36,16 @@ cwd = "frontend"
 command = "pnpm"
 args = ["install"]
 
+[tasks.install-ci-fonts]
+description = "CIマシンへTypst描画用フォントを導入する"
+command = "bash"
+args = ["scripts/install-ci-fonts.sh"]
+
+[tasks.verify-fonts]
+description = "Typstが必要なフォントを認識していることを検証する"
+command = "bash"
+args = ["scripts/verify-fonts.sh"]
+
 [tasks.test-site]
 description = "Run frontend build-level tests."
 cwd = "frontend"

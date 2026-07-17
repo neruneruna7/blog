@@ -26,7 +26,16 @@ fn input() -> OgpRenderInput {
     }
 }
 
-fn assert_ogp_font_is_available() {
+const REQUIRED_OGP_FONTS: [&str; 6] = [
+    "Geist",
+    "Hina Mincho",
+    "Kaisei Decol",
+    "Noto Sans JP",
+    "Noto Serif JP",
+    "Shippori Mincho",
+];
+
+fn assert_ogp_fonts_are_available() {
     let output = Command::new("typst")
         .arg("fonts")
         .output()
@@ -36,18 +45,21 @@ fn assert_ogp_font_is_available() {
         "Typst integration requires `typst fonts` to list installed fonts"
     );
     let fonts = String::from_utf8_lossy(&output.stdout);
+    let available_fonts = fonts.lines().map(str::trim).collect::<Vec<_>>();
+    let missing_fonts = REQUIRED_OGP_FONTS
+        .iter()
+        .copied()
+        .filter(|font| !available_fonts.contains(font))
+        .collect::<Vec<_>>();
     assert!(
-        fonts
-            .lines()
-            .map(str::trim)
-            .any(|font| matches!(font, "Hiragino Sans" | "BIZ UDGothic")),
-        "Typst integration requires Hiragino Sans or BIZ UDGothic for Japanese OGP text"
+        missing_fonts.is_empty(),
+        "Typst integration requires all OGP fonts; missing: {missing_fonts:?}"
     );
 }
 
 #[test]
 fn template_renders_a_valid_japanese_png_at_the_contract_dimensions() {
-    assert_ogp_font_is_available();
+    assert_ogp_fonts_are_available();
     let output = TempDir::new().expect("temporary output directory must be created");
     let output_path = output.path().join("article.png");
 
@@ -67,7 +79,7 @@ fn template_renders_a_valid_japanese_png_at_the_contract_dimensions() {
 
 #[test]
 fn template_renders_a_long_japanese_title_without_failing() {
-    assert_ogp_font_is_available();
+    assert_ogp_fonts_are_available();
     let output = TempDir::new().expect("temporary output directory must be created");
     let output_path = output.path().join("long-title.png");
     let input = OgpRenderInput {

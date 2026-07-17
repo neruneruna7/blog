@@ -9,8 +9,37 @@
 // - Rustの`TypstOgpRenderer`が`--input`で値を渡し、Typst CLIでPNGへコンパイルする。
 
 #set page(width: 1200pt, height: 630pt, margin: 0pt)
+
+#let font-logo = (
+  "Kaisei Decol",
+  // "Shippori Mincho",
+  // "Noto Serif JP",
+  // "Libertinus Serif",
+)
+#let font-heading = (
+  "Shippori Mincho",
+  // "Noto Serif JP",
+  // "Libertinus Serif",
+)
+#let font-body = (
+  "Noto Serif JP",
+  // "Shippori Mincho",
+  // "Libertinus Serif",
+)
+#let font-decor = (
+  "Hina Mincho",
+  // "Shippori Mincho",
+  // "Noto Serif JP",
+  // "Libertinus Serif",
+)
+#let font-sans = (
+  "Geist",
+  "Noto Sans JP",
+  "DejaVu Sans",
+)
+
 #set text(
-  font: ("Hiragino Sans", "Cica"),
+  font: font-body,
   fill: rgb("#f8fafc"),
 )
 
@@ -47,24 +76,33 @@
   inset: 64pt,
 )[
   #block(width: 100%, height: 42pt, clip: true)[
-    #text(size: 28pt, weight: "bold", fill: rgb("#93c5fd"))[#site-title]
+    #text(
+      font: font-logo,
+      size: 28pt,
+      weight: 500,
+      fill: rgb("#93c5fd"),
+    )[#site-title]
   ]
 
   #v(24pt)
 
   #block(width: 100%, height: 215pt, clip: true)[
-    #text(size: title-size, weight: "bold")[#article-title]
+    #text(font: font-heading, size: title-size, weight: 600)[#article-title]
   ]
 
   #v(16pt)
 
   #block(width: 100%, height: 110pt, clip: true)[
-    #text(size: description-size, fill: rgb("#cbd5e1"))[#description]
+    #text(
+      font: font-body,
+      size: description-size,
+      fill: rgb("#cbd5e1"),
+    )[#description]
   ]
 
   #v(16pt)
 
   #block(width: 100%, height: 32pt, clip: true)[
-    #text(size: 20pt, fill: rgb("#93c5fd"))[#tag-line]
+    #text(font: font-sans, size: 20pt, fill: rgb("#93c5fd"))[#tag-line]
   ]
 ]
