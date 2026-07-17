@@ -73,6 +73,7 @@ for (const article of articles) {
   assertMeta(articleHtml, "property", "og:title", article.title, article.slug);
   assertMeta(articleHtml, "property", "og:url", articleUrl, article.slug);
   assertMeta(articleHtml, "property", "og:image", ogpImageUrl, article.slug);
+  assertMeta(articleHtml, "name", "twitter:card", "summary_large_image", article.slug);
   assertMeta(
     articleHtml,
     "property",
