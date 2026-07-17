@@ -111,3 +111,23 @@ args = [
   "--",
   "build",
 ]
+
+[tasks.watch-site]
+description = "generated内の変更を監視し，サイトを再生成する．"
+command = "watchexec"
+args = [
+  "--watch",
+  "generated",
+
+  "--debounce",
+  "200ms",
+
+  "--on-busy-update",
+  "queue",
+
+  "--postpone",
+
+  "--",
+  "makers",
+  "run-site",
+]
