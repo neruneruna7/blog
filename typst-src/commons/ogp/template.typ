@@ -100,7 +100,7 @@
 
     #let lineLen = 40%
     #grid(columns: (1fr, 1fr, 1fr), align: center, gutter: 12pt)[
-      #align(right, 
+      #align(right,
       line(length: lineLen)
       )
     ][
@@ -108,7 +108,7 @@
         #text(font: font-sans, size: 20pt, fill: color-muted-foreground)[#tag-line ]
       ]
     ][
-      #align(left, 
+      #align(left,
       line(length: lineLen)
       )
     ]
