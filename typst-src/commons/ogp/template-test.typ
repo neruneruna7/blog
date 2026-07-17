@@ -74,7 +74,7 @@
   fill: rgb("#0f172a"),
   inset: 64pt,
 )[
-  #block(width: 100%, height: 42pt, clip: true)[
+  #block(width: 100%, height: 50pt)[
     #text(
       font: font-logo,
       size: 28pt,
@@ -85,13 +85,13 @@
 
   #v(24pt)
 
-  #block(width: 100%, height: 215pt, clip: true)[
+  #block(width: 100%, height: 215pt)[
     #text(font: font-heading, size: title-size, weight: 600)[#article-title]
   ]
 
   #v(16pt)
 
-  #block(width: 100%, height: 110pt, clip: true)[
+  #block(width: 100%, height: 110pt)[
     #text(
       font: font-body,
       size: description-size,
@@ -101,7 +101,7 @@
 
   #v(16pt)
 
-  #block(width: 100%, height: 32pt, clip: true)[
+  #block(width: 100%, height: 32pt, )[
     #text(font: font-sans, size: 20pt, fill: rgb("#93c5fd"))[#tag-line]
   ]
 ]
