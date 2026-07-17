@@ -79,34 +79,50 @@
   fill: color-background,
   inset: 64pt,
 )[
-  #block(width: 100%, height: 42pt, clip: true)[
-    #text(
-      font: font-logo,
-      size: 28pt,
-      weight: 500,
-      fill: color-foreground,
-    )[#site-title]
-  ]
 
   #v(24pt)
-
-  #block(width: 100%, height: 215pt, clip: true)[
-    #text(font: font-heading, size: title-size, weight: 600)[#article-title]
-  ]
-
-  #v(16pt)
-
-  #block(width: 100%, height: 110pt, clip: true)[
+  // 説明
+  #block(width: 100%, height: 100pt, stroke: 0pt)[
+    #align(center+bottom)[
     #text(
       font: font-body,
       size: description-size,
       fill: color-muted-foreground,
     )[#description]
   ]
+]
 
-  #v(16pt)
+  // タイトル
+  #block(width: 100%, height: 215pt,stroke: 0pt, inset: 8pt)[
+    #align(center+horizon)[
+      #text(font: font-heading, size: title-size, weight: 600)[#article-title]
+    ]
 
-  #block(width: 100%, height: 32pt, clip: true)[
-    #text(font: font-sans, size: 20pt, fill: color-muted-foreground)[#tag-line]
+    #let lineLen = 40%
+    #grid(columns: (1fr, 1fr, 1fr), align: center, gutter: 12pt)[
+      #align(right, 
+      line(length: lineLen)
+      )
+    ][
+      #block(width: 90%, height: 32pt, )[
+        #text(font: font-sans, size: 20pt, fill: color-muted-foreground)[#tag-line ]
+      ]
+    ][
+      #align(left, 
+      line(length: lineLen)
+      )
+    ]
+  ]
+
+  #v(32pt)
+    #block(width: 100%, height: 50pt)[
+    #align(center+horizon)[
+      #text(
+        font: font-logo,
+        size: 38pt,
+        weight: 500,
+        fill: color-foreground,
+      )[#site-title]
+    ]
   ]
 ]
