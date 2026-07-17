@@ -7,6 +7,7 @@
 //! 使い方の概要:
 //! - `process_html` を本文抽出後、fragment検証前に呼び出す。
 
+pub mod code_block;
 pub mod context;
 pub mod web_link_card;
 
@@ -23,6 +24,7 @@ use crate::error::BlogEngineError;
 /// 使い方の概要:
 /// - Typst出力の本文fragmentを渡す。
 pub fn process_html(html: String, context: &PostprocessContext) -> Result<String, BlogEngineError> {
+    let html = code_block::process(html)?;
     let html = web_link_card::process(html, &context.web_link_card)?;
     Ok(html)
 }
