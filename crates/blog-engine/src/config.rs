@@ -11,6 +11,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
+use url::Url;
 use walkdir::WalkDir;
 
 use crate::error::BlogEngineError;
@@ -67,8 +68,28 @@ pub(crate) struct ArticleConfigFile {
 /// 使い方の概要:
 /// - ビルド処理の最初に入力ルートを渡して呼び出す。
 pub fn load_site_config(source_root: impl AsRef<Path>) -> Result<SiteOutput, BlogEngineError> {
+    load_site_config_with_base_url(source_root, None)
+}
+
+/// なぜ実装するのか:
+/// - デプロイ先ごとの公開URLを、サイト設定ファイルを書き換えずにビルドへ注入するため。
+///
+/// 期待する動作:
+/// - `base_url` が指定された場合は `site.toml` の値を上書きする。
+/// - 指定されなかった場合は `site.toml` の値をそのまま使用する。
+/// - 上書き後の値にも通常のサイト設定検証を適用する。
+///
+/// 使い方の概要:
+/// - CLIの `build --base-url` から任意のURLを渡す。
+pub fn load_site_config_with_base_url(
+    source_root: impl AsRef<Path>,
+    base_url: Option<&str>,
+) -> Result<SiteOutput, BlogEngineError> {
     let path = source_root.as_ref().join("site.toml");
-    let config: SiteConfig = read_toml(&path)?;
+    let mut config: SiteConfig = read_toml(&path)?;
+    if let Some(base_url) = base_url {
+        config.base_url = base_url.to_owned();
+    }
     config.try_into()
 }
 
@@ -142,7 +163,7 @@ impl TryFrom<SiteConfig> for SiteOutput {
     fn try_from(config: SiteConfig) -> Result<Self, Self::Error> {
         validate_non_empty("site.title", &config.title)?;
         validate_non_empty("site.language", &config.language)?;
-        validate_non_empty("site.base_url", &config.base_url)?;
+        validate_base_url(&config.base_url)?;
 
         Ok(Self {
             title: config.title,
@@ -151,6 +172,19 @@ impl TryFrom<SiteConfig> for SiteOutput {
             base_url: config.base_url,
         })
     }
+}
+
+fn validate_base_url(value: &str) -> Result<(), BlogEngineError> {
+    validate_non_empty("site.base_url", value)?;
+    let parsed = Url::parse(value).map_err(|error| {
+        BlogEngineError::validation(format!("site.base_url must be an absolute URL: {error}"))
+    })?;
+    if !matches!(parsed.scheme(), "http" | "https") || parsed.host_str().is_none() {
+        return Err(BlogEngineError::validation(
+            "site.base_url must use http or https and include a host",
+        ));
+    }
+    Ok(())
 }
 
 pub(crate) fn validate_non_empty(field: &str, value: &str) -> Result<(), BlogEngineError> {

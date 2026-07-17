@@ -2,9 +2,9 @@
 default_to_workspace = false
 
 [tasks.build-content]
-description = "Generate intermediate content files under generated/."
+description = "Typstソースからgenerated配下の中間生成物を作成する"
 command = "cargo"
-args = ["run", "-p", "blog-engine", "--", "build"]
+args = ["run", "-p", "blog-engine", "--", "build", "${@}"]
 
 [tasks.assemble-public]
 description = "Assemble frontend and generated public assets."

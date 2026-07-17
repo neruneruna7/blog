@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use blog_engine::article::Article;
-use blog_engine::config::load_site_config;
+use blog_engine::config::{load_site_config, load_site_config_with_base_url};
 use blog_engine::error::BlogEngineError;
 use blog_engine::ogp::{
     build_ogp_public_path, generate_ogp_content_hash, OgpImageMeta, OgpRenderInput,
@@ -75,6 +75,23 @@ fn valid_site_toml_is_normalized_into_site_json_shape() {
             "baseUrl": "http://localhost:4321"
         })
     );
+}
+
+#[test]
+fn command_line_base_url_overrides_site_toml() {
+    let site =
+        load_site_config_with_base_url(fixture("valid-single"), Some("https://blog.example.com"))
+            .expect("base URL override should be valid");
+
+    assert_eq!(site.base_url, "https://blog.example.com");
+}
+
+#[test]
+fn invalid_base_url_override_is_rejected() {
+    let error = load_site_config_with_base_url(fixture("valid-single"), Some("example.com"))
+        .expect_err("relative base URL should be rejected");
+
+    assert!(matches!(error, BlogEngineError::Validation { .. }));
 }
 
 #[test]
