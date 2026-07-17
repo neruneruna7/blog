@@ -87,6 +87,12 @@ typstから作られた記事HTMLに対して当てられるHTML
   margin-top: var(--article-paragraph-gap);
 }
 
+/* インラインコードとコードブロックで同じ等幅フォントを使う． */
+.article-body :where(code, pre) {
+  font-family: var(--font-code);
+  font-variant-ligatures: none;
+}
+
 /*
  * Typstのコードブロックを記事本文の幅に収める．
  *
@@ -123,8 +129,6 @@ typstから作られた記事HTMLに対して当てられるHTML
   overflow-wrap: anywhere;
   white-space: pre-wrap;
   tab-size: 2;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Noto Sans Mono", monospace;
   font-size: 0.88em;
 }
 

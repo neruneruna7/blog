@@ -9,6 +9,7 @@ readonly required_fonts=(
   "Noto Sans JP"
   "Noto Serif JP"
   "Shippori Mincho"
+  "M PLUS 1 Code"
 )
 readonly available_fonts="$(typst fonts)"
 

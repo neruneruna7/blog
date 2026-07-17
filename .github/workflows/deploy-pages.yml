@@ -73,7 +73,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.local/share/fonts/blog
-          key: google-fonts-${{ runner.os }}-${{ env.GOOGLE_FONTS_REVISION }}
+          key: google-fonts-${{ runner.os }}-${{ env.GOOGLE_FONTS_REVISION }}-${{ hashFiles('scripts/install-ci-fonts.sh') }}
 
       - name: Install fonts for Typst
         run: cargo make install-ci-fonts

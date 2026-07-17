@@ -6,7 +6,7 @@ readonly google_fonts_repository="https://github.com/google/fonts.git"
 readonly google_fonts_revision="${GOOGLE_FONTS_REVISION:?GOOGLE_FONTS_REVISION must be set}"
 readonly font_install_dir="${BLOG_FONT_INSTALL_DIR:-${XDG_DATA_HOME:-${HOME}/.local/share}/fonts/blog}"
 readonly revision_marker="${font_install_dir}/.google-fonts-revision"
-readonly expected_font_file_count=13
+readonly expected_font_file_count=14
 
 font_file_count() {
   find "${font_install_dir}" -maxdepth 1 -type f -name '*.ttf' | wc -l | tr -d ' '
@@ -46,7 +46,8 @@ git -C "${checkout_dir}" sparse-checkout set \
   ofl/kaiseidecol \
   ofl/notosansjp \
   ofl/notoserifjp \
-  ofl/shipporimincho
+  ofl/shipporimincho \
+  ofl/mplus1code
 git -C "${checkout_dir}" fetch --quiet --depth=1 origin "${google_fonts_revision}"
 git -C "${checkout_dir}" checkout --quiet --detach FETCH_HEAD
 
