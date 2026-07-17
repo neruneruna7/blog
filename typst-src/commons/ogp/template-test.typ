@@ -10,6 +10,10 @@
 
 #set page(width: 1200pt, height: 630pt, margin: 0pt)
 
+#let color-background = rgb(240, 240, 240)
+#let color-foreground = rgb("#0c212c")
+#let color-muted-foreground = rgb("#546671")
+
 #let font-logo = (
   "Kaisei Decol",
   // "Shippori Mincho",
@@ -39,7 +43,7 @@
 
 #set text(
   font: font-body,
-  fill: rgb("#f8fafc"),
+  fill: color-foreground,
 )
 
 #let read-input(name) = sys.inputs.at(name, default: "")
@@ -71,7 +75,7 @@
 #rect(
   width: 100%,
   height: 100%,
-  fill: rgb("#0f172a"),
+  fill: color-background,
   inset: 64pt,
 )[
   #block(width: 100%, height: 50pt)[
@@ -79,7 +83,7 @@
       font: font-logo,
       size: 28pt,
       weight: 500,
-      fill: rgb("#93c5fd"),
+      fill: color-foreground,
     )[#site-title]
   ]
 
@@ -95,13 +99,13 @@
     #text(
       font: font-body,
       size: description-size,
-      fill: rgb("#cbd5e1"),
+      fill: color-muted-foreground,
     )[#description]
   ]
 
   #v(16pt)
 
   #block(width: 100%, height: 32pt, )[
-    #text(font: font-sans, size: 20pt, fill: rgb("#93c5fd"))[#tag-line]
+    #text(font: font-sans, size: 20pt, fill: color-muted-foreground)[#tag-line]
   ]
 ]
