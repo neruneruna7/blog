@@ -1,0 +1,12 @@
+[package]
+name = "typst-html-export"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+typst = "0.15.1"
+typst-html = "0.15.1"
+typst-kit = { version = "0.15.1", features = [
+    "scan-fonts",
+    "embedded-fonts",
+] }

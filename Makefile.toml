@@ -6,6 +6,11 @@ description = "Typstソースからgenerated配下の中間生成物を作成す
 command = "cargo"
 args = ["run", "-p", "blog-engine", "--", "build", "${@}"]
 
+[tasks.typst-html-export]
+description = "Typstライブラリ経由で文書をHTMLへ変換する"
+command = "cargo"
+args = ["run", "-p", "typst-html-export", "--bin", "typst-html-export"]
+
 [tasks.assemble-public]
 description = "フロントエンドとgenerated配下の公開用アセットを組み立てる"
 dependencies = ["build-content"]
