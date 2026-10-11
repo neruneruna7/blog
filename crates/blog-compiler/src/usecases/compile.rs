@@ -18,6 +18,17 @@ pub fn article_compile() -> Result<(), ()> {
 // 複数ユースケースを横断する必要があるだろうが...
 // まぁ，その時にどこに置くべきか見えてくるだろう．
 const ROOT: &str = "typst-src";
+const ENTRY_POINT: &str = "main.typ";
+const CONFIG_NAME: &str = "ArticleConfig.toml";
+
+#[derive(Debug, Clone, Deserialize)]
+struct RowConfig {
+    slug: String,
+    title: String,
+    description: String,
+    tags: Vec<String>,
+    published_at: String,
+}
 
 #[derive(Debug, Clone)]
 struct RowArticleInput {
@@ -28,8 +39,8 @@ struct RowArticleInput {
 impl RowArticleInput {
     fn read_articles(root: impl AsRef<Path>) -> Result<Self, Box<dyn std::error::Error>> {
         let root = root.as_ref();
-        let entry_point = root.join("index.typ");
-        let config_path = root.join("config.toml");
+        let entry_point = root.join(ENTRY_POINT);
+        let config_path = root.join(CONFIG_NAME);
         let config_contents = fs::read_to_string(config_path)?;
         let config = toml::from_str(&config_contents)?;
 
@@ -38,15 +49,6 @@ impl RowArticleInput {
             config,
         })
     }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-struct RowConfig {
-    slug: String,
-    title: String,
-    description: String,
-    tags: Vec<String>,
-    published_at: String,
 }
 
 // バリデーション後
@@ -78,14 +80,14 @@ mod tests {
 
     use tempfile::tempdir;
 
-    use super::RowArticleInput;
+    use super::{CONFIG_NAME, ENTRY_POINT, RowArticleInput};
 
     #[test]
     /// ファイルが読めることを確認
     fn reads_article_entry_point_and_config() {
         let root = tempdir().expect("temporary directory should be created");
         fs::write(
-            root.path().join("config.toml"),
+            root.path().join(CONFIG_NAME),
             r#"
 slug = "rust-article"
 title = "Rust Article"
@@ -99,7 +101,7 @@ published_at = "2026-10-11T12:00:00+09:00"
         let article =
             RowArticleInput::read_articles(root.path()).expect("article input should be read");
 
-        assert_eq!(article.entry_point, root.path().join("index.typ"));
+        assert_eq!(article.entry_point, root.path().join(ENTRY_POINT));
         assert_eq!(article.config.slug, "rust-article");
         assert_eq!(article.config.title, "Rust Article");
         assert_eq!(article.config.description, "An article about Rust.");
