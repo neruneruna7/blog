@@ -9,6 +9,9 @@ chrono = { version = "0.4", default-features = false, features = ["clock", "serd
 toml = "1.1.8"
 serde = { version = "1.0.229", features = ["derive"] }
 thiserror = "2.0.21"
+lol_html = "2.7"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
 
 [dev-dependencies]
 tempfile = "3"

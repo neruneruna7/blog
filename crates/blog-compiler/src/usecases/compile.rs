@@ -8,10 +8,20 @@ use chrono::{DateTime, FixedOffset};
 use serde::Deserialize;
 use thiserror::Error;
 
+mod postprocess;
+
 pub fn article_compile() -> Result<(), ()> {
     let article_inputs = RawArticleInput::read_articles(TYP_COMPILE_ROOT).unwrap();
     let validated_article_inputs = RawArticleInput::validate_all(article_inputs).unwrap();
-    let compiled = todo!("コンパイル");
+    let postprocessors = postprocess::Pipeline::production();
+    let compiled = validated_article_inputs
+        .into_iter()
+        .map(|article| compile(&article, &postprocessors))
+        .collect::<Vec<_>>();
+    let successed = compiled
+        .into_iter()
+        .filter_map(Result::ok)
+        .collect::<Vec<_>>();
 
     todo!("ファイル書き込み")
 }
@@ -36,6 +46,7 @@ struct RawConfig {
 
 #[derive(Debug, Clone)]
 struct RawArticleInput {
+    root: PathBuf,
     entry_point: PathBuf,
     config: RawConfig,
 }
@@ -64,6 +75,7 @@ impl RawArticleInput {
                 let config = toml::from_str(&config_contents)?;
 
                 Ok(Self {
+                    root: PathBuf::from(root),
                     entry_point,
                     config,
                 })
@@ -74,6 +86,7 @@ impl RawArticleInput {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ArticleInput {
+    root: PathBuf,
     entry_point: PathBuf,
     config: Config,
 }
@@ -107,6 +120,7 @@ impl RawArticleInput {
         }
 
         Ok(ArticleInput {
+            root: self.root,
             entry_point: self.entry_point,
             config,
         })
@@ -196,6 +210,51 @@ impl PublishedAt {
     fn new(value: String) -> Result<Self, ArticleValidationError> {
         Ok(Self(DateTime::<FixedOffset>::parse_from_rfc3339(&value)?))
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CompiledArticle {
+    postprocess: HtmlPostprocessOutput,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct HtmlPostprocessOutput {
+    body_html: String,
+    warnings: Vec<ArticleCompileWarning>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ArticleCompileWarning {
+    url: String,
+    reason: String,
+}
+
+fn compile(
+    article: &ArticleInput,
+    postprocessors: &postprocess::Pipeline,
+) -> Result<CompiledArticle, ArticleCompileError> {
+    let html =
+        typst_html_export::compile_html(&article.root, &article.entry_point).map_err(|source| {
+            ArticleCompileError::TypstHtml {
+                slug: article.config.slug.0.clone(),
+                source,
+            }
+        })?;
+    let postprocess = postprocessors.process(html, &article.config.slug.0)?;
+
+    Ok(CompiledArticle { postprocess })
+}
+
+#[derive(Debug, Error)]
+enum ArticleCompileError {
+    #[error("failed to compile article '{slug}': {source}")]
+    TypstHtml {
+        slug: String,
+        #[source]
+        source: typst_html_export::TypstHtmlExportError,
+    },
+    #[error(transparent)]
+    Postprocess(#[from] postprocess::PostprocessError),
 }
 
 #[derive(Debug, Error)]
