@@ -18,8 +18,8 @@ use typst_kit::fonts::FontStore;
 use typst_layout::PagedDocument;
 use typst_render::{RenderOptions, render};
 
-const OGP_WIDTH_PX: u32 = 1200;
-const OGP_HEIGHT_PX: u32 = 630;
+pub const OGP_WIDTH_PX: u32 = 1200;
+pub const OGP_HEIGHT_PX: u32 = 630;
 const OGP_TAG_LIMIT: usize = 6;
 
 /// OGPテンプレートへ渡す表示データである。

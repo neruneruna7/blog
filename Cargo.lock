@@ -208,12 +208,12 @@ dependencies = [
 name = "blog-compiler"
 version = "0.1.0"
 dependencies = [
- "blog-engine",
  "chrono",
  "lol_html",
  "regex",
  "reqwest",
  "serde",
+ "serde_json",
  "tempfile",
  "thiserror",
  "toml 1.1.8+spec-1.1.0",

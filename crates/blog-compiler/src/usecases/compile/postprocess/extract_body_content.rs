@@ -2,7 +2,7 @@
 
 use regex::Regex;
 
-use super::PostprocessError;
+use crate::error::PostprocessError;
 
 pub(super) struct Processor;
 

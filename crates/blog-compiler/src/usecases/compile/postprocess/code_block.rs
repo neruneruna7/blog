@@ -1,7 +1,7 @@
 //! コードブロックを変換する
 //! 自前のCSSを当てられるように
 
-use super::PostprocessError;
+use crate::error::PostprocessError;
 use lol_html::{
     Settings, element, end_tag,
     html_content::{ContentType, TextChunk},

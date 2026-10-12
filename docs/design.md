@@ -53,18 +53,26 @@ typstでブログを書く．ブログは静的ホストしたい．
 
 ## コンパイル
 ```txt
-- typst-src直下にある記事フォルダを収集．
-  - 生状態を示すために，構造体名にrawとか？
-  - Vecになるな
-- 異常がないかチェック済みのものを示すデータに
+let raw_data: Vec<_> = typst-src直下にある記事フォルダを収集．
+let validated_data = 異常がないかチェック済みのもの   
   - slugの重複チェックなど．
   - タイトルなどが問題ないか
-- typstコンパイル．html文字列が得られる
-  - その記事のOGPコンパイルもここで
-  - assetsにあった画像などはどうなるか？ 今後要検討
-- 自作の後処理工程．
+
+let html_string = typstコンパイル
+let ogp_image = OGPコンパイル
+
+let post_proccessed = 自作の後処理工程．
   - grid対応
   - linkCardでOGP取得
+
+後処理で失敗があれば，警告を標準出力に流す.
+
+let article: Vec<_> = 記事ごとにデータをまとめる
+let articles_output = 出力形式に合わせて，変換
+- site.jsonの中身
+- article-index.jsonの中身
+
+ファイルシステムに書き込み
 - コンパイル成果物
   - 記事ごとのhtml, meta.json, assets
 ```

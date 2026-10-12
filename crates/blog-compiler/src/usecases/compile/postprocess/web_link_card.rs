@@ -12,8 +12,9 @@ use lol_html::{Settings, element, html_content::ContentType, rewrite_str, text};
 use regex::Regex;
 use reqwest::{Url, blocking::Client, redirect::Policy};
 
+use crate::error::PostprocessError;
+
 use super::super::ArticleCompileWarning;
-use super::PostprocessError;
 
 const MAX_REDIRECTS: usize = 5;
 const MAX_HTML_BYTES: u64 = 1_048_576;

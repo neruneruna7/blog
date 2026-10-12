@@ -2,9 +2,8 @@ mod code_block;
 mod extract_body_content;
 mod web_link_card;
 
-use thiserror::Error;
-
 use super::{ArticleCompileWarning, HtmlPostprocessOutput};
+use crate::error::PostprocessError;
 
 /// htmlへの自前処理群
 /// enumで多態性を表現
@@ -67,14 +66,4 @@ impl Pipeline {
             warnings,
         })
     }
-}
-
-#[derive(Debug, Error)]
-pub(super) enum PostprocessError {
-    #[error("article {slug}: {processor} postprocessor failed: {reason}")]
-    Processor {
-        slug: String,
-        processor: &'static str,
-        reason: String,
-    },
 }
