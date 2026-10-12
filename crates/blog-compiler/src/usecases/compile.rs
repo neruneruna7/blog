@@ -1,18 +1,20 @@
 use std::{
     collections::HashSet,
+    error::Error as StdError,
     fs,
     path::{Path, PathBuf},
 };
 
+use blog_engine::config::load_site_config;
 use chrono::{DateTime, FixedOffset};
 use serde::Deserialize;
 use thiserror::Error;
 
 mod postprocess;
 
-pub fn article_compile() -> Result<(), ()> {
-    let article_inputs = RawArticleInput::read_articles(TYP_COMPILE_ROOT).unwrap();
-    let validated_article_inputs = RawArticleInput::validate_all(article_inputs).unwrap();
+pub fn article_compile() -> Result<(), Box<dyn StdError>> {
+    let article_inputs = RawArticleInput::read_articles(TYP_COMPILE_ROOT)?;
+    let validated_article_inputs = RawArticleInput::validate_all(article_inputs)?;
     let postprocessors = postprocess::Pipeline::production();
     let compiled = validated_article_inputs
         .into_iter()
@@ -22,6 +24,31 @@ pub fn article_compile() -> Result<(), ()> {
         .into_iter()
         .filter_map(Result::ok)
         .collect::<Vec<_>>();
+    let site = load_site_config(TYP_COMPILE_ROOT)?;
+    let ogp_images: Vec<OgpImageData> = successed
+        .iter()
+        .map(|article| {
+            let input = typst_html_export::OgpInput {
+                site_title: site.title.clone(),
+                article_title: article.config.title.0.clone(),
+                description: article.config.description.0.clone(),
+                tags: article
+                    .config
+                    .tags
+                    .iter()
+                    .map(|tag| tag.0.clone())
+                    .collect(),
+            };
+            let png =
+                typst_html_export::compile_ogp_png(TYP_COMPILE_ROOT, OGP_ENTRY_POINT, &input)?;
+
+            Ok(OgpImageData {
+                slug: article.config.slug.clone(),
+                png,
+            })
+        })
+        .collect::<Result<Vec<_>, typst_html_export::TypstHtmlExportError>>()?;
+    debug_assert_eq!(ogp_images.len(), successed.len());
 
     todo!("ファイル書き込み")
 }
@@ -31,6 +58,7 @@ pub fn article_compile() -> Result<(), ()> {
 const TYP_COMPILE_ROOT: &str = "typst-src";
 const ARTICLES_PATH: &str = "articles";
 const ENTRY_POINT: &str = "main.typ";
+const OGP_ENTRY_POINT: &str = "commons/ogp/template.typ";
 const CONFIG_NAME: &str = "ArticleConfig.toml";
 const MAX_TITLE_CHARACTERS: usize = 48;
 const MAX_DESCRIPTION_CHARACTERS: usize = 130;
@@ -214,7 +242,14 @@ impl PublishedAt {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct CompiledArticle {
+    config: Config,
     postprocess: HtmlPostprocessOutput,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct OgpImageData {
+    slug: Slug,
+    png: Vec<u8>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -242,7 +277,10 @@ fn compile(
         })?;
     let postprocess = postprocessors.process(html, &article.config.slug.0)?;
 
-    Ok(CompiledArticle { postprocess })
+    Ok(CompiledArticle {
+        config: article.config.clone(),
+        postprocess,
+    })
 }
 
 #[derive(Debug, Error)]
