@@ -7,7 +7,7 @@ pub mod features;
 mod usecases;
 
 fn main() -> Result<(), Error> {
-    let articles = article_compile()?;
-    println!("記事変換完了: {} 件", articles.len());
+    let article_count = article_compile()?;
+    println!("記事変換・成果物書き込み完了: {article_count} 件");
     Ok(())
 }

@@ -1,37 +1,39 @@
 use std::collections::HashMap;
-use std::path::Path;
 
 use crate::{
     commons::article::Slug,
-    features::article_parse::{article::Article, site::Site},
+    features::article_parse::article::Article,
 };
 
-use super::{article, error::Error, models::mid::ProcessedArticle, postprocess::Pipeline};
+use super::{article, error::Error, output::ProcessedArticle, postprocess::Pipeline};
 
 pub struct ArticleTransformer;
 
 impl ArticleTransformer {
     pub fn transform_all(
         articles: HashMap<Slug, Article>,
-        site: &Site,
-        ogp_project_root: impl AsRef<Path>,
-        ogp_main_file: impl AsRef<Path>,
+        mut ogp_images: HashMap<Slug, Vec<u8>>,
     ) -> Result<HashMap<Slug, ProcessedArticle>, Error> {
         let postprocess = Pipeline::production();
-        let ogp_project_root = ogp_project_root.as_ref();
-        let ogp_main_file = ogp_main_file.as_ref();
-        articles
+        let transformed = articles
             .into_iter()
             .map(|(slug, article)| {
+                let ogp_image = ogp_images
+                    .remove(&slug)
+                    .ok_or_else(|| Error::MissingOgpImage(slug.as_str().to_owned()))?;
                 article::transform(
                     slug,
                     article,
-                    site,
-                    ogp_project_root,
-                    ogp_main_file,
+                    ogp_image,
                     &postprocess,
                 )
             })
-            .collect()
+            .collect::<Result<HashMap<_, _>, Error>>()?;
+
+        if let Some(slug) = ogp_images.into_keys().next() {
+            return Err(Error::OgpImageWithoutArticle(slug.as_str().to_owned()));
+        }
+
+        Ok(transformed)
     }
 }

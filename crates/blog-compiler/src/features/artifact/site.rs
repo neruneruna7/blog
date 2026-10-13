@@ -2,7 +2,10 @@ use std::{collections::HashSet, path::Path};
 
 use serde::Serialize;
 
-use crate::commons::site::SiteTitle;
+use crate::{
+    commons::site::SiteTitle,
+    features::article_parse::site::Site,
+};
 
 use super::{
     article::ArticleArtifact,
@@ -22,6 +25,16 @@ pub struct SiteConfig {
     pub language: String,
     // 現状特に使っていないのでコメントアウト
     // pub base_url: String,
+}
+
+impl From<&Site> for SiteConfig {
+    fn from(site: &Site) -> Self {
+        Self {
+            title: site.title.clone(),
+            description: site.description.clone(),
+            language: site.language.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

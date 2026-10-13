@@ -1,9 +1,14 @@
 use std::{collections::HashSet, path::Path};
 
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 
 use crate::commons::article::{
     ArticleId, ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt,
+};
+use crate::features::{
+    article_parse::{article::Article, site::Site},
+    article_transform::ProcessedArticle,
 };
 
 use super::{
@@ -16,6 +21,8 @@ const ARTICLES_DIRECTORY: &str = "articles";
 const PUBLIC_ROOT_DIRECTORY: &str = "public-root";
 const BODY_HTML_FILE: &str = "body.html";
 const ARTICLE_METADATA_FILE: &str = "meta.json";
+const OGP_ASSET_DIRECTORY: &str = "ogp/articles";
+const OGP_IMAGE_MIME_TYPE: &str = "image/png";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArticleArtifact {
@@ -79,6 +86,55 @@ impl Asset {
 }
 
 impl ArticleArtifact {
+    pub fn try_from_processed(
+        processed: ProcessedArticle,
+        site: &Site,
+    ) -> Result<Self, ArtifactBuildError> {
+        let ProcessedArticle {
+            article,
+            html,
+            ogp_image,
+            ..
+        } = processed;
+        let Article {
+            id,
+            slug,
+            title,
+            description,
+            tags,
+            published_at,
+            updated_at,
+            ..
+        } = article;
+
+        let digest = Sha256::digest(&ogp_image);
+        let content_hash = format!("{digest:x}");
+        let file_name = format!("{}-{}.png", slug.as_str(), &content_hash[..12]);
+        let relative_asset_path = Path::new(OGP_ASSET_DIRECTORY).join(&file_name);
+        let public_image_path = format!("/{OGP_ASSET_DIRECTORY}/{file_name}");
+        let alt = format!("{} | {}", title.as_str(), site.title.as_str());
+        let asset = Asset::try_new(relative_asset_path, ogp_image)?;
+        let metadata = ArticleMetadata {
+            id,
+            slug: slug.clone(),
+            title,
+            description,
+            published_at,
+            updated_at,
+            tags,
+            url: format!("/articles/{}/", slug.as_str()),
+            ogp_image: OgpImageMetadata {
+                path: public_image_path,
+                width: typst_html_export::OGP_WIDTH_PX,
+                height: typst_html_export::OGP_HEIGHT_PX,
+                mime_type: OGP_IMAGE_MIME_TYPE.to_owned(),
+                alt,
+            },
+        };
+
+        Self::try_new(slug, html, metadata, vec![asset])
+    }
+
     pub fn try_new(
         slug: Slug,
         html: String,

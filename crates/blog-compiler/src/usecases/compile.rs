@@ -2,12 +2,18 @@ use std::collections::HashMap;
 
 use crate::{
     commons::{
-        app_config::{ARTICLE_ENTRY_POINT, OGP_MAIN_FILE, TYP_COMPILE_ROOT},
+        app_config::{
+            ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT,
+        },
         article::Slug,
     },
     features::{
         article_parse::{article::Article, site::Site},
-        article_transform::{models::mid::ProcessedArticle, transformer::ArticleTransformer},
+        article_transform::ArticleTransformer,
+        artifact::{
+            article::ArticleArtifact,
+            site::{SiteArtifacts, SiteConfig},
+        },
         input::loader::Loader,
         ogp_generate::OgpGenerator,
     },
@@ -17,7 +23,7 @@ pub mod error;
 
 use error::Error;
 
-pub(crate) fn article_compile() -> Result<HashMap<Slug, ProcessedArticle>, Error> {
+pub(crate) fn article_compile() -> Result<usize, Error> {
     let input_bundle = Loader::load(TYP_COMPILE_ROOT, ARTICLE_ENTRY_POINT)?;
     let articles = Article::parse_all(input_bundle.articles)?;
     let site = Site::parse(input_bundle.site_config)?;
@@ -31,8 +37,16 @@ pub(crate) fn article_compile() -> Result<HashMap<Slug, ProcessedArticle>, Error
             ))
         })
         .collect::<Result<HashMap<_, _>, Error>>()?;
-    let transformed =
-        ArticleTransformer::transform_all(articles, &site, TYP_COMPILE_ROOT, OGP_MAIN_FILE)?;
 
-    todo!()
+    let transformed = ArticleTransformer::transform_all(articles, ogp)?;
+    let article_count = transformed.len();
+    let article_artifacts = transformed
+        .into_values()
+        .map(|article| ArticleArtifact::try_from_processed(article, &site))
+        .collect::<Result<Vec<_>, _>>()?;
+    let site_artifacts = SiteArtifacts::try_new(SiteConfig::from(&site), article_artifacts)?;
+
+    site_artifacts.write(ARTIFACT_ROOT)?;
+
+    Ok(article_count)
 }

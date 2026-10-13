@@ -13,6 +13,7 @@ thiserror = "2.0.21"
 lol_html = "2.7"
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+sha2 = "0.10"
 
 [dev-dependencies]
 tempfile = "3"
