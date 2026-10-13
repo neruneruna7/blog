@@ -1,4 +1,4 @@
-use std::{collections::HashSet, path::Path};
+use std::collections::HashSet;
 
 use serde::Serialize;
 
@@ -7,15 +7,7 @@ use crate::{
     features::article_parse::site::Site,
 };
 
-use super::{
-    article::ArticleArtifact,
-    create_directory,
-    error::{ArtifactBuildError, ArtifactWriteError},
-    write_json,
-};
-
-const SITE_CONFIG_FILE: &str = "site.json";
-const ARTICLE_INDEX_FILE: &str = "article-index.json";
+use super::{article::ArticleArtifact, error::ArtifactBuildError};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -58,24 +50,5 @@ impl SiteArtifacts {
         }
 
         Ok(Self { config, articles })
-    }
-
-    pub fn write(&self, output_root: impl AsRef<Path>) -> Result<(), ArtifactWriteError> {
-        let output_root = output_root.as_ref();
-        create_directory(output_root)?;
-        write_json(&output_root.join(SITE_CONFIG_FILE), &self.config)?;
-
-        let article_index = self
-            .articles
-            .iter()
-            .map(|article| &article.metadata)
-            .collect::<Vec<_>>();
-        write_json(&output_root.join(ARTICLE_INDEX_FILE), &article_index)?;
-
-        for article in &self.articles {
-            article.write(output_root)?;
-        }
-
-        Ok(())
     }
 }

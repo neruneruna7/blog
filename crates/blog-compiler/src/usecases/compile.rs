@@ -1,16 +1,12 @@
 use std::collections::HashMap;
 
 use crate::{
-    commons::{
-        app_config::{
-            ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT,
-        },
-        article::Slug,
-    },
+    commons::app_config::{ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT},
     features::{
-        article_parse::{article::Article, site::Site},
+        article_parse::ArticleParser,
         article_transform::ArticleTransformer,
         artifact::{
+            ArtifactWriter,
             article::ArticleArtifact,
             site::{SiteArtifacts, SiteConfig},
         },
@@ -25,8 +21,9 @@ use error::Error;
 
 pub(crate) fn article_compile() -> Result<usize, Error> {
     let input_bundle = Loader::load(TYP_COMPILE_ROOT, ARTICLE_ENTRY_POINT)?;
-    let articles = Article::parse_all(input_bundle.articles)?;
-    let site = Site::parse(input_bundle.site_config)?;
+    let parsed_site = ArticleParser::parse(input_bundle)?;
+    let articles = parsed_site.articles;
+    let site = parsed_site.site;
 
     let ogp = articles
         .iter()
@@ -46,7 +43,7 @@ pub(crate) fn article_compile() -> Result<usize, Error> {
         .collect::<Result<Vec<_>, _>>()?;
     let site_artifacts = SiteArtifacts::try_new(SiteConfig::from(&site), article_artifacts)?;
 
-    site_artifacts.write(ARTIFACT_ROOT)?;
+    ArtifactWriter::write(&site_artifacts, ARTIFACT_ROOT)?;
 
     Ok(article_count)
 }
