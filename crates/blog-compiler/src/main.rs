@@ -6,6 +6,7 @@ pub mod artifact;
 pub mod commons;
 mod compiler;
 pub mod input;
+pub mod ogp_generate;
 pub mod parse_article;
 
 mod usecases;

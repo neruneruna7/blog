@@ -8,12 +8,8 @@ pub enum Error {
         #[source]
         source: typst_html_export::TypstHtmlExportError,
     },
-    #[error("failed to compile OGP image for article '{slug}': {source}")]
-    Ogp {
-        slug: String,
-        #[source]
-        source: typst_html_export::TypstHtmlExportError,
-    },
+    #[error("OGP image generation failed: {0}")]
+    OgpGeneration(#[from] crate::ogp_generate::error::Error),
     #[error("failed to postprocess article '{slug}' in {processor}: {reason}")]
     Postprocess {
         slug: String,

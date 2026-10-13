@@ -1,8 +1,8 @@
-//! RawArticleから記事の中間生成物を作成する変換サブシステム。
+//! ドメインパース済みの記事を中間生成物へ変換するサブシステム。
 
-pub mod article;
+mod article;
 pub mod error;
 pub mod models;
-pub mod ogp;
 pub mod postprocess;
+pub mod transformer;
 pub mod typst;
