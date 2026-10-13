@@ -24,8 +24,8 @@ impl RawSiteBundle {
     /// ```
     pub fn read() -> Result<Self, Error> {
         let root = super::TYP_COMPILE_ROOT;
-        let articles = RawArticle::read_all(&root)?;
-        let site_config = RawSiteConfig::read(&root)?;
+        let articles = RawArticle::read_all(root)?;
+        let site_config = RawSiteConfig::read(root)?;
 
         Ok(Self {
             articles,
