@@ -3,15 +3,15 @@ use std::{io, path::PathBuf};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum Error {
-    #[error("article slug cannot be used as an output directory: {0}")]
-    InvalidArticleSlug(String),
-    #[error("article bundle slug '{bundle_slug}' does not match metadata slug '{metadata_slug}'")]
+pub enum ArtifactBuildError {
+    #[error(
+        "article artifact slug '{artifact_slug}' does not match metadata slug '{metadata_slug}'"
+    )]
     ArticleSlugMismatch {
-        bundle_slug: String,
+        artifact_slug: String,
         metadata_slug: String,
     },
-    #[error("duplicate article slug in output bundle: {0}")]
+    #[error("duplicate article slug in site artifacts: {0}")]
     DuplicateArticleSlug(String),
     #[error("asset path must be relative to public-root: '{0}'")]
     InvalidAssetPath(PathBuf),
@@ -19,19 +19,23 @@ pub enum Error {
     MissingOgpAsset { slug: String, path: PathBuf },
     #[error("duplicate asset path in article '{slug}': '{path}'")]
     DuplicateAssetPath { slug: String, path: PathBuf },
-    #[error("failed to create output directory '{path}': {source}")]
+}
+
+#[derive(Debug, Error)]
+pub enum ArtifactWriteError {
+    #[error("failed to create artifact directory '{path}': {source}")]
     CreateDirectory {
         path: PathBuf,
         #[source]
         source: io::Error,
     },
-    #[error("failed to serialize JSON output '{path}': {source}")]
+    #[error("failed to serialize JSON artifact '{path}': {source}")]
     SerializeJson {
         path: PathBuf,
         #[source]
         source: serde_json::Error,
     },
-    #[error("failed to write output file '{path}': {source}")]
+    #[error("failed to write artifact file '{path}': {source}")]
     WriteFile {
         path: PathBuf,
         #[source]

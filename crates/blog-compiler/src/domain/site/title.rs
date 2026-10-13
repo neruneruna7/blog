@@ -1,6 +1,7 @@
 use crate::domain::{ValueError, validate_non_empty};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(transparent)]
 pub struct SiteTitle(String);
 
 impl SiteTitle {

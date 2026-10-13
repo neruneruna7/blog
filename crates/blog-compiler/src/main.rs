@@ -1,10 +1,10 @@
 use crate::{error::ArticleCompileError, usecases::compile::article_compile};
 
+pub mod artifact;
 mod compiler;
 pub mod domain;
 mod error;
 pub mod input;
-pub mod output;
 
 mod usecases;
 

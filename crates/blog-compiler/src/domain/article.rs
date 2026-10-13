@@ -10,7 +10,8 @@ pub use title::ArticleTitle;
 
 const MAX_DESCRIPTION_CHARACTERS: usize = 130;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(transparent)]
 pub struct ArticleId(String);
 
 impl ArticleId {
@@ -28,7 +29,8 @@ impl ArticleId {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(transparent)]
 pub struct Description(String);
 
 impl Description {
@@ -46,7 +48,8 @@ impl Description {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(transparent)]
 pub struct Tag(String);
 
 impl Tag {
@@ -63,7 +66,8 @@ impl Tag {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(transparent)]
 pub struct PublishedAt(DateTime<FixedOffset>);
 
 impl PublishedAt {
@@ -85,7 +89,8 @@ impl PublishedAt {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(transparent)]
 pub struct UpdatedAt(Option<DateTime<FixedOffset>>);
 
 impl UpdatedAt {

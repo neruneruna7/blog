@@ -2,7 +2,8 @@ use crate::domain::{ValueError, validate_text_length};
 
 pub const MAX_ARTICLE_TITLE_CHARACTERS: usize = 48;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(transparent)]
 pub struct ArticleTitle(String);
 
 impl ArticleTitle {

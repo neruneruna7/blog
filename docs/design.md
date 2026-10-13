@@ -75,7 +75,7 @@ let articles_output = 出力形式に合わせて，変換
 ファイルシステムに書き込み
 - コンパイル成果物
   - 記事ごとのhtml, meta.json, assets
-  - struct SiteBundle
+  - struct SiteArtifacts
   - 
 ```
 
@@ -87,19 +87,19 @@ CompiledArticle
     ↓ 後処理
 ProcessedArticle
     ↓ サイト全体を集約
-SiteBundle
+SiteArtifacts
     ↓ シリアライズ・ファイル出力
 FileSystem
 
 ```rs
-struct SiteBundle {
+struct SiteArtifacts {
     config: SiteConfig,
-    articles: Vec<ArticleBundle>,
+    articles: Vec<ArticleArtifact>,
     site_index: SiteIndex,
     article_index: ArticleIndex,
 }
 
-struct ArticleBundle {
+struct ArticleArtifact {
     slug: String,
     html: String,
     metadata: ArticleMetadata,

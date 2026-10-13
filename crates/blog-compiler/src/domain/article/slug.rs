@@ -1,6 +1,7 @@
 use crate::domain::ValueError;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize)]
+#[serde(transparent)]
 pub struct Slug(String);
 
 impl Slug {
