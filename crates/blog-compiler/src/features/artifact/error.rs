@@ -11,7 +11,7 @@ pub enum ArtifactBuildError {
         artifact_slug: String,
         metadata_slug: String,
     },
-    #[error("duplicate article slug in site artifacts: {0}")]
+    #[error("duplicate article slug in artifact: {0}")]
     DuplicateArticleSlug(String),
     #[error("asset path must be relative to public-root: '{0}'")]
     InvalidAssetPath(PathBuf),

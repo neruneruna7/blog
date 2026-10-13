@@ -3,15 +3,8 @@ use std::collections::HashMap;
 use crate::{
     commons::app_config::{ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT},
     features::{
-        article_parse::ArticleParser,
-        article_transform::ArticleTransformer,
-        artifact::{
-            ArtifactWriter,
-            article::ArticleArtifact,
-            site::{SiteArtifacts, SiteConfig},
-        },
-        input::loader::Loader,
-        ogp_generate::OgpGenerator,
+        article_parse::ArticleParser, article_transform::ArticleTransformer,
+        artifact::ArtifactAssembler, input::loader::Loader, ogp_generate::OgpGenerator,
     },
 };
 
@@ -37,13 +30,9 @@ pub(crate) fn article_compile() -> Result<usize, Error> {
 
     let transformed = ArticleTransformer::transform_all(articles, ogp)?;
     let article_count = transformed.len();
-    let article_artifacts = transformed
-        .into_values()
-        .map(|article| ArticleArtifact::try_from_transformed(article, &site))
-        .collect::<Result<Vec<_>, _>>()?;
-    let site_artifacts = SiteArtifacts::try_new(SiteConfig::from(&site), article_artifacts)?;
+    let artifact = ArtifactAssembler::assemble(transformed, &site)?;
 
-    ArtifactWriter::write(&site_artifacts, ARTIFACT_ROOT)?;
+    artifact.write(ARTIFACT_ROOT)?;
 
     Ok(article_count)
 }

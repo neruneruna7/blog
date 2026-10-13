@@ -1,11 +1,15 @@
-use std::{fs, path::Path};
+use std::{
+    collections::HashSet,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use serde::Serialize;
 
 use super::{
     article::ArticleArtifact,
-    error::ArtifactWriteError,
-    site::SiteArtifacts,
+    error::{ArtifactBuildError, ArtifactWriteError},
+    site::SiteConfig,
 };
 
 const ARTICLES_DIRECTORY: &str = "articles";
@@ -15,25 +19,42 @@ const ARTICLE_METADATA_FILE: &str = "meta.json";
 const SITE_CONFIG_FILE: &str = "site.json";
 const ARTICLE_INDEX_FILE: &str = "article-index.json";
 
-pub struct ArtifactWriter;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Artifact {
+    pub config: SiteConfig,
+    pub articles: Vec<ArticleArtifact>,
+}
 
-impl ArtifactWriter {
-    pub fn write(
-        artifacts: &SiteArtifacts,
-        output_root: impl AsRef<Path>,
-    ) -> Result<(), ArtifactWriteError> {
+impl Artifact {
+    pub fn try_new(
+        config: SiteConfig,
+        articles: Vec<ArticleArtifact>,
+    ) -> Result<Self, ArtifactBuildError> {
+        let mut slugs = HashSet::new();
+        for article in &articles {
+            if !slugs.insert(article.slug.clone()) {
+                return Err(ArtifactBuildError::DuplicateArticleSlug(
+                    article.slug.as_str().to_owned(),
+                ));
+            }
+        }
+
+        Ok(Self { config, articles })
+    }
+
+    pub fn write(&self, output_root: impl AsRef<Path>) -> Result<(), ArtifactWriteError> {
         let output_root = output_root.as_ref();
         create_directory(output_root)?;
-        write_json(&output_root.join(SITE_CONFIG_FILE), &artifacts.config)?;
+        write_json(&output_root.join(SITE_CONFIG_FILE), &self.config)?;
 
-        let article_index = artifacts
+        let article_index = self
             .articles
             .iter()
             .map(|article| &article.metadata)
             .collect::<Vec<_>>();
         write_json(&output_root.join(ARTICLE_INDEX_FILE), &article_index)?;
 
-        for article in &artifacts.articles {
+        for article in &self.articles {
             write_article(article, output_root)?;
         }
 
@@ -41,10 +62,7 @@ impl ArtifactWriter {
     }
 }
 
-fn write_article(
-    article: &ArticleArtifact,
-    output_root: &Path,
-) -> Result<(), ArtifactWriteError> {
+fn write_article(article: &ArticleArtifact, output_root: &Path) -> Result<(), ArtifactWriteError> {
     let article_directory = output_root
         .join(ARTICLES_DIRECTORY)
         .join(article.slug.as_str());

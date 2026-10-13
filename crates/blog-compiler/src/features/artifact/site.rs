@@ -1,13 +1,6 @@
-use std::collections::HashSet;
-
 use serde::Serialize;
 
-use crate::{
-    commons::site::SiteTitle,
-    features::article_parse::site::Site,
-};
-
-use super::{article::ArticleArtifact, error::ArtifactBuildError};
+use crate::{commons::site::SiteTitle, features::article_parse::site::Site};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -26,29 +19,5 @@ impl From<&Site> for SiteConfig {
             description: site.description.clone(),
             language: site.language.clone(),
         }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SiteArtifacts {
-    pub config: SiteConfig,
-    pub articles: Vec<ArticleArtifact>,
-}
-
-impl SiteArtifacts {
-    pub fn try_new(
-        config: SiteConfig,
-        articles: Vec<ArticleArtifact>,
-    ) -> Result<Self, ArtifactBuildError> {
-        let mut slugs = HashSet::new();
-        for article in &articles {
-            if !slugs.insert(article.slug.clone()) {
-                return Err(ArtifactBuildError::DuplicateArticleSlug(
-                    article.slug.as_str().to_owned(),
-                ));
-            }
-        }
-
-        Ok(Self { config, articles })
     }
 }
