@@ -8,4 +8,6 @@ pub enum Error {
     DomainParse(#[from] crate::features::article_parse::error::Error),
     #[error("article transformation failed: {0}")]
     ArticleTransform(#[from] crate::features::article_transform::error::Error),
+    #[error("OGP generation failed: {0}")]
+    OgpGenerate(#[from] crate::features::ogp_generate::error::Error),
 }

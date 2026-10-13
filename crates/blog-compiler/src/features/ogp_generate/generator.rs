@@ -12,8 +12,8 @@ impl OgpGenerator {
     pub fn generate_png(
         article: &Article,
         site: &Site,
-        typst_project_root: &Path,
-        main_file: &Path,
+        typst_project_root: impl AsRef<Path>,
+        main_file: impl AsRef<Path>,
     ) -> Result<Vec<u8>, Error> {
         let input = typst_html_export::OgpInput {
             site_title: site.title.as_str().to_owned(),
