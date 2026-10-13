@@ -12,7 +12,7 @@ use lol_html::{Settings, element, html_content::ContentType, rewrite_str, text};
 use regex::Regex;
 use reqwest::{Url, blocking::Client, redirect::Policy};
 
-use crate::features::article_transform::{error::Error, output::ArticleCompileWarning};
+use crate::features::article_transform::{ArticleCompileWarning, error::Error};
 
 const MAX_REDIRECTS: usize = 5;
 const MAX_HTML_BYTES: u64 = 1_048_576;

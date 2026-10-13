@@ -85,7 +85,7 @@ ValidatedArticle
     ↓ Typstコンパイル
 CompiledArticle
     ↓ 後処理
-ProcessedArticle
+TransformedArticle
     ↓ サイト全体を集約
 SiteArtifacts
     ↓ シリアライズ・ファイル出力

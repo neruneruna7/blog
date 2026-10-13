@@ -2,7 +2,7 @@ mod code_block;
 mod extract_body_content;
 mod web_link_card;
 
-use super::{error::Error, output::ArticleCompileWarning};
+use super::{ArticleCompileWarning, error::Error};
 
 pub(super) struct HtmlPostprocessOutput {
     pub(super) body_html: String,

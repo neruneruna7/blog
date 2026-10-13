@@ -39,7 +39,7 @@ pub(crate) fn article_compile() -> Result<usize, Error> {
     let article_count = transformed.len();
     let article_artifacts = transformed
         .into_values()
-        .map(|article| ArticleArtifact::try_from_processed(article, &site))
+        .map(|article| ArticleArtifact::try_from_transformed(article, &site))
         .collect::<Result<Vec<_>, _>>()?;
     let site_artifacts = SiteArtifacts::try_new(SiteConfig::from(&site), article_artifacts)?;
 

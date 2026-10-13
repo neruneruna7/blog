@@ -8,7 +8,7 @@ use crate::commons::article::{
 };
 use crate::features::{
     article_parse::{article::Article, site::Site},
-    article_transform::ProcessedArticle,
+    article_transform::TransformedArticle,
 };
 
 use super::error::ArtifactBuildError;
@@ -70,16 +70,16 @@ impl Asset {
 }
 
 impl ArticleArtifact {
-    pub fn try_from_processed(
-        processed: ProcessedArticle,
+    pub fn try_from_transformed(
+        transformed: TransformedArticle,
         site: &Site,
     ) -> Result<Self, ArtifactBuildError> {
-        let ProcessedArticle {
+        let TransformedArticle {
             article,
             html,
             ogp_image,
             ..
-        } = processed;
+        } = transformed;
         let Article {
             id,
             slug,

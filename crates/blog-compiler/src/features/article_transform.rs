@@ -2,9 +2,8 @@
 
 mod article;
 pub mod error;
-mod output;
 mod postprocess;
 pub mod transformer;
 
-pub use output::{ArticleCompileWarning, ProcessedArticle};
+pub use article::{ArticleCompileWarning, TransformedArticle};
 pub use transformer::ArticleTransformer;

@@ -5,7 +5,7 @@ use crate::{
     features::article_parse::article::Article,
 };
 
-use super::{article, error::Error, output::ProcessedArticle, postprocess::Pipeline};
+use super::{article, article::TransformedArticle, error::Error, postprocess::Pipeline};
 
 pub struct ArticleTransformer;
 
@@ -13,7 +13,7 @@ impl ArticleTransformer {
     pub fn transform_all(
         articles: HashMap<Slug, Article>,
         mut ogp_images: HashMap<Slug, Vec<u8>>,
-    ) -> Result<HashMap<Slug, ProcessedArticle>, Error> {
+    ) -> Result<HashMap<Slug, TransformedArticle>, Error> {
         let postprocess = Pipeline::production();
         let transformed = articles
             .into_iter()
