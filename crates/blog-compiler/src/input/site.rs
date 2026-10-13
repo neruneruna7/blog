@@ -13,6 +13,15 @@ pub struct RawSiteBundle {
 }
 
 impl RawSiteBundle {
+    /// ファイルシステムなどから，記事データやサイト設定などを読み出す．
+    ///
+    /// ## example
+    /// ```
+    /// let input_bundle = RawSiteBundle::read().unwrap();
+    ///
+    /// let articles = input_bundle.articles;
+    /// let site_config = input_bundle.site_config;
+    /// ```
     pub fn read() -> Result<Self, Error> {
         let root = super::TYP_COMPILE_ROOT;
         let articles = RawArticle::read_all(&root)?;
