@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -28,64 +26,14 @@ pub(crate) enum ArticleValidationError {
 
 #[derive(Debug, Error)]
 pub(crate) enum ArticleCompileError {
+    #[error("failed to read article inputs: {0}")]
+    Read(#[from] crate::input::error::Error),
+    #[error("article validation failed: {0}")]
+    Validation(#[from] ArticleValidationError),
     #[error("failed to compile article '{slug}': {source}")]
     TypstHtml {
         slug: String,
         #[source]
         source: typst_html_export::TypstHtmlExportError,
     },
-    #[error(transparent)]
-    Postprocess(#[from] PostprocessError),
-}
-
-#[derive(Debug, Error)]
-pub(crate) enum PostprocessError {
-    #[error("article {slug}: {processor} postprocessor failed: {reason}")]
-    Processor {
-        slug: String,
-        processor: &'static str,
-        reason: String,
-    },
-}
-
-#[derive(Debug, Error)]
-pub(crate) enum ArticleWriteError {
-    #[error("article output root must have a parent directory: {0}")]
-    MissingOutputParent(PathBuf),
-    #[error("failed to serialize metadata for article '{slug}': {source}")]
-    SerializeMetadata {
-        slug: String,
-        #[source]
-        source: serde_json::Error,
-    },
-    #[error("failed to create output directory '{path}': {source}")]
-    CreateDirectory {
-        path: PathBuf,
-        #[source]
-        source: std::io::Error,
-    },
-    #[error("failed to write output file '{path}': {source}")]
-    WriteFile {
-        path: PathBuf,
-        #[source]
-        source: std::io::Error,
-    },
-}
-
-#[derive(Debug, Error)]
-pub(crate) enum OgpSiteConfigError {
-    #[error("failed to read site configuration '{path}': {source}")]
-    Read {
-        path: PathBuf,
-        #[source]
-        source: std::io::Error,
-    },
-    #[error("failed to parse site configuration '{path}': {source}")]
-    Parse {
-        path: PathBuf,
-        #[source]
-        source: toml::de::Error,
-    },
-    #[error("site title must not be empty in '{path}'")]
-    EmptyTitle { path: PathBuf },
 }

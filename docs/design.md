@@ -75,6 +75,35 @@ let articles_output = 出力形式に合わせて，変換
 ファイルシステムに書き込み
 - コンパイル成果物
   - 記事ごとのhtml, meta.json, assets
+  - struct SiteBundle
+  - 
 ```
 
+RawArticle
+    ↓ 検証
+ValidatedArticle
+    ↓ Typstコンパイル
+CompiledArticle
+    ↓ 後処理
+ProcessedArticle
+    ↓ サイト全体を集約
+SiteBundle
+    ↓ シリアライズ・ファイル出力
+FileSystem
+
+```rs
+struct SiteBundle {
+    config: SiteConfig,
+    articles: Vec<ArticleBundle>,
+    site_index: SiteIndex,
+    article_index: ArticleIndex,
+}
+
+struct ArticleBundle {
+    slug: String,
+    html: String,
+    metadata: ArticleMetadata,
+    assets: Vec<Asset>,
+}
+```
 一旦typstコンパイルまで実装．その後はまた考えよう

@@ -1,9 +1,13 @@
-use crate::usecases::compile::article_compile;
-use std::error::Error;
+use crate::{error::ArticleCompileError, usecases::compile::article_compile};
 
+mod compiler;
 mod error;
+pub mod input;
+
 mod usecases;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    article_compile()
+fn main() -> Result<(), ArticleCompileError> {
+    let articles = article_compile()?;
+    println!("Typstコンパイル完了: {} 件", articles.len());
+    Ok(())
 }
