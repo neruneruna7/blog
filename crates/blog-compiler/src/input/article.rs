@@ -19,7 +19,7 @@ impl RawArticle {
     pub(super) fn read_all(root: impl AsRef<std::path::Path>) -> Result<Vec<Self>, Error> {
         let root = root.as_ref();
         let articles_path = root.join(ARTICLES_PATH);
-        let mut article_roots = fs::read_dir(&articles_path)
+        let article_roots = fs::read_dir(&articles_path)
             .map_err(|source| Error::ReadDirectory {
                 path: articles_path.clone(),
                 source,
@@ -44,7 +44,6 @@ impl RawArticle {
             .into_iter()
             .filter_map(|(path, is_directory)| is_directory.then_some(path))
             .collect::<Vec<_>>();
-        article_roots.sort();
 
         article_roots
             .into_iter()
@@ -87,15 +86,15 @@ pub struct RawArticleConfig {
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
+    use std::{collections::HashSet, fs};
 
     use tempfile::tempdir;
 
-    use super::{ARTICLE_CONFIG_NAME, ARTICLES_PATH, ENTRY_POINT, RawArticle};
+    use super::{ARTICLE_CONFIG_NAME, ARTICLES_PATH, RawArticle};
 
     #[test]
-    /// 記事ディレクトリ名の順序で入力を返すことを確認
-    fn reads_each_article_directory_in_sorted_order() {
+    /// ディレクトリの列挙順に依存せず各記事入力を読むことを確認
+    fn reads_each_article_directory_without_requiring_order() {
         let root = tempdir().expect("temporary directory should be created");
         let articles_root = root.path().join(ARTICLES_PATH);
         write_article_config(&articles_root, "z-article", "z-article");
@@ -107,17 +106,11 @@ mod tests {
 
         let articles = RawArticle::read_all(root.path()).expect("article inputs should be read");
 
-        assert_eq!(articles.len(), 2);
-        assert_eq!(
-            articles[0].entry_point,
-            articles_root.join("a-article").join(ENTRY_POINT)
-        );
-        assert_eq!(articles[0].config.slug, "a-article");
-        assert_eq!(
-            articles[1].entry_point,
-            articles_root.join("z-article").join(ENTRY_POINT)
-        );
-        assert_eq!(articles[1].config.slug, "z-article");
+        let slugs = articles
+            .iter()
+            .map(|article| article.config.slug.as_str())
+            .collect::<HashSet<_>>();
+        assert_eq!(slugs, HashSet::from(["a-article", "z-article"]));
     }
 
     fn write_article_config(articles_root: &std::path::Path, directory: &str, slug: &str) {
