@@ -1,14 +1,12 @@
-use crate::domain::{ValueError, validate_text_length};
-
-pub const MAX_ARTICLE_TITLE_CHARACTERS: usize = 48;
+use crate::commons::{ValueError, validate_non_empty};
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 #[serde(transparent)]
-pub struct ArticleTitle(String);
+pub struct SiteTitle(String);
 
-impl ArticleTitle {
+impl SiteTitle {
     pub fn new(value: String) -> Result<Self, ValueError> {
-        validate_text_length("title", &value, MAX_ARTICLE_TITLE_CHARACTERS)?;
+        validate_non_empty("site title", &value)?;
         Ok(Self(value))
     }
 

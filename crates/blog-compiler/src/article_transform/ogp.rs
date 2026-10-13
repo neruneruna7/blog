@@ -1,7 +1,7 @@
 use crate::{
-    domain::article::Tag,
-    domain_parse::{article::Article, site::Site},
+    commons::article::Tag,
     input::TYP_COMPILE_ROOT,
+    parse_article::{article::Article, site::Site},
 };
 
 use super::error::Error;

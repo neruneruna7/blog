@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use crate::{
-    domain::article::Slug,
-    domain_parse::{article::Article, site::Site},
+    commons::article::Slug,
+    parse_article::{article::Article, site::Site},
 };
 
 use super::{

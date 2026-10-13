@@ -1,4 +1,4 @@
-use crate::{domain::site::SiteTitle, input::site::RawSiteConfig};
+use crate::{commons::site::SiteTitle, input::site::RawSiteConfig};
 
 use super::error::Error;
 

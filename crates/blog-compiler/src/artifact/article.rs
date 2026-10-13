@@ -2,7 +2,7 @@ use std::{collections::HashSet, path::Path};
 
 use serde::Serialize;
 
-use crate::domain::article::{
+use crate::commons::article::{
     ArticleId, ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt,
 };
 

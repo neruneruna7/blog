@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use crate::{
     article_transform::{self, models::mid::ProcessedArticle},
-    domain::article::Slug,
-    domain_parse::{article::Article, site::Site},
+    commons::article::Slug,
     input::loader::Loader,
+    parse_article::{article::Article, site::Site},
 };
 
 pub mod error;

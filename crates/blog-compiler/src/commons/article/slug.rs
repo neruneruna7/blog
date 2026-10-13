@@ -1,4 +1,4 @@
-use crate::domain::ValueError;
+use crate::commons::ValueError;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize)]
 #[serde(transparent)]

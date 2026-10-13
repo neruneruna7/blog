@@ -2,7 +2,7 @@ use std::{collections::HashSet, path::Path};
 
 use serde::Serialize;
 
-use crate::domain::site::SiteTitle;
+use crate::commons::site::SiteTitle;
 
 use super::{
     article::ArticleArtifact,

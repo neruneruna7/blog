@@ -3,10 +3,10 @@ use crate::usecases::compile::{article_compile, error::Error};
 pub mod article_transform;
 
 pub mod artifact;
+pub mod commons;
 mod compiler;
-pub mod domain;
-pub mod domain_parse;
 pub mod input;
+pub mod parse_article;
 
 mod usecases;
 
