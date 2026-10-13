@@ -1,7 +1,9 @@
 use crate::{
     commons::article::Slug,
-    ogp_generate::OgpGenerator,
-    parse_article::{article::Article, site::Site},
+    features::{
+        article_parse::{article::Article, site::Site},
+        ogp_generate::OgpGenerator,
+    },
 };
 
 use super::{

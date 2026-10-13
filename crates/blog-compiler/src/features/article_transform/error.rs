@@ -9,7 +9,7 @@ pub enum Error {
         source: typst_html_export::TypstHtmlExportError,
     },
     #[error("OGP image generation failed: {0}")]
-    OgpGeneration(#[from] crate::ogp_generate::error::Error),
+    OgpGeneration(#[from] crate::features::ogp_generate::error::Error),
     #[error("failed to postprocess article '{slug}' in {processor}: {reason}")]
     Postprocess {
         slug: String,

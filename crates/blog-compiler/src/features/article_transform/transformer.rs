@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     commons::article::Slug,
-    parse_article::{article::Article, site::Site},
+    features::article_parse::{article::Article, site::Site},
 };
 
 use super::{article, error::Error, models::mid::ProcessedArticle, postprocess::Pipeline};

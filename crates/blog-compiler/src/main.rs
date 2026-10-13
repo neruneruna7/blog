@@ -1,13 +1,8 @@
 use crate::usecases::compile::{article_compile, error::Error};
 
-pub mod article_transform;
-
-pub mod artifact;
 pub mod commons;
 mod compiler;
-pub mod input;
-pub mod ogp_generate;
-pub mod parse_article;
+pub mod features;
 
 mod usecases;
 

@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
 use crate::{
-    article_transform::{models::mid::ProcessedArticle, transformer::ArticleTransformer},
     commons::article::Slug,
-    input::loader::Loader,
-    parse_article::{article::Article, site::Site},
+    features::{
+        article_parse::{article::Article, site::Site},
+        article_transform::{models::mid::ProcessedArticle, transformer::ArticleTransformer},
+        input::loader::Loader,
+    },
 };
 
 pub mod error;

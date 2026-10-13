@@ -2,7 +2,7 @@
 
 use regex::Regex;
 
-use crate::article_transform::error::Error;
+use crate::features::article_transform::error::Error;
 
 pub(super) struct Processor;
 

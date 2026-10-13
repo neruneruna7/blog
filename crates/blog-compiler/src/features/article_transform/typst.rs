@@ -1,4 +1,4 @@
-use crate::parse_article::article::Article;
+use crate::features::article_parse::article::Article;
 
 use super::error::Error;
 

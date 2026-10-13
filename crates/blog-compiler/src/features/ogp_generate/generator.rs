@@ -1,7 +1,9 @@
 use crate::{
     commons::article::Tag,
-    input::TYP_COMPILE_ROOT,
-    parse_article::{article::Article, site::Site},
+    features::{
+        article_parse::{article::Article, site::Site},
+        input::TYP_COMPILE_ROOT,
+    },
 };
 
 use super::error::Error;

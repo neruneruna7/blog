@@ -1,7 +1,7 @@
 //! コードブロックを変換する
 //! 自前のCSSを当てられるように
 
-use crate::article_transform::error::Error;
+use crate::features::article_transform::error::Error;
 use lol_html::{
     Settings, element, end_tag,
     html_content::{ContentType, TextChunk},

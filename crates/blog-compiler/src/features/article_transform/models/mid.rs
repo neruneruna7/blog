@@ -1,4 +1,4 @@
-use crate::parse_article::article::Article;
+use crate::features::article_parse::article::Article;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CompiledArticle {
