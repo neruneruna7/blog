@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::{
     commons::app_config::{ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT},
     features::{
@@ -15,22 +13,10 @@ use error::Error;
 pub(crate) fn article_compile() -> Result<usize, Error> {
     let input_bundle = Loader::load(TYP_COMPILE_ROOT, ARTICLE_ENTRY_POINT)?;
     let parsed_site = ArticleParser::parse(input_bundle)?;
-    let articles = parsed_site.articles;
-    let site = parsed_site.site;
-
-    let ogp = articles
-        .iter()
-        .map(|(slug, article)| -> Result<_, Error> {
-            Ok((
-                slug.clone(),
-                OgpGenerator::generate_png(article, &site, TYP_COMPILE_ROOT, OGP_MAIN_FILE)?,
-            ))
-        })
-        .collect::<Result<HashMap<_, _>, Error>>()?;
-
-    let transformed = ArticleTransformer::transform_all(articles, ogp)?;
+    let ogp = OgpGenerator::generate_all(&parsed_site, TYP_COMPILE_ROOT, OGP_MAIN_FILE)?;
+    let transformed = ArticleTransformer::transform_all(parsed_site.articles, ogp)?;
     let article_count = transformed.len();
-    let artifact = ArtifactAssembler::assemble(transformed, &site)?;
+    let artifact = ArtifactAssembler::assemble(transformed, &parsed_site.site)?;
 
     artifact.write(ARTIFACT_ROOT)?;
 

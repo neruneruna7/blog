@@ -1,14 +1,38 @@
+use std::{collections::HashMap, path::Path};
+
 use crate::{
-    commons::article::Tag,
-    features::article_parse::{article::Article, site::Site},
+    commons::article::{Slug, Tag},
+    features::article_parse::{ParsedSiteBundle, article::Article, site::Site},
 };
-use std::path::Path;
 
 use super::error::Error;
 
 pub struct OgpGenerator;
 
 impl OgpGenerator {
+    pub fn generate_all(
+        parsed_site: &ParsedSiteBundle,
+        typst_project_root: impl AsRef<Path>,
+        main_file: impl AsRef<Path>,
+    ) -> Result<HashMap<Slug, Vec<u8>>, Error> {
+        let typst_project_root = typst_project_root.as_ref();
+        let main_file = main_file.as_ref();
+
+        parsed_site
+            .articles
+            .iter()
+            .map(|(slug, article)| {
+                let image = Self::generate_png(
+                    article,
+                    &parsed_site.site,
+                    typst_project_root,
+                    main_file,
+                )?;
+                Ok((slug.clone(), image))
+            })
+            .collect()
+    }
+
     pub fn generate_png(
         article: &Article,
         site: &Site,
