@@ -4,7 +4,7 @@ use crate::{
     article_transform::{self, models::mid::ProcessedArticle},
     domain::article::Slug,
     domain_parse::{article::Article, site::Site},
-    input::site::RawSiteBundle,
+    input::loader::Loader,
 };
 
 pub mod error;
@@ -12,7 +12,7 @@ pub mod error;
 use error::Error;
 
 pub(crate) fn article_compile() -> Result<HashMap<Slug, ProcessedArticle>, Error> {
-    let input_bundle = RawSiteBundle::read()?;
+    let input_bundle = Loader::load()?;
     let articles = Article::parse_all(input_bundle.articles)?;
     let site = Site::parse(input_bundle.site_config)?;
 

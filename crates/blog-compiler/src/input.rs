@@ -2,6 +2,7 @@
 
 pub mod article;
 pub mod error;
+pub mod loader;
 pub mod site;
 
 /// Typst 記事とサイト設定を読み込むルート。
