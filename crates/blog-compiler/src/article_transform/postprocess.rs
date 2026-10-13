@@ -2,8 +2,12 @@ mod code_block;
 mod extract_body_content;
 mod web_link_card;
 
-use super::{ArticleCompileWarning, HtmlPostprocessOutput};
-use crate::error::PostprocessError;
+use super::{error::Error, models::mid::ArticleCompileWarning};
+
+pub(super) struct HtmlPostprocessOutput {
+    pub(super) body_html: String,
+    pub(super) warnings: Vec<ArticleCompileWarning>,
+}
 
 /// htmlへの自前処理群
 /// enumで多態性を表現
@@ -19,7 +23,7 @@ impl HtmlProcessor {
         &self,
         html: String,
         slug: &str,
-    ) -> Result<(String, Vec<ArticleCompileWarning>), PostprocessError> {
+    ) -> Result<(String, Vec<ArticleCompileWarning>), Error> {
         match self {
             Self::CodeBlock(processor) => Ok((processor.process(html, slug)?, Vec::new())),
             Self::WebLinkCard(processor) => {
@@ -46,17 +50,13 @@ impl Pipeline {
         }
     }
 
-    pub(super) fn process(
-        &self,
-        html: String,
-        slug: &str,
-    ) -> Result<HtmlPostprocessOutput, PostprocessError> {
+    pub(super) fn process(&self, html: String, slug: &str) -> Result<HtmlPostprocessOutput, Error> {
         let (body_html, mut warnings) = self.processors.iter().try_fold(
             (html, Vec::new()),
             |(html, mut warnings), processor| {
                 let (html, processor_warnings) = processor.process(html, slug)?;
                 warnings.extend(processor_warnings);
-                Ok((html, warnings))
+                Ok::<_, Error>((html, warnings))
             },
         )?;
         warnings.sort_by(|left: &ArticleCompileWarning, right| left.url.cmp(&right.url));

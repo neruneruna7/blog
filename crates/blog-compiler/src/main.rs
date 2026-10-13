@@ -1,15 +1,17 @@
-use crate::{error::ArticleCompileError, usecases::compile::article_compile};
+use crate::usecases::compile::{article_compile, error::Error};
+
+pub mod article_transform;
 
 pub mod artifact;
 mod compiler;
 pub mod domain;
-mod error;
+pub mod domain_parse;
 pub mod input;
 
 mod usecases;
 
-fn main() -> Result<(), ArticleCompileError> {
+fn main() -> Result<(), Error> {
     let articles = article_compile()?;
-    println!("Typstコンパイル完了: {} 件", articles.len());
+    println!("記事変換完了: {} 件", articles.len());
     Ok(())
 }

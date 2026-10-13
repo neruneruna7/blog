@@ -2,13 +2,13 @@
 
 use regex::Regex;
 
-use crate::error::PostprocessError;
+use crate::article_transform::error::Error;
 
 pub(super) struct Processor;
 
 impl Processor {
-    pub(super) fn process(&self, html: String, slug: &str) -> Result<String, PostprocessError> {
-        extract(&html).ok_or_else(|| PostprocessError::Processor {
+    pub(super) fn process(&self, html: String, slug: &str) -> Result<String, Error> {
+        extract(&html).ok_or_else(|| Error::Postprocess {
             slug: slug.to_owned(),
             processor: "body content extraction",
             reason: "HTML document does not contain a complete <body> element".to_owned(),

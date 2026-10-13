@@ -1,7 +1,7 @@
 //! コードブロックを変換する
 //! 自前のCSSを当てられるように
 
-use crate::error::PostprocessError;
+use crate::article_transform::error::Error;
 use lol_html::{
     Settings, element, end_tag,
     html_content::{ContentType, TextChunk},
@@ -15,7 +15,7 @@ const CODE_LINE_CLOSE: &str = "</span>";
 pub(super) struct Processor;
 
 impl Processor {
-    pub(super) fn process(&self, html: String, slug: &str) -> Result<String, PostprocessError> {
+    pub(super) fn process(&self, html: String, slug: &str) -> Result<String, Error> {
         rewrite_str(
             &html,
             Settings {
@@ -36,7 +36,7 @@ impl Processor {
                 ..Settings::default()
             },
         )
-        .map_err(|error| PostprocessError::Processor {
+        .map_err(|error| Error::Postprocess {
             slug: slug.to_owned(),
             processor: "code block",
             reason: error.to_string(),

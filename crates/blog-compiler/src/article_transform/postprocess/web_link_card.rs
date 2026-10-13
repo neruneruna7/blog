@@ -12,9 +12,7 @@ use lol_html::{Settings, element, html_content::ContentType, rewrite_str, text};
 use regex::Regex;
 use reqwest::{Url, blocking::Client, redirect::Policy};
 
-use crate::error::PostprocessError;
-
-use super::super::ArticleCompileWarning;
+use crate::article_transform::{error::Error, models::mid::ArticleCompileWarning};
 
 const MAX_REDIRECTS: usize = 5;
 const MAX_HTML_BYTES: u64 = 1_048_576;
@@ -72,7 +70,7 @@ impl Processor {
         }
     }
 
-    pub(super) fn process(&self, html: &str, slug: &str) -> Result<Output, PostprocessError> {
+    pub(super) fn process(&self, html: &str, slug: &str) -> Result<Output, Error> {
         let urls = collect_urls(html, slug)?;
         let cards = self.resolver.resolve(&urls);
         let html = transform(html, &cards, slug)?;
@@ -93,7 +91,7 @@ pub(super) struct Output {
     pub(super) warnings: Vec<ArticleCompileWarning>,
 }
 
-fn collect_urls(html: &str, slug: &str) -> Result<Vec<String>, PostprocessError> {
+fn collect_urls(html: &str, slug: &str) -> Result<Vec<String>, Error> {
     if !html.contains("web-link-card-flag=\"true\"") {
         return Ok(Vec::new());
     }
@@ -111,7 +109,7 @@ fn collect_urls(html: &str, slug: &str) -> Result<Vec<String>, PostprocessError>
             ..Settings::default()
         },
     )
-    .map_err(|error| PostprocessError::Processor {
+    .map_err(|error| Error::Postprocess {
         slug: slug.to_owned(),
         processor: "web link card URL collection",
         reason: error.to_string(),
@@ -120,7 +118,7 @@ fn collect_urls(html: &str, slug: &str) -> Result<Vec<String>, PostprocessError>
     Ok(urls)
 }
 
-fn transform(html: &str, cards: &ResolvedCards, slug: &str) -> Result<String, PostprocessError> {
+fn transform(html: &str, cards: &ResolvedCards, slug: &str) -> Result<String, Error> {
     if !html.contains("web-link-card-flag=\"true\"") {
         return Ok(html.to_owned());
     }
@@ -142,7 +140,7 @@ fn transform(html: &str, cards: &ResolvedCards, slug: &str) -> Result<String, Po
             ..Settings::default()
         },
     )
-    .map_err(|error| PostprocessError::Processor {
+    .map_err(|error| Error::Postprocess {
         slug: slug.to_owned(),
         processor: "web link card rendering",
         reason: error.to_string(),
