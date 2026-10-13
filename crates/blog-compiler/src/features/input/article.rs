@@ -5,7 +5,6 @@ use serde::Deserialize;
 use super::error::Error;
 
 const ARTICLES_PATH: &str = "articles";
-const ENTRY_POINT: &str = "main.typ";
 const ARTICLE_CONFIG_NAME: &str = "ArticleConfig.toml";
 
 #[derive(Debug, Clone)]
@@ -16,8 +15,12 @@ pub struct RawArticle {
 }
 
 impl RawArticle {
-    pub(super) fn read_all(root: impl AsRef<std::path::Path>) -> Result<Vec<Self>, Error> {
+    pub(super) fn read_all(
+        root: impl AsRef<std::path::Path>,
+        entry_point_file: impl AsRef<std::path::Path>,
+    ) -> Result<Vec<Self>, Error> {
         let root = root.as_ref();
+        let entry_point_file = entry_point_file.as_ref();
         let articles_path = root.join(ARTICLES_PATH);
         let article_roots = fs::read_dir(&articles_path)
             .map_err(|source| Error::ReadDirectory {
@@ -48,7 +51,7 @@ impl RawArticle {
         article_roots
             .into_iter()
             .map(|article_root| {
-                let entry_point = article_root.join(ENTRY_POINT);
+                let entry_point = article_root.join(entry_point_file);
                 let config_path = article_root.join(ARTICLE_CONFIG_NAME);
                 let config_contents = fs::read_to_string(&config_path).map_err(|source| {
                     Error::ReadArticleConfig {
@@ -90,6 +93,8 @@ mod tests {
 
     use tempfile::tempdir;
 
+    use crate::commons::app_config::ARTICLE_ENTRY_POINT;
+
     use super::{ARTICLE_CONFIG_NAME, ARTICLES_PATH, RawArticle};
 
     #[test]
@@ -104,7 +109,8 @@ mod tests {
         fs::create_dir_all(articles_root.join("a-article/assets"))
             .expect("nested asset directory should be created");
 
-        let articles = RawArticle::read_all(root.path()).expect("article inputs should be read");
+        let articles = RawArticle::read_all(root.path(), ARTICLE_ENTRY_POINT)
+            .expect("article inputs should be read");
 
         let slugs = articles
             .iter()

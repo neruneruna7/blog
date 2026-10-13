@@ -1,6 +1,7 @@
 //! 複数の関心事を横断して使うような型，処理など
 use thiserror::Error;
 
+pub mod app_config;
 pub mod article;
 pub mod site;
 

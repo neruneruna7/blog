@@ -1,19 +1,20 @@
 use crate::{
     commons::article::Tag,
-    features::{
-        article_parse::{article::Article, site::Site},
-        input::TYP_COMPILE_ROOT,
-    },
+    features::article_parse::{article::Article, site::Site},
 };
+use std::path::Path;
 
 use super::error::Error;
-
-const OGP_MAIN_FILE: &str = "commons/ogp/template.typ";
 
 pub struct OgpGenerator;
 
 impl OgpGenerator {
-    pub fn generate_png(article: &Article, site: &Site) -> Result<Vec<u8>, Error> {
+    pub fn generate_png(
+        article: &Article,
+        site: &Site,
+        typst_project_root: &Path,
+        main_file: &Path,
+    ) -> Result<Vec<u8>, Error> {
         let input = typst_html_export::OgpInput {
             site_title: site.title.as_str().to_owned(),
             article_title: article.title.as_str().to_owned(),
@@ -26,7 +27,7 @@ impl OgpGenerator {
                 .collect(),
         };
 
-        typst_html_export::compile_ogp_png(TYP_COMPILE_ROOT, OGP_MAIN_FILE, &input).map_err(
+        typst_html_export::compile_ogp_png(typst_project_root, main_file, &input).map_err(
             |source| Error::Typst {
                 slug: article.slug.as_str().to_owned(),
                 source,

@@ -4,18 +4,21 @@
 //! - フォルダを見た際に，どこから辿ればいいかわかりやすくなる
 //!- ここがエントリポイントだということをわかりやすくする．
 use super::{
-    TYP_COMPILE_ROOT,
     article::RawArticle,
     error::Error,
     site::{RawSiteBundle, RawSiteConfig},
 };
+use std::path::Path;
 
 pub struct Loader;
 
 impl Loader {
-    pub fn load() -> Result<RawSiteBundle, Error> {
-        let root = TYP_COMPILE_ROOT;
-        let articles = RawArticle::read_all(root)?;
+    pub fn load(
+        root: impl AsRef<Path>,
+        article_entry_point: impl AsRef<Path>,
+    ) -> Result<RawSiteBundle, Error> {
+        let root = root.as_ref();
+        let articles = RawArticle::read_all(root, article_entry_point)?;
         let site_config = RawSiteConfig::read(root)?;
 
         Ok(RawSiteBundle {

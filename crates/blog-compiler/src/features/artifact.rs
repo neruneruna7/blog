@@ -3,8 +3,6 @@ pub mod article;
 pub mod error;
 pub mod site;
 
-pub const ARTIFACT_ROOT: &str = "generated";
-
 use std::{fs, path::Path};
 
 use serde::Serialize;
