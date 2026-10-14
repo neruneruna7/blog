@@ -22,12 +22,8 @@ impl OgpGenerator {
             .articles
             .iter()
             .map(|(slug, article)| {
-                let image = Self::generate_png(
-                    article,
-                    &parsed_site.site,
-                    typst_project_root,
-                    main_file,
-                )?;
+                let image =
+                    Self::generate_png(article, &parsed_site.site, typst_project_root, main_file)?;
                 Ok((slug.clone(), image))
             })
             .collect()

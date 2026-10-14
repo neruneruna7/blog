@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 typst-html-export = { path = "../typst-html-export" }
+clap = { version = "4.6", features = ["derive"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 toml = "1.1.8"
 serde = { version = "1.0.229", features = ["derive"] }
