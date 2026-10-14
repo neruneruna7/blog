@@ -6,7 +6,7 @@ use crate::{
 };
 
 use super::{
-    article::ArticleArtifact, artifact::Artifact, error::ArtifactBuildError, site::SiteConfig,
+    article::ArticleArtifact, artifact_model::Artifact, error::ArtifactBuildError, site::SiteConfig,
 };
 
 pub struct ArtifactAssembler;
