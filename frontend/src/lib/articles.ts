@@ -29,7 +29,6 @@ export type SiteConfig = {
   title: string;
   description: string;
   language: string;
-  baseUrl: string;
 };
 
 /**
@@ -155,13 +154,11 @@ function asSiteConfig(value: unknown, source: string): SiteConfig {
   assertString(value.title, `${source}.title`);
   assertString(value.description, `${source}.description`);
   assertString(value.language, `${source}.language`);
-  assertString(value.baseUrl, `${source}.baseUrl`);
 
   return {
     title: value.title,
     description: value.description,
     language: value.language,
-    baseUrl: value.baseUrl,
   };
 }
 

@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use blog_engine::article::Article;
-use blog_engine::config::{load_site_config, load_site_config_with_base_url};
+use blog_engine::config::load_site_config;
 use blog_engine::error::BlogEngineError;
 use blog_engine::ogp::{
     build_ogp_public_path, generate_ogp_content_hash, OgpImageMeta, OgpRenderInput,
@@ -71,27 +71,9 @@ fn valid_site_toml_is_normalized_into_site_json_shape() {
         json!({
             "title": "neru7 blog",
             "description": "Typst-based technical blog",
-            "language": "ja",
-            "baseUrl": "http://localhost:4321"
+            "language": "ja"
         })
     );
-}
-
-#[test]
-fn command_line_base_url_overrides_site_toml() {
-    let site =
-        load_site_config_with_base_url(fixture("valid-single"), Some("https://blog.example.com"))
-            .expect("base URL override should be valid");
-
-    assert_eq!(site.base_url, "https://blog.example.com");
-}
-
-#[test]
-fn invalid_base_url_override_is_rejected() {
-    let error = load_site_config_with_base_url(fixture("valid-single"), Some("example.com"))
-        .expect_err("relative base URL should be rejected");
-
-    assert!(matches!(error, BlogEngineError::Validation { .. }));
 }
 
 #[test]
@@ -319,10 +301,9 @@ fn build_writes_site_and_article_index_json() {
     build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
         .expect("build should succeed");
 
-    assert_eq!(
-        read_json(output.path().join("site.json"))["baseUrl"],
-        "http://localhost:4321"
-    );
+    assert!(read_json(output.path().join("site.json"))
+        .get("baseUrl")
+        .is_none());
     assert_eq!(
         read_json(output.path().join("article-index.json"))[0]["slug"],
         "hello-typst"
@@ -403,7 +384,7 @@ fn typst_compile_failure_is_rejected() {
 }
 
 #[test]
-fn existing_site_json_output_remains_unchanged() {
+fn site_json_does_not_include_deployment_origin() {
     let output = TempDir::new().expect("temp dir should be created");
 
     build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
@@ -414,8 +395,7 @@ fn existing_site_json_output_remains_unchanged() {
         json!({
             "title": "neru7 blog",
             "description": "Typst-based technical blog",
-            "language": "ja",
-            "baseUrl": "http://localhost:4321"
+            "language": "ja"
         })
     );
 }

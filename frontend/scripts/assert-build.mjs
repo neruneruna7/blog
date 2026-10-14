@@ -67,12 +67,10 @@ for (const article of articles) {
     `${article.ogpImage.path} must exist in frontend/dist.`,
   );
 
-  const articleUrl = new URL(article.url, site.baseUrl).href;
-  const ogpImageUrl = new URL(article.ogpImage.path, site.baseUrl).href;
   assertMeta(articleHtml, "property", "og:type", "article", article.slug);
   assertMeta(articleHtml, "property", "og:title", article.title, article.slug);
-  assertMeta(articleHtml, "property", "og:url", articleUrl, article.slug);
-  assertMeta(articleHtml, "property", "og:image", ogpImageUrl, article.slug);
+  assertAbsoluteUrlMeta(articleHtml, "og:url", article.url, article.slug);
+  assertAbsoluteUrlMeta(articleHtml, "og:image", article.ogpImage.path, article.slug);
   assertMeta(articleHtml, "name", "twitter:card", "summary_large_image", article.slug);
   assertMeta(
     articleHtml,
@@ -105,6 +103,31 @@ function assertMeta(html, attribute, key, content, slug) {
     `<meta\\s+${attribute}="${escapedKey}"\\s+content="${escapedContent}"\\s*\\/?>`,
   );
   assert(metaPattern.test(html), `${slug} must contain ${key}=${content}.`);
+}
+
+function assertAbsoluteUrlMeta(html, key, expectedPath, slug) {
+  const escapedKey = escapeRegExp(escapeHtmlAttribute(key));
+  const metaPattern = new RegExp(
+    `<meta\\s+property="${escapedKey}"\\s+content="([^"]+)"\\s*\\/?>`,
+  );
+  const match = html.match(metaPattern);
+  assert(match, `${slug} must contain ${key} as an absolute URL.`);
+
+  let actualUrl;
+  try {
+    actualUrl = new URL(match[1]);
+  } catch {
+    throw new Error(`${slug} ${key} must be an absolute HTTP(S) URL.`);
+  }
+
+  assert(
+    ["http:", "https:"].includes(actualUrl.protocol),
+    `${slug} ${key} must use HTTP or HTTPS.`,
+  );
+  assert(
+    actualUrl.pathname === expectedPath,
+    `${slug} ${key} must point to ${expectedPath}.`,
+  );
 }
 
 function escapeHtmlAttribute(value) {

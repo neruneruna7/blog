@@ -33,10 +33,6 @@ struct BuildArgs {
     /// JSONおよびHTMLの出力ルート。
     #[arg(long, default_value = "generated", value_name = "DIR")]
     output: PathBuf,
-
-    /// `site.toml` のbase_urlを上書きする公開URL。
-    #[arg(long, value_name = "URL")]
-    base_url: Option<String>,
 }
 
 #[derive(Debug, Args)]
@@ -59,13 +55,7 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Build(args) => {
-            blog_engine::build_with_options(
-                args.source,
-                args.output,
-                blog_engine::BuildOptions {
-                    base_url: args.base_url,
-                },
-            )?;
+            blog_engine::build(args.source, args.output)?;
         }
         Commands::New(args) => {
             let title = match args.title {

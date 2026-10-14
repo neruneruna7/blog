@@ -13,7 +13,6 @@ fn site() -> SiteOutput {
         title: "  Example   Blog  ".to_owned(),
         description: "A   site description".to_owned(),
         language: "ja".to_owned(),
-        base_url: "https://example.com".to_owned(),
     }
 }
 

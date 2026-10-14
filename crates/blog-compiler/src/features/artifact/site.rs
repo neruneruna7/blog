@@ -8,8 +8,6 @@ pub struct SiteConfig {
     pub title: SiteTitle,
     pub description: String,
     pub language: String,
-    // 現状特に使っていないのでコメントアウト
-    // pub base_url: String,
 }
 
 impl From<&Site> for SiteConfig {

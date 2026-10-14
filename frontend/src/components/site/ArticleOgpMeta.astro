@@ -7,8 +7,9 @@ type Props = {
 };
 
 const { site, article } = Astro.props;
-const articleUrl = new URL(article.url, site.baseUrl).href;
-const imageUrl = new URL(article.ogpImage.path, site.baseUrl).href;
+const siteUrl = import.meta.env.SITE;
+const articleUrl = new URL(article.url, siteUrl).href;
+const imageUrl = new URL(article.ogpImage.path, siteUrl).href;
 ---
 
 <!--

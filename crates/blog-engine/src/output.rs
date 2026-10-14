@@ -20,7 +20,7 @@ use crate::ogp::OgpImageMeta;
 /// - `generated/site.json` の安定したJSON契約をRust型で表すため。
 ///
 /// 期待する動作:
-/// - `base_url` を `baseUrl` として出力し、その他のサイトメタデータを保持する。
+/// - 記事コンパイルに必要なサイト表示メタデータを保持する。
 ///
 /// 使い方の概要:
 /// - `config::load_site_config` の戻り値として受け取り、`write_site_output` へ渡す。
@@ -30,7 +30,6 @@ pub struct SiteOutput {
     pub title: String,
     pub description: String,
     pub language: String,
-    pub base_url: String,
 }
 
 /// なぜ実装するのか:

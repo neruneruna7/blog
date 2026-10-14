@@ -470,7 +470,7 @@ mod tests {
         let source = TempDir::new().unwrap();
         fs::write(
             source.path().join("site.toml"),
-            "title = 'site'\ndescription = ''\nlanguage = 'ja'\nbase_url = 'https://example.com'\n",
+            "title = 'site'\ndescription = ''\nlanguage = 'ja'\n",
         )
         .unwrap();
         source

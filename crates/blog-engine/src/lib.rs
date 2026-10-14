@@ -24,10 +24,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use article::{normalize_article_sources, normalize_articles, Article};
-use config::{
-    load_article_config_files, load_article_configs, load_site_config,
-    load_site_config_with_base_url,
-};
+use config::{load_article_config_files, load_article_configs, load_site_config};
 use error::BlogEngineError;
 use ogp::{
     build_ogp_public_path, generate_ogp_content_hash, OgpImageMeta, OgpRenderInput,
@@ -68,12 +65,6 @@ pub struct BuildReport {
     pub ogp: OgpBuildStats,
 }
 
-/// ビルド時にファイル設定へ適用する上書き値である。
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct BuildOptions {
-    pub base_url: Option<String>,
-}
-
 /// なぜ実装するのか:
 /// - CLIとテストの両方から同じビルド境界を呼び出せるようにするため。
 ///
@@ -87,15 +78,6 @@ pub fn build(
     source_root: impl AsRef<Path>,
     output_root: impl AsRef<Path>,
 ) -> Result<(), BlogEngineError> {
-    build_with_options(source_root, output_root, BuildOptions::default())
-}
-
-/// CLIなどの呼び出し元が指定した設定を適用してコンテンツを生成する。
-pub fn build_with_options(
-    source_root: impl AsRef<Path>,
-    output_root: impl AsRef<Path>,
-    options: BuildOptions,
-) -> Result<(), BlogEngineError> {
     let source_root = source_root.as_ref();
     let runner = CliTypstRunner::new(source_root);
     let ogp_renderer =
@@ -108,7 +90,6 @@ pub fn build_with_options(
         &runner,
         &ogp_renderer,
         &postprocess_context,
-        options.base_url.as_deref(),
     )
     .map(|_| ())
 }
@@ -134,7 +115,6 @@ pub fn build_with_typst_runner(
         runner,
         &ogp_renderer,
         &postprocess_context,
-        None,
     )
     .map(|_| ())
 }
@@ -161,7 +141,6 @@ pub fn build_with_runners(
         typst_runner,
         ogp_renderer,
         &postprocess_context,
-        None,
     )
 }
 
@@ -187,7 +166,6 @@ pub fn build_with_typst_runner_and_postprocess_context(
         runner,
         &ogp_renderer,
         postprocess_context,
-        None,
     )
     .map(|_| ())
 }
@@ -207,7 +185,6 @@ fn build_with_runners_and_postprocess_context(
     typst_runner: &impl TypstRunner,
     ogp_renderer: &impl OgpRenderer,
     postprocess_context: &html_postprocess::PostprocessContext,
-    base_url: Option<&str>,
 ) -> Result<BuildReport, BlogEngineError> {
     let source_root = source_root.as_ref();
     let output_root = output_root.as_ref();
@@ -219,7 +196,6 @@ fn build_with_runners_and_postprocess_context(
         typst_runner,
         ogp_renderer,
         postprocess_context,
-        base_url,
     );
     let report = match result {
         Ok(report) => report,
@@ -253,9 +229,8 @@ fn build_into_staging(
     typst_runner: &impl TypstRunner,
     ogp_renderer: &impl OgpRenderer,
     postprocess_context: &html_postprocess::PostprocessContext,
-    base_url: Option<&str>,
 ) -> Result<BuildReport, BlogEngineError> {
-    let site = load_site_config_with_base_url(source_root, base_url)?;
+    let site = load_site_config(source_root)?;
     let article_sources = load_normalized_article_sources(source_root)?;
     let articles = article_sources
         .iter()

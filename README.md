@@ -19,6 +19,7 @@ Commands:
 Content generation:
 - `cargo make build-content` runs `blog-engine`, which uses the Typst CLI to generate `body.html` and writes article metadata and OGP assets.
 - OGP images are written under `generated/public-root/ogp/articles`.
+- Generated article metadata keeps site-root-relative paths; Astro resolves the deployment origin from `BASE_URL` when it writes OGP tags.
 - `body.html` is an HTML fragment embedded by Astro. It is not a final page.
 
 Article source layout:
@@ -31,6 +32,7 @@ Astro:
 - `cargo make build-site` generates content, merges `frontend/public` into `generated/public-root`, and builds `frontend/dist/`.
 - `cargo make build` runs content generation first, then builds the Astro static site.
 - `cargo make test` runs Rust content tests and frontend build-level assertions.
+- Set `BASE_URL` in the repository-root `.env` for local Astro builds; CI reads it from the GitHub Actions variable `BASE_URL`.
 - Run `cd frontend && npm install` before the first Astro build. Dependency installation is intentionally not hidden inside cargo-make.
 
 Optional real Typst integration test:
