@@ -289,7 +289,7 @@ fn render_ogp_images(
     article_sources: &[article::ArticleSource],
     renderer: &impl OgpRenderer,
 ) -> Result<(Vec<OgpImageMeta>, OgpBuildStats), BlogEngineError> {
-    let ogp_output_dir = output_root.join("public/ogp/articles");
+    let ogp_output_dir = output_root.join("public-root/ogp/articles");
     fs::create_dir_all(&ogp_output_dir)
         .map_err(|source| BlogEngineError::io(&ogp_output_dir, source))?;
     let started_at = Instant::now();

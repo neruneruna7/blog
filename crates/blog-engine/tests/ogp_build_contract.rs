@@ -178,7 +178,7 @@ fn renders_each_unique_article_with_site_and_article_input() {
         call.output_path
             .parent()
             .expect("OGP path should have a parent")
-            .ends_with("public/ogp/articles")
+            .ends_with("public-root/ogp/articles")
     }));
     assert!(calls.iter().all(|call| {
         let file_name = call
@@ -219,7 +219,11 @@ fn successful_ogp_generation_is_registered_as_structured_metadata() {
         .as_str()
         .expect("OGP path should be a string")
         .trim_start_matches('/');
-    assert!(output.path().join("public").join(public_path).is_file());
+    assert!(output
+        .path()
+        .join("public-root")
+        .join(public_path)
+        .is_file());
 }
 
 #[test]
@@ -227,12 +231,12 @@ fn ogp_failure_preserves_previous_output_and_writes_no_new_json() {
     let output = TempDir::new().expect("output directory should be created");
     let old_index = "old article index";
     let old_png = b"old png";
-    fs::create_dir_all(output.path().join("public/ogp/articles"))
+    fs::create_dir_all(output.path().join("public-root/ogp/articles"))
         .expect("old OGP directory should be created");
     fs::write(output.path().join("article-index.json"), old_index)
         .expect("old JSON should be written");
     fs::write(
-        output.path().join("public/ogp/articles/old-hash.png"),
+        output.path().join("public-root/ogp/articles/old-hash.png"),
         old_png,
     )
     .expect("old PNG should be written");
@@ -251,7 +255,7 @@ fn ogp_failure_preserves_previous_output_and_writes_no_new_json() {
         old_index
     );
     assert_eq!(
-        fs::read(output.path().join("public/ogp/articles/old-hash.png"))
+        fs::read(output.path().join("public-root/ogp/articles/old-hash.png"))
             .expect("old PNG should remain"),
         old_png
     );
@@ -260,7 +264,7 @@ fn ogp_failure_preserves_previous_output_and_writes_no_new_json() {
 #[test]
 fn successful_build_removes_old_hashes_and_aggregates_statistics() {
     let output = TempDir::new().expect("output directory should be created");
-    let old_path = output.path().join("public/ogp/articles/old-hash.png");
+    let old_path = output.path().join("public-root/ogp/articles/old-hash.png");
     fs::create_dir_all(
         old_path
             .parent()
@@ -300,7 +304,7 @@ fn identical_content_hash_is_rendered_once_and_reused_per_article_path() {
     .expect("build should succeed");
 
     assert_eq!(renderer.calls().len(), 1);
-    let ogp_dir = output.path().join("public/ogp/articles");
+    let ogp_dir = output.path().join("public-root/ogp/articles");
     let mut files = fs::read_dir(ogp_dir)
         .expect("OGP directory should exist")
         .map(|entry| entry.expect("OGP entry should be readable").file_name())

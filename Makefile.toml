@@ -12,7 +12,7 @@ command = "cargo"
 args = ["run", "-p", "typst-html-export", "--bin", "typst-html-export"]
 
 [tasks.assemble-public]
-description = "フロントエンドとgenerated配下の公開用アセットを組み立てる"
+description = "frontend/publicをgenerated/public-rootへ統合する"
 dependencies = ["build-content"]
 cwd = "frontend"
 command = "pnpm"
