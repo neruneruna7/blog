@@ -1,7 +1,4 @@
-use crate::{
-    commons::article::Slug,
-    features::article_parse::article::Article,
-};
+use crate::{commons::article::Slug, features::article_parse::article::Article};
 
 use super::{error::Error, postprocess::Pipeline};
 
@@ -25,13 +22,23 @@ pub(super) fn transform(
     ogp_image: Vec<u8>,
     postprocess: &Pipeline,
 ) -> Result<(Slug, TransformedArticle), Error> {
-    let html = typst_html_export::compile_html(&article.root, &article.entry_point).map_err(
-        |source| Error::TypstHtml {
-            slug: article.slug.as_str().to_owned(),
-            source,
-        },
-    )?;
+    tracing::debug!(slug = %slug.as_str(), "記事をHTMLへ変換");
+    let html =
+        typst_html_export::compile_html(&article.root, &article.entry_point).map_err(|source| {
+            Error::TypstHtml {
+                slug: article.slug.as_str().to_owned(),
+                source,
+            }
+        })?;
     let postprocessed = postprocess.process(html, slug.as_str())?;
+    for warning in &postprocessed.warnings {
+        tracing::warn!(
+            slug = %slug.as_str(),
+            url = ?warning.url,
+            reason = ?warning.reason,
+            "記事の後処理で警告"
+        );
+    }
 
     Ok((
         slug,

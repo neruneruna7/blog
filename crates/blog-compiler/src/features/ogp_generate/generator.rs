@@ -22,6 +22,7 @@ impl OgpGenerator {
             .articles
             .iter()
             .map(|(slug, article)| {
+                tracing::debug!(slug = %slug.as_str(), "OGP画像を生成");
                 let image =
                     Self::generate_png(article, &parsed_site.site, typst_project_root, main_file)?;
                 Ok((slug.clone(), image))
