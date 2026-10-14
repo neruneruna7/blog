@@ -4,7 +4,7 @@ default_to_workspace = false
 [tasks.build-content]
 description = "Typstソースからgenerated配下の中間生成物を作成する"
 command = "cargo"
-args = ["run", "-p", "blog-engine", "--", "build", "${@}"]
+args = ["run", "-p", "blog-compiler", "--", "build", "${@}"]
 
 [tasks.typst-html-export]
 description = "Typstライブラリ経由で文書をHTMLへ変換する"
@@ -21,7 +21,7 @@ args = ["run", "assemble-public"]
 [tasks.new-article]
 description = "新しいTypst記事の雛形を作成する"
 command = "cargo"
-args = ["run", "-p", "blog-engine", "--", "new", "${@}"]
+args = ["run", "-p", "blog-compiler", "--", "new", "${@}"]
 
 [tasks.test-content]
 description = "コンテンツエンジンのRustテストを実行する"
@@ -112,7 +112,7 @@ args = [
   "cargo",
   "run",
   "-p",
-  "blog-engine",
+  "blog-compiler",
   "--",
   "build",
 ]

@@ -3,3 +3,4 @@
 /generated.*/
 /.cache/blog-engine/web-link-cards/
 /frontend/dist/
+.env

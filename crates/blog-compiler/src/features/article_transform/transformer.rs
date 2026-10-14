@@ -1,9 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{
-    commons::article::Slug,
-    features::article_parse::article::Article,
-};
+use crate::{commons::article::Slug, features::article_parse::article::Article};
 
 use super::{article, article::TransformedArticle, error::Error, postprocess::Pipeline};
 
@@ -21,12 +18,7 @@ impl ArticleTransformer {
                 let ogp_image = ogp_images
                     .remove(&slug)
                     .ok_or_else(|| Error::MissingOgpImage(slug.as_str().to_owned()))?;
-                article::transform(
-                    slug,
-                    article,
-                    ogp_image,
-                    &postprocess,
-                )
+                article::transform(slug, article, ogp_image, &postprocess)
             })
             .collect::<Result<HashMap<_, _>, Error>>()?;
 

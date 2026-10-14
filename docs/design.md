@@ -108,6 +108,22 @@ struct ArticleArtifact {
 ```
 一旦typstコンパイルまで実装．その後はまた考えよう
 
+## 新規記事作成
+```
+let selected_template = CLIによって選択されたテンプレート. load_template
+
+let articles = 現在ある記事一覧を取得する．slugの重複防止のため．
+
+let new_slug = 他と重複しないslug．
+
+let new_article_config = (new_slug)新規記事の設定．CLIで指定がなければデフォルト値を入れる．デフォルト値はDefaultトレイトで指定する．
+
+let new_article = データ組み立て
+
+new_article.create()
+```
+
+
 ## 異常系
 読み込み時にエラーがあったらどうするか？
 その時点で処理を落とすか？

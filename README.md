@@ -17,7 +17,7 @@ Commands:
 - cargo make clean
 
 Content generation:
-- `cargo make build-content` runs `blog-engine`, which uses the Typst CLI to generate `body.html` and writes article metadata and OGP assets.
+- `cargo make build-content` runs `blog-compiler build` to generate `body.html`, article metadata, and OGP assets.
 - OGP images are written under `generated/public-root/ogp/articles`.
 - Generated article metadata keeps site-root-relative paths; Astro resolves the deployment origin from `BASE_URL` when it writes OGP tags.
 - `body.html` is an HTML fragment embedded by Astro. It is not a final page.

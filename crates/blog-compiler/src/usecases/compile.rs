@@ -2,7 +2,7 @@ use std::path::Path;
 
 use crate::features::{
     article_parse::ArticleParser, article_transform::ArticleTransformer,
-    artifact::ArtifactAssembler, input::loader::Loader, ogp_generate::OgpGenerator,
+    artifact::ArtifactAssembler, load_article::loader::Loader, ogp_generate::OgpGenerator,
 };
 use tracing::info;
 

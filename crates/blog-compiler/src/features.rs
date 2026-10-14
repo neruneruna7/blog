@@ -2,5 +2,7 @@
 pub mod article_parse;
 pub mod article_transform;
 pub mod artifact;
-pub mod input;
+pub mod load_article;
+pub mod load_template;
 pub mod ogp_generate;
+pub mod template_artifact;

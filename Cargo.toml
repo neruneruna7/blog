@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "crates/blog-compiler",
-    "crates/blog-engine",
+    # "crates/blog-engine",
     "crates/typst-html-export"
 ]
 resolver = "2"

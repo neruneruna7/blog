@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{commons::article::Slug, features::input::site::RawSiteBundle};
+use crate::{commons::article::Slug, features::load_article::site::RawSiteBundle};
 
 use super::{article::Article, error::Error, site::Site};
 
