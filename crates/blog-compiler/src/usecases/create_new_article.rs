@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     commons::{
-        app_config::ARTICLE_ENTRY_POINT,
+        app_config::{ARTICLE_ENTRY_POINT, TYP_COMPILE_ROOT},
         article::{ArticleTitle, Description, Slug, Tag},
     },
     features::{
@@ -40,12 +40,9 @@ pub struct CreatedArticle {
     pub template: String,
 }
 
-#[tracing::instrument(skip(request), fields(source_root = %source_root.as_ref().display()), err)]
-pub fn create_new_article(
-    source_root: impl AsRef<Path>,
-    request: NewArticleRequest,
-) -> Result<CreatedArticle, Error> {
-    let source_root = source_root.as_ref();
+#[tracing::instrument(skip(request), err)]
+pub fn create_new_article(request: NewArticleRequest) -> Result<CreatedArticle, Error> {
+    let source_root = Path::new(TYP_COMPILE_ROOT);
     let template_root = source_root.join(TEMPLATE_FOLDER);
     let template = TemplateLoader::load_selected(&template_root, request.template.as_deref())?;
     let template_name = template.name().to_owned();

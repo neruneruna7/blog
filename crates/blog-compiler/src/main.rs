@@ -1,13 +1,8 @@
-use std::path::Path;
-
 use clap::{Args, Parser, Subcommand};
 
-use crate::{
-    commons::app_config::{ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT},
-    usecases::{
-        compile::article_compile,
-        create_new_article::{NewArticleRequest, create_new_article},
-    },
+use crate::usecases::{
+    compile::article_compile,
+    create_new_article::{NewArticleRequest, create_new_article},
 };
 use tracing_subscriber::EnvFilter;
 
@@ -53,10 +48,6 @@ struct NewArticleArgs {
     /// 記事タグ。複数指定できる。
     #[arg(long = "tag")]
     tags: Vec<String>,
-
-    /// Typstプロジェクトルート。
-    #[arg(long, default_value = TYP_COMPILE_ROOT, value_name = "DIR")]
-    source: String,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -65,15 +56,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match cli.command {
         Some(Command::New(args)) => {
-            let article = create_new_article(
-                Path::new(&args.source),
-                NewArticleRequest {
-                    template: args.template,
-                    title: args.title,
-                    description: args.description,
-                    tags: args.tags,
-                },
-            )?;
+            let article = create_new_article(NewArticleRequest {
+                template: args.template,
+                title: args.title,
+                description: args.description,
+                tags: args.tags,
+            })?;
             println!(
                 "新規記事を作成: slug={} template={} path={}",
                 article.slug,
@@ -82,12 +70,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             );
         }
         Some(Command::Build) | None => {
-            let article_count = article_compile(
-                Path::new(TYP_COMPILE_ROOT),
-                Path::new(ARTICLE_ENTRY_POINT),
-                Path::new(OGP_MAIN_FILE),
-                Path::new(ARTIFACT_ROOT),
-            )?;
+            let article_count = article_compile()?;
             println!("記事変換・成果物書き込み完了: {article_count} 件");
         }
     }
