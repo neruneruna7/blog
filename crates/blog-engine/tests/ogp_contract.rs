@@ -18,7 +18,6 @@ fn site() -> SiteOutput {
 
 fn article() -> Article {
     Article {
-        id: "article-1".to_owned(),
         slug: "sample-typst".to_owned(),
         title: "  Example   Article  ".to_owned(),
         description: "An   article description".to_owned(),

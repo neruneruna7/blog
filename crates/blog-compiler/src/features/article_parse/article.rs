@@ -1,7 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use crate::{
-    commons::article::{ArticleId, ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt},
+    commons::article::{ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt},
     features::load_article::article::RawArticle,
 };
 
@@ -11,7 +11,6 @@ use super::error::Error;
 pub struct Article {
     pub root: PathBuf,
     pub entry_point: PathBuf,
-    pub id: ArticleId,
     pub slug: Slug,
     pub title: ArticleTitle,
     pub description: Description,
@@ -31,7 +30,6 @@ impl Article {
         Ok(Self {
             root,
             entry_point,
-            id: ArticleId::new(config.id)?,
             slug: Slug::new(config.slug)?,
             title: ArticleTitle::new(config.title)?,
             description: Description::new(config.description)?,

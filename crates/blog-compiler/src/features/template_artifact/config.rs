@@ -5,7 +5,6 @@ const DEFAULT_TITLE: &str = "新規記事";
 
 #[derive(Debug, Serialize)]
 pub(crate) struct ArticleConfig {
-    pub(crate) id: String,
     pub(crate) slug: String,
     pub(crate) title: String,
     pub(crate) description: String,
@@ -17,7 +16,6 @@ pub(crate) struct ArticleConfig {
 impl Default for ArticleConfig {
     fn default() -> Self {
         Self {
-            id: String::new(),
             slug: String::new(),
             title: DEFAULT_TITLE.to_owned(),
             description: DEFAULT_TITLE.to_owned(),
@@ -29,9 +27,8 @@ impl Default for ArticleConfig {
 }
 
 impl ArticleConfig {
-    pub(crate) fn with_identity(id: String, slug: String) -> Self {
+    pub(crate) fn with_slug(slug: String) -> Self {
         Self {
-            id,
             slug,
             ..Self::default()
         }

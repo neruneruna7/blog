@@ -74,8 +74,7 @@ fn main() -> Result<()> {
                 },
             )?;
             println!(
-                "Created article:\\n  id:   {}\\n  slug: {}\\n  path: {}",
-                article.id,
+                "Created article:\\n  slug: {}\\n  path: {}",
                 article.slug,
                 article.article_dir.display()
             );

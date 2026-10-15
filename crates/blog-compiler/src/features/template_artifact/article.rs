@@ -33,7 +33,7 @@ impl NewArticle {
     }
 
     pub(crate) fn create(self) -> Result<(), Error> {
-        let temporary_dir = create_temporary_directory(&self.source_root, &self.config.id)?;
+        let temporary_dir = create_temporary_directory(&self.source_root, &self.config.slug)?;
         let result = self.write_and_commit(&temporary_dir);
         if result.is_err() {
             let _ = fs::remove_dir_all(&temporary_dir);
@@ -78,9 +78,9 @@ impl NewArticle {
     }
 }
 
-fn create_temporary_directory(source_root: &Path, id: &str) -> Result<PathBuf, Error> {
+fn create_temporary_directory(source_root: &Path, slug: &str) -> Result<PathBuf, Error> {
     for suffix in 0..MAX_STAGING_ATTEMPTS {
-        let path = source_root.join(format!(".new-article-{id}-{suffix}"));
+        let path = source_root.join(format!(".new-article-{slug}-{suffix}"));
         match fs::create_dir(&path) {
             Ok(()) => return Ok(path),
             Err(source) if source.kind() == io::ErrorKind::AlreadyExists => continue,

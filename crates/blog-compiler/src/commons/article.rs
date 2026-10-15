@@ -1,6 +1,6 @@
 use chrono::{DateTime, FixedOffset};
 
-use super::{ValueError, validate_non_empty, validate_text_length};
+use super::{ValueError, validate_text_length};
 
 pub mod slug;
 pub mod title;
@@ -9,25 +9,6 @@ pub use slug::Slug;
 pub use title::ArticleTitle;
 
 const MAX_DESCRIPTION_CHARACTERS: usize = 130;
-
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
-#[serde(transparent)]
-pub struct ArticleId(String);
-
-impl ArticleId {
-    pub fn new(value: String) -> Result<Self, ValueError> {
-        validate_non_empty("id", &value)?;
-        Ok(Self(value))
-    }
-
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-
-    pub fn into_string(self) -> String {
-        self.0
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 #[serde(transparent)]

@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::{
     commons::{
         app_config::ARTICLE_ENTRY_POINT,
-        article::{ArticleId, ArticleTitle, Description, Slug, Tag},
+        article::{ArticleTitle, Description, Slug, Tag},
     },
     features::{
         load_article::loader::Loader,
@@ -35,7 +35,6 @@ pub struct NewArticleRequest {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreatedArticle {
-    pub id: String,
     pub slug: String,
     pub article_dir: PathBuf,
     pub template: String,
@@ -59,9 +58,8 @@ pub fn create_new_article(
         .collect::<HashSet<_>>();
 
     let articles_root = source_root.join(ARTICLE_FOLDER);
-    let (id, slug) = select_unique_identity(&articles_root, &existing_slugs)?;
-    let config = build_article_config(request, id, slug)?;
-    let id = config.id.clone();
+    let slug = select_unique_slug(&articles_root, &existing_slugs)?;
+    let config = build_article_config(request, slug)?;
     let slug = config.slug.clone();
     let article_dir = articles_root.join(&slug);
 
@@ -74,20 +72,18 @@ pub fn create_new_article(
     new_article.create()?;
 
     Ok(CreatedArticle {
-        id,
         slug,
         article_dir,
         template: template_name,
     })
 }
 
-fn select_unique_identity(
+fn select_unique_slug(
     articles_root: &Path,
     existing_slugs: &HashSet<String>,
-) -> Result<(ArticleId, Slug), Error> {
+) -> Result<Slug, Error> {
     for _ in 0..MAX_SLUG_ATTEMPTS {
         let uuid = Uuid::now_v7();
-        let id = ArticleId::new(uuid.hyphenated().to_string())?;
         let slug = Slug::new(uuid.simple().to_string())?;
         let article_path = articles_root.join(slug.as_str());
         let path_exists =
@@ -99,7 +95,7 @@ fn select_unique_identity(
                 })?;
 
         if !existing_slugs.contains(slug.as_str()) && !path_exists {
-            return Ok((id, slug));
+            return Ok(slug);
         }
     }
 
@@ -109,12 +105,8 @@ fn select_unique_identity(
     })
 }
 
-fn build_article_config(
-    request: NewArticleRequest,
-    id: ArticleId,
-    slug: Slug,
-) -> Result<ArticleConfig, Error> {
-    let mut config = ArticleConfig::with_identity(id.into_string(), slug.into_string());
+fn build_article_config(request: NewArticleRequest, slug: Slug) -> Result<ArticleConfig, Error> {
+    let mut config = ArticleConfig::with_slug(slug.into_string());
 
     let title_value = request
         .title

@@ -42,7 +42,6 @@ pub struct SiteConfig {
 /// - `load_article_config_files` がデコードし、`article::normalize_articles` が検証する。
 #[derive(Debug, Clone, Deserialize)]
 pub struct ArticleConfig {
-    pub(crate) id: String,
     pub(crate) slug: String,
     pub(crate) title: String,
     pub(crate) description: String,

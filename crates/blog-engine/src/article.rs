@@ -28,8 +28,8 @@ static SLUG_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 /// - 検証済み記事の日時を、公開順序の比較に適した値として保持するため。
 ///
 /// 期待する動作:
-/// - `published_at` を降順、`slug` を昇順、`id` を昇順で比較する。
-/// - 比較結果が等しいとき、3つの比較キーもすべて等しい。
+/// - `published_at` を降順、`slug` を昇順で比較する。
+/// - 比較結果が等しいとき、2つの比較キーもすべて等しい。
 ///
 /// 使い方の概要:
 /// - `Article::publication_order_key` から取得し、記事一覧のsortに渡す。
@@ -37,7 +37,6 @@ static SLUG_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 pub struct PublicationOrderKey<'a> {
     published_at: Reverse<&'a DateTime<FixedOffset>>,
     slug: &'a str,
-    id: &'a str,
 }
 
 /// なぜ実装するのか:
@@ -45,13 +44,12 @@ pub struct PublicationOrderKey<'a> {
 ///
 /// 期待する動作:
 /// - RFC3339として検証された公開日時と更新日時をchronoの型で保持する。
-/// - idとslug、タイトル、概要、タグ、公開URLを記事の属性として保持する。
+/// - slug、タイトル、概要、タグ、公開URLを記事の属性として保持する。
 ///
 /// 使い方の概要:
 /// - `normalize_articles` の戻り値として受け取り、出力や本文生成へ渡す。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Article {
-    pub id: String,
     pub slug: String,
     pub title: String,
     pub description: String,
@@ -82,7 +80,7 @@ impl Article {
     /// - 記事本体へ一覧表示専用の並び順を直接持たせず、比較規則を専用キーへ隔離するため。
     ///
     /// 期待する動作:
-    /// - 公開日時降順、slug昇順、id昇順を表す `PublicationOrderKey` を返す。
+    /// - 公開日時降順、slug昇順を表す `PublicationOrderKey` を返す。
     ///
     /// 使い方の概要:
     /// - 各記事のキーを `cmp` へ渡し、一覧の並べ替えで使う。
@@ -90,7 +88,6 @@ impl Article {
         PublicationOrderKey {
             published_at: Reverse(&self.published_at),
             slug: &self.slug,
-            id: &self.id,
         }
     }
 }
@@ -99,7 +96,7 @@ impl Article {
 /// - 複数記事の検証と決定的な公開順序を一箇所に集約するため。
 ///
 /// 期待する動作:
-/// - idとslugの重複を拒否し、公開日時降順、同日時ではslug昇順、同slugではid昇順で返す。
+/// - slugの重複を拒否し、公開日時降順、同日時ではslug昇順で返す。
 ///
 /// 使い方の概要:
 /// - 読み込んだ `ArticleConfig` の一覧を渡し、検証済み `Article` を受け取る。
@@ -119,7 +116,7 @@ pub fn normalize_articles(configs: Vec<ArticleConfig>) -> Result<Vec<Article>, B
 /// - 記事設定と本文ソースの対応を保ったまま、検証済み記事を決定的な順序で返すため。
 ///
 /// 期待する動作:
-/// - 各設定を検証し、idとslugの重複を拒否する。
+/// - 各設定を検証し、slugの重複を拒否する。
 /// - 公開順序キーで本文ソース全体を並べ替える。
 ///
 /// 使い方の概要:
@@ -152,26 +149,19 @@ pub(crate) fn normalize_article_sources(
 }
 
 /// なぜ実装するのか:
-/// - 記事集合におけるidとslugの一意性を検証するため。
+/// - 記事集合におけるslugの一意性を検証するため。
 ///
 /// 期待する動作:
-/// - 同じidまたはslugが複数の記事に現れた場合、検証エラーを返す。
+/// - 同じslugが複数の記事に現れた場合、検証エラーを返す。
 ///
 /// 使い方の概要:
 /// - 記事単体の値検証が完了した一覧に対して呼び出す。
 fn validate_unique_articles<'a>(
     articles: impl IntoIterator<Item = &'a Article>,
 ) -> Result<(), BlogEngineError> {
-    let mut seen_ids = HashSet::new();
     let mut seen_slugs = HashSet::new();
 
     for article in articles {
-        if !seen_ids.insert(article.id.as_str()) {
-            return Err(BlogEngineError::validation(format!(
-                "article id must be unique: {}",
-                article.id
-            )));
-        }
         if !seen_slugs.insert(article.slug.as_str()) {
             return Err(BlogEngineError::validation(format!(
                 "article slug must be unique: {}",
@@ -208,7 +198,6 @@ fn sort_articles(articles: &mut [Article]) {
 /// 使い方の概要:
 /// - `normalize_articles` または `normalize_article_sources` から呼び出す。
 fn validate_article(config: ArticleConfig) -> Result<Article, BlogEngineError> {
-    validate_non_empty("article.id", &config.id)?;
     validate_non_empty("article.slug", &config.slug)?;
     validate_non_empty("article.title", &config.title)?;
     validate_non_empty("article.description", &config.description)?;
@@ -225,7 +214,6 @@ fn validate_article(config: ArticleConfig) -> Result<Article, BlogEngineError> {
     let url = format!("/articles/{}/", config.slug);
 
     Ok(Article {
-        id: config.id,
         slug: config.slug,
         title: config.title,
         description: config.description,

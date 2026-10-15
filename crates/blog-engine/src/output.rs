@@ -44,7 +44,6 @@ pub struct SiteOutput {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArticleOutput {
-    pub id: String,
     pub slug: String,
     pub title: String,
     pub description: String,
@@ -67,7 +66,6 @@ impl ArticleOutput {
     /// - OGP生成が成功した後に `ArticleOutput::from_article` を呼び出す。
     pub fn from_article(article: &Article, ogp_image: OgpImageMeta) -> Self {
         Self {
-            id: article.id.clone(),
             slug: article.slug.clone(),
             title: article.title.clone(),
             description: article.description.clone(),

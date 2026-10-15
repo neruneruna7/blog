@@ -91,7 +91,6 @@ fn article_entry_point_path(article_directory: &OsStr, entry_point_file: &Path) 
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct RawArticleConfig {
-    pub id: String,
     pub slug: String,
     pub title: String,
     pub description: String,
@@ -164,7 +163,7 @@ mod tests {
         fs::write(
             article_root.join(ARTICLE_CONFIG_NAME),
             format!(
-                "id = \"019f88bd-06ad-76e0-8a70-394cb553d1af\"\nslug = \"{slug}\"\ntitle = \"Rust Article\"\ndescription = \"An article about Rust.\"\ntags = [\"rust\", \"compiler\"]\npublished_at = \"2026-10-11T12:00:00+09:00\"\nupdated_at = \"\"\n"
+                "slug = \"{slug}\"\ntitle = \"Rust Article\"\ndescription = \"An article about Rust.\"\ntags = [\"rust\", \"compiler\"]\npublished_at = \"2026-10-11T12:00:00+09:00\"\nupdated_at = \"\"\n"
             ),
         )
         .expect("config should be written");

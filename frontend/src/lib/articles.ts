@@ -60,7 +60,6 @@ export type OgpImageMeta = {
  * - 記事一覧、静的パス生成、記事ページの表示に使う.
  */
 export type ArticleMeta = {
-  id: string;
   slug: string;
   title: string;
   description: string;
@@ -177,7 +176,6 @@ function asArticleMeta(value: unknown, source: string): ArticleMeta {
     throw new Error(`${source} must be an object.`);
   }
 
-  assertString(value.id, `${source}.id`);
   assertString(value.slug, `${source}.slug`);
   assertString(value.title, `${source}.title`);
   assertString(value.description, `${source}.description`);
@@ -188,7 +186,6 @@ function asArticleMeta(value: unknown, source: string): ArticleMeta {
   const ogpImage = asOgpImageMeta(value.ogpImage, `${source}.ogpImage`);
 
   return {
-    id: value.id,
     slug: value.slug,
     title: value.title,
     description: value.description,

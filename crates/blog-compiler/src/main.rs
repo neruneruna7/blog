@@ -75,8 +75,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 },
             )?;
             println!(
-                "新規記事を作成: id={} slug={} template={} path={}",
-                article.id,
+                "新規記事を作成: slug={} template={} path={}",
                 article.slug,
                 article.template,
                 article.article_dir.display()

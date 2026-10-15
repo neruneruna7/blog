@@ -3,9 +3,7 @@ use std::{collections::HashSet, path::Path};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 
-use crate::commons::article::{
-    ArticleId, ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt,
-};
+use crate::commons::article::{ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt};
 use crate::features::{
     article_parse::{article::Article, site::Site},
     article_transform::TransformedArticle,
@@ -27,7 +25,6 @@ pub struct ArticleArtifact {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArticleMetadata {
-    pub id: ArticleId,
     pub slug: Slug,
     pub title: ArticleTitle,
     pub description: Description,
@@ -81,7 +78,6 @@ impl ArticleArtifact {
             ..
         } = transformed;
         let Article {
-            id,
             slug,
             title,
             description,
@@ -99,7 +95,6 @@ impl ArticleArtifact {
         let alt = format!("{} | {}", title.as_str(), site.title.as_str());
         let asset = Asset::try_new(relative_asset_path, ogp_image)?;
         let metadata = ArticleMetadata {
-            id,
             slug: slug.clone(),
             title,
             description,
