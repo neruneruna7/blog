@@ -1,22 +1,14 @@
-use std::collections::HashMap;
+use crate::features::load_source::source::RawSource;
 
-use crate::{commons::article::Slug, features::load_source::site::RawSiteBundle};
-
-use super::{article::Article, error::Error, site::Site};
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ParsedSiteBundle {
-    pub articles: HashMap<Slug, Article>,
-    pub site: Site,
-}
+use super::{article::Article, error::Error, site::Site, source::ParsedSource};
 
 pub struct ArticleParser;
 
 impl ArticleParser {
-    pub fn parse(raw_site_bundle: RawSiteBundle) -> Result<ParsedSiteBundle, Error> {
-        let articles = Article::parse_all(raw_site_bundle.articles)?;
-        let site = Site::parse(raw_site_bundle.site_config)?;
+    pub fn parse(raw_source: RawSource) -> Result<ParsedSource, Error> {
+        let articles = Article::parse_all(raw_source.articles)?;
+        let site = Site::parse(raw_source.site_config)?;
 
-        Ok(ParsedSiteBundle { articles, site })
+        Ok(ParsedSource { articles, site })
     }
 }

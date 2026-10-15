@@ -50,8 +50,8 @@ pub fn create_new_article(
     let template = TemplateLoader::load_selected(&template_root, request.template.as_deref())?;
     let template_name = template.name().to_owned();
 
-    let input_bundle = SourceLoader::load(source_root, ARTICLE_ENTRY_POINT)?;
-    let existing_slugs = input_bundle
+    let source = SourceLoader::load(source_root, ARTICLE_ENTRY_POINT)?;
+    let existing_slugs = source
         .articles
         .into_iter()
         .map(|article| article.config.slug)

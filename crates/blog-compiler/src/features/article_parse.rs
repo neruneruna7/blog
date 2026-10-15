@@ -4,5 +4,7 @@ pub mod article;
 pub mod error;
 pub mod parser;
 pub mod site;
+pub mod source;
 
-pub use parser::{ArticleParser, ParsedSiteBundle};
+pub use parser::ArticleParser;
+pub use source::ParsedSource;

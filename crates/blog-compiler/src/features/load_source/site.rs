@@ -2,15 +2,9 @@ use std::{fs, path::Path};
 
 use serde::Deserialize;
 
-use super::{article::RawArticle, error::Error};
+use super::error::Error;
 
 const SITE_CONFIG_NAME: &str = "site.toml";
-
-#[derive(Debug, Clone)]
-pub struct RawSiteBundle {
-    pub articles: Vec<RawArticle>,
-    pub site_config: RawSiteConfig,
-}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct RawSiteConfig {

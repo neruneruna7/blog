@@ -4,3 +4,4 @@ pub mod article;
 pub mod error;
 pub mod loader;
 pub mod site;
+pub mod source;
