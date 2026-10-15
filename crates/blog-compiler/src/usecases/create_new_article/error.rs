@@ -5,7 +5,7 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("failed to load existing article inputs: {0}")]
-    Input(#[from] crate::features::load_article::error::Error),
+    Input(#[from] crate::features::load_source::error::Error),
     #[error("article template loading failed: {0}")]
     LoadTemplate(#[from] crate::features::load_template::error::Error),
     #[error("article template artifact creation failed: {0}")]

@@ -10,9 +10,9 @@ use super::{
 };
 use std::path::Path;
 
-pub struct Loader;
+pub struct SourceLoader;
 
-impl Loader {
+impl SourceLoader {
     pub fn load(
         root: impl AsRef<Path>,
         article_entry_point: impl AsRef<Path>,

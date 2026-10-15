@@ -11,7 +11,7 @@ use crate::{
         article::{ArticleTitle, Description, Slug, Tag},
     },
     features::{
-        load_article::loader::Loader,
+        load_source::loader::SourceLoader,
         load_template::loader::TemplateLoader,
         template_artifact::{article::NewArticle, config::ArticleConfig},
     },
@@ -50,7 +50,7 @@ pub fn create_new_article(
     let template = TemplateLoader::load_selected(&template_root, request.template.as_deref())?;
     let template_name = template.name().to_owned();
 
-    let input_bundle = Loader::load(source_root, ARTICLE_ENTRY_POINT)?;
+    let input_bundle = SourceLoader::load(source_root, ARTICLE_ENTRY_POINT)?;
     let existing_slugs = input_bundle
         .articles
         .into_iter()

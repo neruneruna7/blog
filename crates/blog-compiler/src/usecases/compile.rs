@@ -2,7 +2,7 @@ use std::path::Path;
 
 use crate::features::{
     article_parse::ArticleParser, article_transform::ArticleTransformer,
-    artifact::ArtifactAssembler, load_article::loader::Loader, ogp_generate::OgpGenerator,
+    artifact::ArtifactAssembler, load_source::loader::SourceLoader, ogp_generate::OgpGenerator,
 };
 use tracing::info;
 
@@ -34,7 +34,7 @@ pub(crate) fn article_compile(
         "記事コンパイルを開始"
     );
 
-    let input_bundle = Loader::load(typst_project_root, article_entry_point)?;
+    let input_bundle = SourceLoader::load(typst_project_root, article_entry_point)?;
     info!(
         article_count = input_bundle.articles.len(),
         "入力を読み込み完了"
