@@ -6,7 +6,7 @@ use sha2::{Digest, Sha256};
 use crate::commons::article::{ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt};
 use crate::features::{
     article_transform::TransformedArticle,
-    source_parse::{article::Article, site::Site},
+    source_parse::site::Site,
 };
 
 use super::error::ArtifactBuildError;
@@ -72,20 +72,16 @@ impl ArticleArtifact {
         site: &Site,
     ) -> Result<Self, ArtifactBuildError> {
         let TransformedArticle {
-            article,
-            html,
-            ogp_image,
-            ..
-        } = transformed;
-        let Article {
             slug,
             title,
             description,
             tags,
             published_at,
             updated_at,
+            html,
+            ogp_image,
             ..
-        } = article;
+        } = transformed;
 
         let digest = Sha256::digest(&ogp_image);
         let content_hash = format!("{digest:x}");
