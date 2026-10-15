@@ -24,9 +24,9 @@ command = "cargo"
 args = ["run", "-p", "blog-compiler", "--", "new", "${@}"]
 
 [tasks.test-content]
-description = "コンテンツエンジンのRustテストを実行する"
+description = "記事コンパイラのRustテストを実行する"
 command = "cargo"
-args = ["test", "-p", "blog-engine"]
+args = ["test", "-p", "blog-compiler"]
 
 [tasks.build-site]
 description = "Astroをビルド"
