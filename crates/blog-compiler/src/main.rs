@@ -16,11 +16,12 @@ mod usecases;
 #[command(
     name = "blog-compiler",
     version,
-    about = "Typstの記事からWebサイト用の成果物を生成するCLI"
+    about = "Typstの記事からWebサイト用の成果物を生成するCLI",
+    arg_required_else_help = true
 )]
 struct Cli {
     #[command(subcommand)]
-    command: Option<Command>,
+    command: Command,
 }
 
 #[derive(Debug, Subcommand)]
@@ -55,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
 
     match cli.command {
-        Some(Command::New(args)) => {
+        Command::New(args) => {
             let article = create_new_article(NewArticleRequest {
                 template: args.template,
                 title: args.title,
@@ -69,7 +70,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 article.article_dir.display()
             );
         }
-        Some(Command::Build) | None => {
+        Command::Build => {
             let article_count = article_compile()?;
             println!("記事変換・成果物書き込み完了: {article_count} 件");
         }
