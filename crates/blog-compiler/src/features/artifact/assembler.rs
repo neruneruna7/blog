@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     commons::article::Slug,
-    features::{article_parse::site::Site, article_transform::TransformedArticle},
+    features::{article_transform::TransformedArticle, source_parse::site::Site},
 };
 
 use super::{

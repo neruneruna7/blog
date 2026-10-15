@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::Path};
 
 use crate::{
     commons::article::{Slug, Tag},
-    features::article_parse::{ParsedSource, article::Article, site::Site},
+    features::source_parse::{ParsedSource, article::Article, site::Site},
 };
 
 use super::error::Error;

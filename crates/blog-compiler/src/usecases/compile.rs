@@ -1,8 +1,8 @@
 use std::path::Path;
 
 use crate::features::{
-    article_parse::ArticleParser, article_transform::ArticleTransformer,
-    artifact::ArtifactAssembler, load_source::loader::SourceLoader, ogp_generate::OgpGenerator,
+    article_transform::ArticleTransformer, artifact::ArtifactAssembler,
+    load_source::loader::SourceLoader, ogp_generate::OgpGenerator, source_parse::SourceParser,
 };
 use tracing::info;
 
@@ -37,7 +37,7 @@ pub(crate) fn article_compile(
     let source = SourceLoader::load(typst_project_root, article_entry_point)?;
     info!(article_count = source.articles.len(), "入力を読み込み完了");
 
-    let parsed_source = ArticleParser::parse(source)?;
+    let parsed_source = SourceParser::parse(source)?;
     info!(
         article_count = parsed_source.articles.len(),
         "記事とサイト設定を解析完了"

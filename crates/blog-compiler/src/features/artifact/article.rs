@@ -5,8 +5,8 @@ use sha2::{Digest, Sha256};
 
 use crate::commons::article::{ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt};
 use crate::features::{
-    article_parse::{article::Article, site::Site},
     article_transform::TransformedArticle,
+    source_parse::{article::Article, site::Site},
 };
 
 use super::error::ArtifactBuildError;

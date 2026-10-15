@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use crate::{commons::site::SiteTitle, features::article_parse::site::Site};
+use crate::{commons::site::SiteTitle, features::source_parse::site::Site};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]

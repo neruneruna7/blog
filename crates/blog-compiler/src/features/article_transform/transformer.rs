@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{commons::article::Slug, features::article_parse::article::Article};
+use crate::{commons::article::Slug, features::source_parse::article::Article};
 
 use super::{article, article::TransformedArticle, error::Error, postprocess::Pipeline};
 
