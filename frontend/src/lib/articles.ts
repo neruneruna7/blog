@@ -29,7 +29,6 @@ export type SiteConfig = {
   title: string;
   description: string;
   language: string;
-  baseUrl: string;
 };
 
 /**
@@ -61,7 +60,6 @@ export type OgpImageMeta = {
  * - 記事一覧、静的パス生成、記事ページの表示に使う.
  */
 export type ArticleMeta = {
-  id: string;
   slug: string;
   title: string;
   description: string;
@@ -155,13 +153,11 @@ function asSiteConfig(value: unknown, source: string): SiteConfig {
   assertString(value.title, `${source}.title`);
   assertString(value.description, `${source}.description`);
   assertString(value.language, `${source}.language`);
-  assertString(value.baseUrl, `${source}.baseUrl`);
 
   return {
     title: value.title,
     description: value.description,
     language: value.language,
-    baseUrl: value.baseUrl,
   };
 }
 
@@ -180,7 +176,6 @@ function asArticleMeta(value: unknown, source: string): ArticleMeta {
     throw new Error(`${source} must be an object.`);
   }
 
-  assertString(value.id, `${source}.id`);
   assertString(value.slug, `${source}.slug`);
   assertString(value.title, `${source}.title`);
   assertString(value.description, `${source}.description`);
@@ -191,7 +186,6 @@ function asArticleMeta(value: unknown, source: string): ArticleMeta {
   const ogpImage = asOgpImageMeta(value.ogpImage, `${source}.ogpImage`);
 
   return {
-    id: value.id,
     slug: value.slug,
     title: value.title,
     description: value.description,

@@ -13,13 +13,11 @@ fn site() -> SiteOutput {
         title: "  Example   Blog  ".to_owned(),
         description: "A   site description".to_owned(),
         language: "ja".to_owned(),
-        base_url: "https://example.com".to_owned(),
     }
 }
 
 fn article() -> Article {
     Article {
-        id: "article-1".to_owned(),
         slug: "sample-typst".to_owned(),
         title: "  Example   Article  ".to_owned(),
         description: "An   article description".to_owned(),
@@ -228,7 +226,9 @@ fn artifact_distinguishes_filesystem_path_from_public_metadata() {
         alt: "Example Article | Example Blog".to_owned(),
     };
     let artifact = OgpArtifact {
-        file_path: PathBuf::from("generated/public/ogp/articles/sample-typst-a82c19d843f1.png"),
+        file_path: PathBuf::from(
+            "generated/public-root/ogp/articles/sample-typst-a82c19d843f1.png",
+        ),
         image,
         content_hash: "a82c19d843f1deadbeef".to_owned(),
         byte_size: 42,
@@ -236,7 +236,7 @@ fn artifact_distinguishes_filesystem_path_from_public_metadata() {
 
     assert_eq!(
         artifact.file_path,
-        PathBuf::from("generated/public/ogp/articles/sample-typst-a82c19d843f1.png")
+        PathBuf::from("generated/public-root/ogp/articles/sample-typst-a82c19d843f1.png")
     );
     assert_eq!(
         artifact.image.path,

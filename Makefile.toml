@@ -4,10 +4,15 @@ default_to_workspace = false
 [tasks.build-content]
 description = "Typstソースからgenerated配下の中間生成物を作成する"
 command = "cargo"
-args = ["run", "-p", "blog-engine", "--", "build", "${@}"]
+args = ["run", "-p", "blog-compiler", "--", "build", "${@}"]
+
+[tasks.typst-html-export]
+description = "Typstライブラリ経由で文書をHTMLへ変換する"
+command = "cargo"
+args = ["run", "-p", "typst-html-export", "--bin", "typst-html-export"]
 
 [tasks.assemble-public]
-description = "フロントエンドとgenerated配下の公開用アセットを組み立てる"
+description = "frontend/publicをgenerated/public-rootへ統合する"
 dependencies = ["build-content"]
 cwd = "frontend"
 command = "pnpm"
@@ -16,12 +21,12 @@ args = ["run", "assemble-public"]
 [tasks.new-article]
 description = "新しいTypst記事の雛形を作成する"
 command = "cargo"
-args = ["run", "-p", "blog-engine", "--", "new", "${@}"]
+args = ["run", "-p", "blog-compiler", "--", "new", "${@}"]
 
 [tasks.test-content]
-description = "コンテンツエンジンのRustテストを実行する"
+description = "記事コンパイラのRustテストを実行する"
 command = "cargo"
-args = ["test", "-p", "blog-engine"]
+args = ["test", "-p", "blog-compiler"]
 
 [tasks.build-site]
 description = "Astroをビルド"
@@ -107,7 +112,7 @@ args = [
   "cargo",
   "run",
   "-p",
-  "blog-engine",
+  "blog-compiler",
   "--",
   "build",
 ]

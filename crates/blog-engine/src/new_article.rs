@@ -2,7 +2,7 @@
 //! - Typst記事雛形の作成をCLIから独立した再利用可能な境界として提供するため。
 //!
 //! 期待する動作:
-//! - 既存記事を検証し、衝突しないUUIDv7とslugを持つ記事を原子的に作成する。
+//! - 既存記事を検証し、衝突しないslugを持つ記事を原子的に作成する。
 //!
 //! 使い方の概要:
 //! - `create_article` に入力ルートとタイトル・概要を渡す。
@@ -11,13 +11,11 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use chrono::{DateTime, FixedOffset, Utc};
-use serde::Serialize;
-use uuid::Uuid;
-
 use crate::article::validate_slug;
 use crate::error::BlogEngineError;
 use crate::{load_normalized_articles, load_site_config};
+use chrono::{DateTime, FixedOffset, Utc};
+use serde::Serialize;
 
 const SLUG_ALPHABET: &[u8; 32] = b"0123456789abcdefghjkmnpqrstvwxyz";
 const SLUG_LENGTH: usize = 12;
@@ -25,10 +23,10 @@ const MAX_SLUG_ATTEMPTS: usize = 16;
 const MAIN_TYP: &str = "// 記事本文をここに記述する．\n\n= はじめに\n\n本文を記述する．\n";
 
 /// なぜ実装するのか:
-/// - CLI入力をファイル出力や識別子生成から分離するため。
+/// - CLI入力をファイル出力やslug生成から分離するため。
 ///
 /// 期待する動作:
-/// - タイトルと任意の概要だけを受け取り、slugやIDを外部入力にしない。
+/// - タイトルと任意の概要だけを受け取り、slugを外部入力にしない。
 ///
 /// 使い方の概要:
 /// - `create_article` の第二引数として構築する。
@@ -42,20 +40,18 @@ pub struct NewArticleRequest {
 /// - 作成済み記事を後続処理へ明確に引き渡すため。
 ///
 /// 期待する動作:
-/// - 記事の永続ID、slug、確定済みディレクトリを返す。
+/// - 記事のslugと確定済みディレクトリを返す。
 ///
 /// 使い方の概要:
 /// - CLIはこの値を成功メッセージとして表示する。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CreatedArticle {
-    pub id: String,
     pub slug: String,
     pub article_dir: PathBuf,
 }
 
 #[derive(Debug, Serialize)]
 struct NewArticleConfig<'a> {
-    id: &'a str,
     slug: &'a str,
     title: &'a str,
     description: &'a str,
@@ -65,7 +61,7 @@ struct NewArticleConfig<'a> {
 }
 
 /// なぜ実装するのか:
-/// - 本番の時刻・UUIDv7・OS乱数を用いた記事作成の公開入口を提供するため。
+/// - 本番の時刻とOS乱数を用いた記事作成の公開入口を提供するため。
 ///
 /// 期待する動作:
 /// - 入力を検証し、完全な記事雛形を一時ディレクトリ経由で確定先へ作成する。
@@ -80,17 +76,11 @@ pub fn create_article(
     let offset = FixedOffset::east_opt(9 * 60 * 60)
         .ok_or_else(|| BlogEngineError::validation("UTC+09:00 offset is invalid"))?;
     let published_at = Utc::now().with_timezone(&offset);
-    create_article_with_context(
-        source_root.as_ref(),
-        request,
-        published_at,
-        Uuid::now_v7(),
-        generate_slug,
-    )
+    create_article_with_context(source_root.as_ref(), request, published_at, generate_slug)
 }
 
 /// なぜ実装するのか:
-/// - 時刻・UUID・乱数という非決定値を狭い境界へ隔離し、作成処理を決定的に検証するため。
+/// - 時刻と乱数という非決定値を狭い境界へ隔離し、作成処理を決定的に検証するため。
 ///
 /// 期待する動作:
 /// - 注入値以外は本番と同じ検証・staging・確定手順で記事を作成する。
@@ -101,7 +91,6 @@ fn create_article_with_context<F>(
     source_root: &Path,
     request: NewArticleRequest,
     published_at: DateTime<FixedOffset>,
-    article_id: Uuid,
     mut next_slug: F,
 ) -> Result<CreatedArticle, BlogEngineError>
 where
@@ -118,7 +107,6 @@ where
     let articles_root = source_root.join("articles");
     let slug = select_unique_slug(&articles_root, &existing_slugs, &mut next_slug)?;
     let article_dir = articles_root.join(&slug);
-    let id = article_id.hyphenated().to_string();
 
     fs::create_dir_all(&articles_root)
         .map_err(|source| BlogEngineError::io(&articles_root, source))?;
@@ -126,11 +114,10 @@ where
         return Err(BlogEngineError::ArticlePathExists { path: article_dir });
     }
 
-    let temporary_dir = create_temporary_directory(&articles_root, &id)?;
+    let temporary_dir = create_temporary_directory(&articles_root, &slug)?;
     let result = write_and_commit_article(
         &temporary_dir,
         &article_dir,
-        &id,
         &slug,
         &title,
         &description,
@@ -223,7 +210,6 @@ fn create_temporary_directory(
 fn write_and_commit_article(
     temporary_dir: &Path,
     article_dir: &Path,
-    id: &str,
     slug: &str,
     title: &str,
     description: &str,
@@ -231,7 +217,6 @@ fn write_and_commit_article(
 ) -> Result<CreatedArticle, BlogEngineError> {
     let config_path = temporary_dir.join("ArticleConfig.toml");
     let config = NewArticleConfig {
-        id,
         slug,
         title,
         description,
@@ -263,7 +248,6 @@ fn write_and_commit_article(
         .map_err(|source| BlogEngineError::io(article_dir, source))?;
 
     Ok(CreatedArticle {
-        id: id.to_owned(),
         slug: slug.to_owned(),
         article_dir: article_dir.to_path_buf(),
     })
@@ -290,14 +274,11 @@ fn generate_slug() -> Result<String, BlogEngineError> {
 mod tests {
     use std::fs;
 
+    use super::*;
     use chrono::{FixedOffset, TimeZone};
     use tempfile::TempDir;
     use toml::Value;
-    use uuid::Uuid;
 
-    use super::*;
-
-    const UUID: &str = "019bf2d9-49d3-7eb3-8a2d-a1d29f396cb4";
     const SLUG: &str = "0123456789ab";
 
     #[test]
@@ -308,7 +289,6 @@ mod tests {
             source.path(),
             request("  記事タイトル  ", Some("  記事概要  ")),
             published_at,
-            uuid(),
             || Ok(SLUG.to_owned()),
         )
         .expect("article should be created");
@@ -323,13 +303,6 @@ mod tests {
                 .expect("config should be readable"),
         )
         .expect("config should be TOML");
-        assert_eq!(config["id"].as_str(), Some(UUID));
-        assert_eq!(
-            Uuid::parse_str(config["id"].as_str().unwrap_or_default())
-                .unwrap()
-                .get_version_num(),
-            7
-        );
         assert_eq!(config["slug"].as_str(), Some(SLUG));
         assert_eq!(config["title"].as_str(), Some("記事タイトル"));
         assert_eq!(config["description"].as_str(), Some("記事概要"));
@@ -352,7 +325,6 @@ mod tests {
             source.path(),
             request("記事タイトル", None),
             fixed_time(),
-            uuid(),
             || Ok(SLUG.to_owned()),
         )
         .expect("article should be created");
@@ -370,7 +342,6 @@ mod tests {
             source.path(),
             request("  title  ", None),
             fixed_time(),
-            uuid(),
             || Ok(SLUG.to_owned()),
         )
         .unwrap();
@@ -385,14 +356,12 @@ mod tests {
     fn rejects_blank_title_and_explicit_blank_description_without_output() {
         for request in [request(" \t ", None), request("title", Some("\n "))] {
             let source = source_root();
-            assert!(create_article_with_context(
-                source.path(),
-                request,
-                fixed_time(),
-                uuid(),
-                || Ok(SLUG.to_owned())
-            )
-            .is_err());
+            assert!(
+                create_article_with_context(source.path(), request, fixed_time(), || Ok(
+                    SLUG.to_owned()
+                ))
+                .is_err()
+            );
             assert!(!source.path().join("articles").exists());
         }
     }
@@ -408,7 +377,6 @@ mod tests {
             source.path(),
             request("title", None),
             fixed_time(),
-            uuid(),
             || Ok(candidates.next().unwrap().to_owned()),
         )
         .unwrap();
@@ -429,7 +397,6 @@ mod tests {
             source.path(),
             request("title", None),
             fixed_time(),
-            uuid(),
             || Ok(SLUG.to_owned()),
         )
         .unwrap_err();
@@ -448,13 +415,12 @@ mod tests {
             source.path(),
             request("title", None),
             fixed_time(),
-            uuid(),
             || Ok(SLUG.to_owned())
         )
         .is_err());
         assert!(!source
             .path()
-            .join(format!("articles/.new-article-{UUID}-0"))
+            .join(format!("articles/.new-article-{SLUG}-0"))
             .exists());
     }
 
@@ -470,7 +436,7 @@ mod tests {
         let source = TempDir::new().unwrap();
         fs::write(
             source.path().join("site.toml"),
-            "title = 'site'\ndescription = ''\nlanguage = 'ja'\nbase_url = 'https://example.com'\n",
+            "title = 'site'\ndescription = ''\nlanguage = 'ja'\n",
         )
         .unwrap();
         source
@@ -488,10 +454,6 @@ mod tests {
             .unwrap()
             .with_ymd_and_hms(2026, 7, 11, 12, 34, 56)
             .unwrap()
-    }
-
-    fn uuid() -> Uuid {
-        Uuid::parse_str(UUID).unwrap()
     }
 
     fn article_directories(source: &Path) -> Vec<PathBuf> {

@@ -1,0 +1,23 @@
+[package]
+name = "blog-compiler"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+typst-html-export = { path = "../typst-html-export" }
+clap = { version = "4.6", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+toml = "1.1.8"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0.21"
+lol_html = "2.7"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+sha2 = "0.10"
+uuid = { version = "1", features = ["v7"] }
+
+[dev-dependencies]
+tempfile = "3"

@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use blog_engine::article::Article;
-use blog_engine::config::{load_site_config, load_site_config_with_base_url};
+use blog_engine::config::load_site_config;
 use blog_engine::error::BlogEngineError;
 use blog_engine::ogp::{
     build_ogp_public_path, generate_ogp_content_hash, OgpImageMeta, OgpRenderInput,
@@ -71,27 +71,9 @@ fn valid_site_toml_is_normalized_into_site_json_shape() {
         json!({
             "title": "neru7 blog",
             "description": "Typst-based technical blog",
-            "language": "ja",
-            "baseUrl": "http://localhost:4321"
+            "language": "ja"
         })
     );
-}
-
-#[test]
-fn command_line_base_url_overrides_site_toml() {
-    let site =
-        load_site_config_with_base_url(fixture("valid-single"), Some("https://blog.example.com"))
-            .expect("base URL override should be valid");
-
-    assert_eq!(site.base_url, "https://blog.example.com");
-}
-
-#[test]
-fn invalid_base_url_override_is_rejected() {
-    let error = load_site_config_with_base_url(fixture("valid-single"), Some("example.com"))
-        .expect_err("relative base URL should be rejected");
-
-    assert!(matches!(error, BlogEngineError::Validation { .. }));
 }
 
 #[test]
@@ -106,7 +88,6 @@ fn valid_article_config_toml_is_normalized_into_article_metadata_shape() {
     assert_eq!(
         actual,
         json!({
-            "id": "01JZQ2EXAMPLE0000000000000",
             "slug": "hello-typst",
             "title": "Hello Typst",
             "description": "Typstでブログ記事を書く最小例",
@@ -182,38 +163,33 @@ fn same_published_at_is_sorted_by_slug_ascending() {
 }
 
 #[test]
-fn publication_order_key_uses_id_as_the_final_tie_breaker() {
+fn publication_order_key_uses_slug_as_the_final_tie_breaker() {
     let published_at = DateTime::<FixedOffset>::parse_from_rfc3339("2026-07-09T00:00:00+09:00")
         .expect("fixture date should be valid");
-    let article_with_lower_id = Article {
-        id: "article-a".to_owned(),
-        slug: "same-slug".to_owned(),
+    let article_with_lower_slug = Article {
+        slug: "article-a".to_owned(),
         title: "Article A".to_owned(),
         description: "Article A".to_owned(),
         published_at,
         updated_at: None,
         tags: Vec::new(),
-        url: "/articles/same-slug/".to_owned(),
+        url: "/articles/article-a/".to_owned(),
     };
-    let article_with_higher_id = Article {
-        id: "article-b".to_owned(),
-        ..article_with_lower_id.clone()
+    let article_with_higher_slug = Article {
+        slug: "article-b".to_owned(),
+        url: "/articles/article-b/".to_owned(),
+        ..article_with_lower_slug.clone()
     };
 
     assert!(
-        article_with_lower_id.publication_order_key()
-            < article_with_higher_id.publication_order_key()
+        article_with_lower_slug.publication_order_key()
+            < article_with_higher_slug.publication_order_key()
     );
 }
 
 #[test]
 fn duplicate_slug_is_rejected() {
     assert_validation_error("duplicate-slug", "slug must be unique");
-}
-
-#[test]
-fn duplicate_id_is_rejected() {
-    assert_validation_error("duplicate-id", "id must be unique");
 }
 
 #[test]
@@ -304,25 +280,15 @@ fn generated_json_is_deterministic() {
 }
 
 #[test]
-fn id_and_slug_remain_separate_fields() {
-    let article = single_article("valid-single");
-
-    assert_eq!(article.id, "01JZQ2EXAMPLE0000000000000");
-    assert_eq!(article.slug, "hello-typst");
-    assert_ne!(article.id, article.slug);
-}
-
-#[test]
 fn build_writes_site_and_article_index_json() {
     let output = TempDir::new().expect("temp dir should be created");
 
     build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
         .expect("build should succeed");
 
-    assert_eq!(
-        read_json(output.path().join("site.json"))["baseUrl"],
-        "http://localhost:4321"
-    );
+    assert!(read_json(output.path().join("site.json"))
+        .get("baseUrl")
+        .is_none());
     assert_eq!(
         read_json(output.path().join("article-index.json"))[0]["slug"],
         "hello-typst"
@@ -403,7 +369,7 @@ fn typst_compile_failure_is_rejected() {
 }
 
 #[test]
-fn existing_site_json_output_remains_unchanged() {
+fn site_json_does_not_include_deployment_origin() {
     let output = TempDir::new().expect("temp dir should be created");
 
     build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
@@ -414,14 +380,13 @@ fn existing_site_json_output_remains_unchanged() {
         json!({
             "title": "neru7 blog",
             "description": "Typst-based technical blog",
-            "language": "ja",
-            "baseUrl": "http://localhost:4321"
+            "language": "ja"
         })
     );
 }
 
 #[test]
-fn existing_article_index_json_output_remains_unchanged() {
+fn article_index_json_uses_slug_as_its_article_key() {
     let output = TempDir::new().expect("temp dir should be created");
 
     build_with_typst_runner(fixture("valid-single"), output.path(), &FakeTypstRunner)
@@ -430,7 +395,6 @@ fn existing_article_index_json_output_remains_unchanged() {
     assert_eq!(
         read_json(output.path().join("article-index.json")),
         json!([{
-            "id": "01JZQ2EXAMPLE0000000000000",
             "slug": "hello-typst",
             "title": "Hello Typst",
             "description": "Typstでブログ記事を書く最小例",
@@ -459,7 +423,6 @@ fn existing_meta_json_output_remains_unchanged() {
                 .join("meta.json")
         ),
         json!({
-            "id": "01JZQ2EXAMPLE0000000000000",
             "slug": "hello-typst",
             "title": "Hello Typst",
             "description": "Typstでブログ記事を書く最小例",

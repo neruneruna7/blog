@@ -1,9 +1,8 @@
 # Typst Blog Engine
 
 Current milestone:
-- Rust content engine generates site/article JSON.
-- Rust content engine generates Typst-derived body.html fragments.
-- Astro reads generated/ and builds static pages.
+- Rust generates site/article JSON, Typst-derived `body.html`, and OGP assets.
+- Astro reads generated content and `generated/public-root` to build static pages.
 - React is not introduced yet.
 - Typst HTML export is experimental and intentionally accepted for this prototype.
 
@@ -17,9 +16,11 @@ Commands:
 - cargo make check
 - cargo make clean
 
-Typst CLI:
-- `cargo make build-content` uses `typst compile --features html` to generate `generated/articles/<slug>/body.html`.
-- `body.html` is an intermediate HTML fragment. It is not a final page.
+Content generation:
+- `cargo make build-content` runs `blog-compiler build` to generate `body.html`, article metadata, and OGP assets.
+- OGP images are written under `generated/public-root/ogp/articles`.
+- Generated article metadata keeps site-root-relative paths; Astro resolves the deployment origin from `BASE_URL` when it writes OGP tags.
+- `body.html` is an HTML fragment embedded by Astro. It is not a final page.
 
 Article source layout:
 - Article configuration is discovered under `typst-src/articles/<directory-name>/ArticleConfig.toml`.
@@ -28,9 +29,10 @@ Article source layout:
 - New article creation uses the generated slug as the default directory name.
 
 Astro:
-- `cargo make build-site` builds `frontend/dist/` from the existing files under `generated/`.
+- `cargo make build-site` generates content, merges `frontend/public` into `generated/public-root`, and builds `frontend/dist/`.
 - `cargo make build` runs content generation first, then builds the Astro static site.
 - `cargo make test` runs Rust content tests and frontend build-level assertions.
+- Set `BASE_URL` in the repository-root `.env` for local Astro builds; CI reads it from the GitHub Actions variable `BASE_URL`.
 - Run `cd frontend && npm install` before the first Astro build. Dependency installation is intentionally not hidden inside cargo-make.
 
 Optional real Typst integration test:

@@ -1,0 +1,197 @@
+
+@startuml system
+title Typst Blog System - Architecture
+
+left to right direction
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+actor "執筆者" as User
+component "テキストエディタ\nZed / VS Code / etc." as Editor
+
+package "typst-src/ (Input)" as Source {
+  folder "commons/" as Commons
+  folder "ogp/" as OgpTemplate
+  folder "templates/" as Templates
+
+  folder "articles/<foldername>/" as ArticleSource {
+    file "main.typ" as MainTyp
+    file "ArticleConfig.toml" as ArticleConfig
+    folder "assets/" as SourceAssets
+  }
+}
+
+component "Content Compiler" as Compiler
+
+package "generated/ (Artifacts)" as Generated {
+  file "article-index.json" as ArticleIndex
+
+  folder "article/<slug>/" as ArticleOutput {
+    file "body.html" as BodyHtml
+    file "meta.json" as MetaJson
+  }
+
+  folder "public/<slug>/" as PublicOutput {
+    folder "assets/" as PublicAssets
+    folder "ogp/" as PublicOgp {
+      file "<OGP画像ファイル>" as OgpImage
+    }
+  }
+}
+
+package "Frontend" as Frontend {
+  component "Static Site Generator\n(e.g. Astro)" as SSG
+  component "UI / Layout / CSS" as UI
+}
+
+folder "dist/" as Dist
+cloud "Static Hosting" as Hosting
+
+User --> Editor : 執筆
+Editor --> Source : ファイル編集
+
+Source --> Compiler : ソース入力
+Compiler --> Generated : 成果物出力
+
+Generated --> SSG : 読み込み
+UI --> SSG : 表示構築
+SSG --> Dist : 静的サイト生成
+Dist --> Hosting : デプロイ
+
+note bottom of SSG
+  typst-src/ への依存は禁止。
+  generated/ のみを
+  コンテンツ入力として使用する。
+end note
+
+note bottom of ArticleConfig
+  slug と foldername は独立。
+  URL: /articles/<slug>/
+end note
+
+
+@enduml
+
+
+@startuml compiler-architecture
+title Content Compiler - Internal Architecture
+
+top to bottom direction
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+folder "typst-src/" as Source
+
+package "Content Compiler" {
+
+  component "Source Loader\n入力の発見・設定の解析・検証" as Loader
+
+  component "Article Model\n正規化された記事情報" as Model
+
+  package "Compilation" {
+    component "Typst CLI\n(HTML)" as HTMLCompiler
+    component "Typst CLI\n(PNG)" as PNGCompiler
+  }
+
+  package "Post Processing" {
+    component "HTML Postprocessor\n本文抽出・HTML補完" as HTMLPost
+    component "Asset Processor\nアセット処理・参照解決" as Assets
+  }
+
+  component "Artifact Generator\nJSON生成・出力の統合" as Generator
+
+  Loader --> Model
+
+  Model --> HTMLCompiler : main.typ
+  HTMLCompiler --> HTMLPost : HTML
+
+  Model --> PNGCompiler : OGP入力
+  Model --> Assets : 記事アセット
+
+  HTMLPost --> Generator : body.html
+  PNGCompiler --> Generator : OGP画像
+  Assets --> Generator : 公開アセット
+  Model --> Generator : メタデータ
+}
+
+folder "generated/" as Generated
+
+Source --> Loader
+Generator --> Generated
+
+note right of HTMLCompiler
+  Typst CLIをHTML出力用に実行
+end note
+
+note right of PNGCompiler
+  同じTypst CLIを
+  PNG出力用に実行
+end note
+
+@enduml
+
+
+@startuml compile-pipeline
+title Article HTML Compilation Pipeline
+
+start
+
+:main.typ を取得;
+
+partition "Typst Compilation" {
+  :Typst CLIでHTMLへコンパイル;
+  :Typstが生成したHTMLを取得;
+}
+
+partition "HTML Post Processing" {
+  :HTMLから記事本文を抽出;
+  :未対応機能を補完・変換;
+  :アセットの参照先を解決;
+  :HTML断片の整合性を検証;
+}
+
+partition "Artifact Generation" {
+  :body.html を出力;
+}
+
+stop
+@enduml
+
+
+@startuml postprocessor
+title HTML Postprocessor - Pipeline Architecture
+
+top to bottom direction
+skinparam componentStyle rectangle
+
+component "Typst CLI" as Typst
+
+package "HTML Postprocessor" {
+  component "HTML Parser" as Parser
+
+  package "Processing Pipeline" {
+    component "Processor 1\nCode Block" as P1
+    component "Processor 2\nLink Card" as P2
+    component "Processor 3\n..." as P3
+  }
+
+  component "HTML Serializer" as Serializer
+  component "HTML Validator" as Validator
+}
+
+artifact "body.html" as Output
+
+Typst --> Parser : HTML
+Parser --> P1 : HTML Document
+P1 --> P2 : Document
+P2 --> P3 : Document
+P3 --> Serializer : Document
+Serializer --> Validator : HTML
+Validator --> Output
+
+note right of P3
+  新しいProcessorを
+  パイプラインへ追加可能
+end note
+
+@enduml

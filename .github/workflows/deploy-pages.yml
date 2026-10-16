@@ -99,14 +99,12 @@ jobs:
       # cargo make testはbuild-contentに依存していないため，
       # frontendのテストより先に生成物を作る．
       - name: Generate content
-        env:
-          SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
-        run: |
-          test -n "$SITE_BASE_URL"
-          cargo make build-content --base-url "$SITE_BASE_URL"
+        run: cargo make build-content
 
       # frontend/package.jsonのtestはAstroビルドと成果物検証を行う．
       - name: Test and build frontend
+        env:
+          BASE_URL: ${{ vars.BASE_URL }}
         run: cargo make test-site
 
       - name: Verify deployment output
