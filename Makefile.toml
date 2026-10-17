@@ -4,7 +4,7 @@ default_to_workspace = false
 [tasks.build-content]
 description = "Typstソースからgenerated配下の中間生成物を作成する"
 command = "cargo"
-args = ["run", "-p", "blog-compiler", "--", "build", "${@}"]
+args = ["run", "-r","-p", "blog-compiler", "--", "build", "${@}"]
 
 [tasks.typst-html-export]
 description = "Typstライブラリ経由で文書をHTMLへ変換する"

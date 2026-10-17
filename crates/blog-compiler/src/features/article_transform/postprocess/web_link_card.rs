@@ -220,7 +220,23 @@ fn fetch_metadata(client: &Client, requested_url: &Url) -> Result<CardMetadata, 
         let response = client
             .get(resolved_url.clone())
             .send()
-            .map_err(|error| error.to_string())?;
+            .map_err(|error| {
+                tracing::warn!(
+                    method = "GET",
+                    url = %resolved_url,
+                    redirect_count,
+                    error = %error,
+                    "OGPメタデータ取得のHTTPアクセスに失敗"
+                );
+                error.to_string()
+            })?;
+        tracing::info!(
+            method = "GET",
+            url = %resolved_url,
+            redirect_count,
+            status = %response.status(),
+            "OGPメタデータ取得のHTTP応答"
+        );
 
         if response.status().is_redirection() {
             if redirect_count == MAX_REDIRECTS {
