@@ -49,14 +49,7 @@ typstでブログを書く．ブログは静的ホストしたい．
     - 
 
 # 命名
-記事: Article
-サイトのこと: Site
-テンプレートのこと: Template
-
-記事一覧とサイト設定をまとめたコンパイル対象を `Source` と呼ぶ．
-`Input` は処理の入口しか表さず，`Bundle` は複数要素の集合であることしか表さない．
-`Source` は記事とサイト設定がコンパイル対象の原資料であることを表すため，この文脈では意味が明確である．
-処理段階は `RawSource` と `ParsedSource` の接頭辞で表し，`Bundle` は型名に使わない．
+ドメイン用語と対応する命名の正本は [`domain-language.toml`](domain-language.toml) とする．
 
 
 # 擬似コード
