@@ -40,7 +40,7 @@ impl BuildCacheWriter {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::{HashMap, HashSet};
     ///
     /// use blog_compiler::{
     ///     commons::site::SiteTitle,
@@ -62,7 +62,12 @@ impl BuildCacheWriter {
     /// };
     /// let source_root = tempfile::tempdir()?;
     /// let output_root = tempfile::tempdir()?;
-    /// let input = BlogCacheLoader::load(&source, source_root.path(), output_root.path())?;
+    /// let input = BlogCacheLoader::load(
+    ///     &source,
+    ///     &HashSet::new(),
+    ///     source_root.path(),
+    ///     output_root.path(),
+    /// )?;
     /// let writer = BuildCacheWriter::new(input, output_root.path());
     /// let _ = writer;
     /// # Ok(())
@@ -114,7 +119,7 @@ impl BuildCacheWriter {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::{HashMap, HashSet};
     ///
     /// use blog_compiler::{
     ///     commons::{article::Slug, site::SiteTitle},
@@ -136,7 +141,12 @@ impl BuildCacheWriter {
     /// };
     /// let source_root = tempfile::tempdir()?;
     /// let output_root = tempfile::tempdir()?;
-    /// let input = BlogCacheLoader::load(&source, source_root.path(), output_root.path())?;
+    /// let input = BlogCacheLoader::load(
+    ///     &source,
+    ///     &HashSet::new(),
+    ///     source_root.path(),
+    ///     output_root.path(),
+    /// )?;
     /// let mut writer = BuildCacheWriter::new(input, output_root.path());
     /// let slug = Slug::new("missing-article".to_owned())?;
     /// assert!(writer.record_html_success(&slug).is_err());
@@ -162,7 +172,7 @@ impl BuildCacheWriter {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::{HashMap, HashSet};
     ///
     /// use blog_compiler::{
     ///     commons::{article::Slug, site::SiteTitle},
@@ -184,7 +194,12 @@ impl BuildCacheWriter {
     /// };
     /// let source_root = tempfile::tempdir()?;
     /// let output_root = tempfile::tempdir()?;
-    /// let input = BlogCacheLoader::load(&source, source_root.path(), output_root.path())?;
+    /// let input = BlogCacheLoader::load(
+    ///     &source,
+    ///     &HashSet::new(),
+    ///     source_root.path(),
+    ///     output_root.path(),
+    /// )?;
     /// let mut writer = BuildCacheWriter::new(input, output_root.path());
     /// let slug = Slug::new("missing-article".to_owned())?;
     /// assert!(writer.record_ogp_success(&slug).is_err());
@@ -232,7 +247,12 @@ impl BuildCacheWriter {
     /// };
     /// let source_root = tempfile::tempdir()?;
     /// let output_root = tempfile::tempdir()?;
-    /// let input = BlogCacheLoader::load(&source, source_root.path(), output_root.path())?;
+    /// let input = BlogCacheLoader::load(
+    ///     &source,
+    ///     &HashSet::new(),
+    ///     source_root.path(),
+    ///     output_root.path(),
+    /// )?;
     /// let mut writer = BuildCacheWriter::new(input, output_root.path());
     /// writer.remove_obsolete(&HashSet::new())?;
     /// # Ok(())

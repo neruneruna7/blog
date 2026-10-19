@@ -99,7 +99,7 @@ jobs:
       # cargo make testはbuild-blogに依存していないため，
       # frontendのテストより先に生成物を作る．
       - name: Generate blog artifacts
-        run: cargo make build-blog
+        run: cargo make build-blog-release
 
       # frontend/package.jsonのtestはAstroビルドと成果物検証を行う．
       - name: Test and build frontend

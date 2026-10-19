@@ -92,6 +92,8 @@ fn article_entry_point_path(article_directory: &OsStr, entry_point_file: &Path) 
 #[derive(Debug, Clone, Deserialize)]
 pub struct RawArticleConfig {
     pub slug: String,
+    #[serde(default)]
+    pub publish: bool,
     pub title: String,
     pub description: String,
     pub tags: Vec<String>,

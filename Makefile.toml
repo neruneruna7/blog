@@ -6,6 +6,11 @@ description = "Typstソースからgenerated配下のブログ成果物を作成
 command = "cargo"
 args = ["run", "-r","-p", "blog-compiler", "--", "build", "${@}"]
 
+[tasks.build-blog-release]
+description = "公開設定が有効な記事だけをブログ成果物へ出力する"
+command = "cargo"
+args = ["run", "-r", "-p", "blog-compiler", "--", "build", "--release"]
+
 [tasks.typst-html-export]
 description = "Typstライブラリ経由で文書をHTMLへ変換する"
 command = "cargo"

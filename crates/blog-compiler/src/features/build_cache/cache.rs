@@ -18,7 +18,7 @@ impl BuildCache {
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::{HashMap, HashSet};
     ///
     /// use blog_compiler::{
     ///     commons::site::SiteTitle,
@@ -40,7 +40,12 @@ impl BuildCache {
     /// };
     /// let source_root = tempfile::tempdir()?;
     /// let output_root = tempfile::tempdir()?;
-    /// let input = BlogCacheLoader::load(&source, source_root.path(), output_root.path())?;
+    /// let input = BlogCacheLoader::load(
+    ///     &source,
+    ///     &HashSet::new(),
+    ///     source_root.path(),
+    ///     output_root.path(),
+    /// )?;
     /// let plan = BuildCache::new(&input);
     /// assert_eq!(plan.html_count(), 0);
     /// # Ok(())

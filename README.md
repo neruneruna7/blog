@@ -18,6 +18,8 @@ Commands:
 
 Blog generation:
 - `cargo make build-blog` runs `blog-compiler build` to generate `body.html`, article metadata, and OGP assets.
+- `cargo make build-blog-release` generates artifacts only for articles with `publish = true` in `ArticleConfig.toml`.
+- New articles default to `publish = false`; the regular `build-blog` task includes all articles for development.
 - OGP images are written under `generated/public-root/ogp/articles`.
 - Generated article metadata keeps site-root-relative paths; Astro resolves the deployment origin from `BASE_URL` when it writes OGP tags.
 - `body.html` is an HTML fragment embedded by Astro. It is not a final page.

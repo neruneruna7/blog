@@ -88,6 +88,7 @@ impl OgpGenerator {
     ///     root: PathBuf::from("typst-src/articles/example"),
     ///     entry_point: PathBuf::from("typst-src/articles/example/main.typ"),
     ///     slug: Slug::new("example".to_owned())?,
+    ///     publish: true,
     ///     title: ArticleTitle::new("Example".to_owned())?,
     ///     description: Description::new("Example article".to_owned())?,
     ///     tags: Vec::new(),

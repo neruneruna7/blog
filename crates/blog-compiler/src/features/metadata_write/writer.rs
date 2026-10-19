@@ -62,14 +62,14 @@ struct ArticleIndexEntry<'a> {
 pub struct MetadataWriter;
 
 impl MetadataWriter {
-    /// サイト設定、記事一覧、記事ごとのメタデータを生成する。
+    /// サイト設定と、指定されたslugの記事一覧・記事ごとのメタデータを生成する。
     ///
-    /// OGP画像の公開パスを含め、すべてのメタデータを`ParsedSource`から導出する。
+    /// OGP画像の公開パスを含め、指定されたslugの記事だけのメタデータを`ParsedSource`から導出する。
     ///
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::{HashMap, HashSet};
     ///
     /// use blog_compiler::{
     ///     commons::site::SiteTitle,
@@ -86,7 +86,7 @@ impl MetadataWriter {
     ///     },
     /// };
     /// let output_root = tempfile::tempdir()?;
-    /// MetadataWriter::write(&source, output_root.path())?;
+    /// MetadataWriter::write(&source, &HashSet::new(), output_root.path())?;
     /// assert!(output_root.path().join("site.json").is_file());
     /// # Ok(())
     /// # }
@@ -95,7 +95,11 @@ impl MetadataWriter {
     /// # Errors
     ///
     /// メタデータを直列化できない場合、または出力ファイルを置き換えられない場合に返す。
-    pub fn write(parsed_source: &ParsedSource, output_root: impl AsRef<Path>) -> Result<(), Error> {
+    pub fn write(
+        parsed_source: &ParsedSource,
+        current_slugs: &HashSet<Slug>,
+        output_root: impl AsRef<Path>,
+    ) -> Result<(), Error> {
         let output_root = output_root.as_ref();
         let site_metadata = SiteMetadata {
             title: &parsed_source.site.title,
@@ -104,7 +108,12 @@ impl MetadataWriter {
         };
         write_json(&output_root.join(SITE_CONFIG_FILE), &site_metadata)?;
 
-        let mut articles = parsed_source.articles.values().collect::<Vec<_>>();
+        let mut articles = parsed_source
+            .articles
+            .iter()
+            .filter(|(slug, _)| current_slugs.contains(*slug))
+            .map(|(_, article)| article)
+            .collect::<Vec<_>>();
         articles.sort_by(|left, right| left.slug.as_str().cmp(right.slug.as_str()));
         let entries = articles
             .into_iter()
@@ -123,29 +132,19 @@ impl MetadataWriter {
         Ok(())
     }
 
-    /// 入力から削除された記事の`meta.json`を削除する。
+    /// `current_slugs`から外れた記事の`meta.json`を削除する。
     ///
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::HashSet;
     ///
-    /// use blog_compiler::{
-    ///     commons::site::SiteTitle,
-    ///     features::{metadata_write::MetadataWriter, source_parse::{ParsedSource, site::Site}},
-    /// };
+    /// use blog_compiler::{commons::article::Slug, features::metadata_write::MetadataWriter};
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let source = ParsedSource {
-    ///     articles: HashMap::new(),
-    ///     site: Site {
-    ///         title: SiteTitle::new("Example Blog".to_owned())?,
-    ///         description: "Example site".to_owned(),
-    ///         language: "ja".to_owned(),
-    ///     },
-    /// };
     /// let output_root = tempfile::tempdir()?;
-    /// MetadataWriter::remove_obsolete(&source, output_root.path())?;
+    /// let current_slugs = HashSet::<Slug>::new();
+    /// MetadataWriter::remove_obsolete(&current_slugs, output_root.path())?;
     /// # Ok(())
     /// # }
     /// ```
@@ -154,7 +153,7 @@ impl MetadataWriter {
     ///
     /// 記事ディレクトリを検査できない場合、または不要なメタデータを削除できない場合に返す。
     pub fn remove_obsolete(
-        parsed_source: &ParsedSource,
+        current_slugs: &HashSet<Slug>,
         output_root: impl AsRef<Path>,
     ) -> Result<(), Error> {
         let directory = output_root.as_ref().join(ARTICLES_DIRECTORY);
@@ -168,9 +167,8 @@ impl MetadataWriter {
                 });
             }
         };
-        let current_slug_names = parsed_source
-            .articles
-            .keys()
+        let current_slug_names = current_slugs
+            .iter()
             .map(Slug::as_str)
             .collect::<HashSet<_>>();
 

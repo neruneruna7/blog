@@ -10,7 +10,7 @@ use crate::{
         blog_cache_loader::BlogCacheLoader, build_cache::BuildCache,
         build_cache_writer::BuildCacheWriter, load_source::loader::SourceLoader,
         metadata_write::MetadataWriter, ogp_generate::OgpGenerator, ogp_write::OgpWriter,
-        source_parse::SourceParser,
+        publication_filter::PublicationFilter, source_parse::SourceParser,
     },
 };
 use tracing::info;
@@ -22,18 +22,22 @@ use error::Error;
 /// 記事とサイト設定を読み込み、HTML・OGP・メタデータを独立して更新する。
 ///
 /// HTMLとOGPは個別にキャッシュ判定し、各成果物の書き込み成功後にBuildCacheWriterが指紋を保存する。
+/// `release`が有効な場合は、`publish = true`の記事だけをコンパイル対象にする。
 ///
 /// # Examples
 ///
+/// 開発時は全記事を含め、公開用の生成では公開設定済みの記事だけを含める。
+///
 /// ```sh
 /// cargo make build-blog
+/// cargo make build-blog-release
 /// ```
 ///
 /// # Errors
 ///
 /// 入力の読み込み・解析、HTML・OGPの生成、各成果物の書き込み、またはキャッシュ更新に失敗した場合に返す。
 #[tracing::instrument(err)]
-pub(crate) fn article_compile() -> Result<usize, Error> {
+pub(crate) fn article_compile(release: bool) -> Result<usize, Error> {
     let typst_project_root = Path::new(TYP_COMPILE_ROOT);
     let article_entry_point = Path::new(ARTICLE_ENTRY_POINT);
     let ogp_main_file = Path::new(OGP_MAIN_FILE);
@@ -49,17 +53,34 @@ pub(crate) fn article_compile() -> Result<usize, Error> {
         article_count = parsed_source.articles.len(),
         "記事とサイト設定を解析完了"
     );
+    let current_slugs = parsed_source
+        .articles
+        .iter()
+        .filter(|(_, article)| !release || PublicationFilter::is_publication_target(article))
+        .map(|(slug, _)| slug.clone())
+        .collect::<HashSet<_>>();
+    info!(
+        release,
+        article_count = current_slugs.len(),
+        "コンパイル対象記事を確定"
+    );
 
-    let cache_input = BlogCacheLoader::load(&parsed_source, typst_project_root, artifact_root)?;
+    let cache_input = BlogCacheLoader::load(
+        &parsed_source,
+        &current_slugs,
+        typst_project_root,
+        artifact_root,
+    )?;
     let build_plan = BuildCache::new(&cache_input);
     let mut build_cache_writer = BuildCacheWriter::new(cache_input, artifact_root);
-    let total_count = parsed_source.articles.len();
+    let total_count = current_slugs.len();
     let html_cache_hit_count = total_count - build_plan.html_count();
     let ogp_cache_hit_count = total_count - build_plan.ogp_count();
 
     let html_articles = parsed_source
         .articles
         .iter()
+        .filter(|(_, article)| !release || PublicationFilter::is_publication_target(article))
         .filter(|(slug, _)| build_plan.needs_html(slug))
         .map(|(slug, article)| (slug.clone(), article.clone()))
         .collect::<HashMap<_, _>>();
@@ -79,7 +100,7 @@ pub(crate) fn article_compile() -> Result<usize, Error> {
 
     let mut ogp_written_count = 0;
     for (slug, article) in &parsed_source.articles {
-        if !build_plan.needs_ogp(slug) {
+        if !current_slugs.contains(slug) || !build_plan.needs_ogp(slug) {
             continue;
         }
         let png = OgpGenerator::generate_png(
@@ -99,16 +120,11 @@ pub(crate) fn article_compile() -> Result<usize, Error> {
         "OGP画像のキャッシュ・書き込み結果"
     );
 
-    MetadataWriter::write(&parsed_source, artifact_root)?;
+    MetadataWriter::write(&parsed_source, &current_slugs, artifact_root)?;
     info!("メタデータの書き込み完了");
 
-    let current_slugs = parsed_source
-        .articles
-        .keys()
-        .cloned()
-        .collect::<HashSet<_>>();
     ArticleWriter::remove_obsolete(&current_slugs, artifact_root)?;
-    MetadataWriter::remove_obsolete(&parsed_source, artifact_root)?;
+    MetadataWriter::remove_obsolete(&current_slugs, artifact_root)?;
     OgpWriter::remove_obsolete(&current_slugs, artifact_root)?;
     build_cache_writer.remove_obsolete(&current_slugs)?;
     info!(article_count = total_count, "コンパイル成果物の更新完了");

@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, HashMap},
+    collections::{BTreeMap, HashMap, HashSet},
     fs::{self, File},
     path::Path,
 };
@@ -55,14 +55,14 @@ pub struct BlogCacheInput {
 pub struct BlogCacheLoader;
 
 impl BlogCacheLoader {
-    /// `ParsedSource`と生成先から、再生成判定とManifest更新に必要な入力を返す。
+    /// `ParsedSource`と対象slug、生成先から再生成判定とManifest更新に必要な入力を返す。
     ///
     /// キャッシュManifestの読み込みに失敗した場合は空の履歴として扱い、全成果物を再生成できる状態を返す。
     ///
     /// # Examples
     ///
     /// ```
-    /// use std::collections::HashMap;
+    /// use std::collections::{HashMap, HashSet};
     ///
     /// use blog_compiler::{
     ///     commons::site::SiteTitle,
@@ -80,7 +80,12 @@ impl BlogCacheLoader {
     /// };
     /// let source_root = tempfile::tempdir()?;
     /// let output_root = tempfile::tempdir()?;
-    /// let input = BlogCacheLoader::load(&source, source_root.path(), output_root.path())?;
+    /// let input = BlogCacheLoader::load(
+    ///     &source,
+    ///     &HashSet::new(),
+    ///     source_root.path(),
+    ///     output_root.path(),
+    /// )?;
     /// let _input = input;
     /// # Ok(())
     /// # }
@@ -91,22 +96,28 @@ impl BlogCacheLoader {
     /// ソースツリーの走査・読み込み、またはOGP指紋入力の直列化に失敗した場合に返す。
     pub fn load(
         parsed_source: &ParsedSource,
+        current_slugs: &HashSet<Slug>,
         source_root: impl AsRef<Path>,
         output_root: impl AsRef<Path>,
     ) -> Result<BlogCacheInput, Error> {
         let source_root = source_root.as_ref();
         let output_root = output_root.as_ref();
-        let mut articles = HashMap::with_capacity(parsed_source.articles.len());
-
-        for (slug, article) in &parsed_source.articles {
-            let article_input = ArticleCacheInput {
-                html_hash: html_hash(article, source_root)?,
-                ogp_hash: ogp_hash(article, &parsed_source.site, source_root)?,
-                html_is_readable: cached_html_is_readable(output_root, slug),
-                ogp_is_valid: cached_ogp_is_valid(output_root, slug),
-            };
-            articles.insert(slug.clone(), article_input);
-        }
+        let articles = parsed_source
+            .articles
+            .iter()
+            .filter(|(slug, _)| current_slugs.contains(*slug))
+            .map(|(slug, article)| {
+                Ok((
+                    slug.clone(),
+                    ArticleCacheInput {
+                        html_hash: html_hash(article, source_root)?,
+                        ogp_hash: ogp_hash(article, &parsed_source.site, source_root)?,
+                        html_is_readable: cached_html_is_readable(output_root, slug),
+                        ogp_is_valid: cached_ogp_is_valid(output_root, slug),
+                    },
+                ))
+            })
+            .collect::<Result<HashMap<_, _>, Error>>()?;
 
         let (manifest, manifest_needs_rewrite) =
             read_manifest(&output_root.join(CACHE_DIRECTORY).join(MANIFEST_FILE));

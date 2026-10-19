@@ -1,4 +1,5 @@
 slug = "sample-typst"
+publish = false
 title = "Typst実験場"
 description = "Typstで好き放題やる例"
 published_at = "2026-07-09T00:00:00+09:00"
