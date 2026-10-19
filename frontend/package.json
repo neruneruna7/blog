@@ -10,7 +10,7 @@
     "prebuild": "pnpm run assemble-public",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "npm run build && node --test ./scripts/assemble-public.test.mjs && node ./scripts/assert-build.mjs"
+    "test": "npm run build && node --test ./scripts/assemble-public.test.mjs ./scripts/generated-reload.test.mjs ./scripts/generated-reload.integration.test.mjs && node ./scripts/assert-build.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
