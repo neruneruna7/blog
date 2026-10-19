@@ -26,7 +26,7 @@ use error::Error;
 /// # Examples
 ///
 /// ```sh
-/// cargo make build-content
+/// cargo make build-blog
 /// ```
 ///
 /// # Errors

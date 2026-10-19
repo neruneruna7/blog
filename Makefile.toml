@@ -1,8 +1,8 @@
 [config]
 default_to_workspace = false
 
-[tasks.build-content]
-description = "Typstソースからgenerated配下の中間生成物を作成する"
+[tasks.build-blog]
+description = "Typstソースからgenerated配下のブログ成果物を作成する"
 command = "cargo"
 args = ["run", "-r","-p", "blog-compiler", "--", "build", "${@}"]
 
@@ -13,7 +13,7 @@ args = ["run", "-p", "typst-html-export", "--bin", "typst-html-export"]
 
 [tasks.assemble-public]
 description = "frontend/publicをgenerated/public-rootへ統合する"
-dependencies = ["build-content"]
+dependencies = ["build-blog"]
 cwd = "frontend"
 command = "pnpm"
 args = ["run", "assemble-public"]
@@ -23,19 +23,19 @@ description = "新しいTypst記事の雛形を作成する"
 command = "cargo"
 args = ["run", "-p", "blog-compiler", "--", "new", "${@}"]
 
-[tasks.test-content]
-description = "記事コンパイラのRustテストを実行する"
+[tasks.test-blog]
+description = "ブログコンパイラのRustテストを実行する"
 command = "cargo"
 args = ["test", "-p", "blog-compiler"]
 
-[tasks.build-site]
-description = "Astroをビルド"
+[tasks.build-frontend]
+description = "Astroでフロントエンドをビルドする"
 dependencies = ["assemble-public"]
 cwd = "frontend"
 command = "pnpm"
 args = ["exec", "astro", "build"]
 
-[tasks.frontend-install]
+[tasks.install-frontend]
 description = "フロントエンドの依存関係をインストールする"
 cwd = "frontend"
 command = "pnpm"
@@ -51,25 +51,25 @@ description = "Typstが必要なフォントを認識していることを検証
 command = "bash"
 args = ["scripts/verify-fonts.sh"]
 
-[tasks.test-site]
+[tasks.test-frontend]
 description = "フロントエンドのビルドレベルテストを実行する"
 cwd = "frontend"
 command = "pnpm"
 args = ["run", "test"]
 
-[tasks.run-site]
+[tasks.run-frontend]
 description = "Astro開発サーバーを起動"
 cwd = "frontend"
 command = "pnpm"
 args = ["run", "dev"]
 
 [tasks.build]
-description = "記事コンテンツを生成してAstro静的サイトをビルドする"
-dependencies = ["build-site"]
+description = "ブログ成果物を生成してフロントエンドをビルドする"
+dependencies = ["build-frontend"]
 
 [tasks.test]
 description = "Rustとフロントエンドのテストを実行する"
-dependencies = ["test-content", "test-site"]
+dependencies = ["test-blog", "test-frontend"]
 
 [tasks.fmt]
 description = "Rustコードをフォーマットする"
@@ -84,7 +84,7 @@ args = ["clippy", "--workspace", "--all-targets", "--", "-D", "warnings"]
 [tasks.check]
 clear = true
 description = "フォーマット，lint，テストを実行する"
-dependencies = ["fmt", "clippy", "test-content"]
+dependencies = ["fmt", "clippy", "test-blog"]
 
 [tasks.clean]
 clear = true
@@ -93,8 +93,8 @@ script = '''
 rm -rf generated
 '''
 
-[tasks.watch-content]
-description = "typst-src内の変更を監視し，コンテンツを再生成する．"
+[tasks.watch-blog]
+description = "typst-src内の変更を監視し，ブログ成果物を再生成する．"
 command = "watchexec"
 args = [
   "--watch",
