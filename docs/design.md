@@ -56,60 +56,43 @@ typstでブログを書く．ブログは静的ホストしたい．
 
 ## コンパイル
 ```txt
-let raw_data: Vec<_> = typst-src直下にある記事フォルダを収集．
-let validated_data = 異常がないかチェック済みのもの   
-  - slugの重複チェックなど．
-  - タイトルなどが問題ないか
+let source = SourceLoader::load()
+let parsed_source = SourceParser::parse(source)
 
-let html_string = typstコンパイル
-let ogp_image = OGPコンパイル
+let cache_input = BlogCacheLoader::load(parsed_source)
+let build_plan = BuildCache::new(&cache_input)
+let mut cache_writer = BuildCacheWriter::new(cache_input, generated)
 
-let post_proccessed = 自作の後処理工程．
-  - grid対応
-  - linkCardでOGP取得
-
-後処理で失敗があれば，警告を標準出力に流す.
-
-let article: Vec<_> = 記事ごとにデータをまとめる
-let articles_output = 出力形式に合わせて，変換
-- site.jsonの中身
-- article-index.jsonの中身
-
-ファイルシステムに書き込み
-- コンパイル成果物
-  - 記事ごとのhtml, meta.json, assets
-  - struct Artifact
-  - 
-```
-
-RawArticle
-    ↓ 検証
-ValidatedArticle
-    ↓ Typstコンパイル
-CompiledArticle
-    ↓ 後処理
-TransformedArticle
-    ↓ サイト全体を集約
-Artifact
-    ↓ シリアライズ・ファイル出力
-FileSystem
-
-```rs
-struct Artifact {
-    config: SiteConfig,
-    articles: Vec<ArticleArtifact>,
-    site_index: SiteIndex,
-    article_index: ArticleIndex,
+let articles_to_transform = parsed_source.articles
+  .filter(|article| build_plan.needs_html(article.slug))
+let html = ArticleTransformer::transform_all(articles_to_transform)
+for (slug, html) in html {
+  ArticleWriter::write(slug, html, generated)
+  cache_writer.record_html_success(slug)
 }
 
-struct ArticleArtifact {
-    slug: String,
-    html: String,
-    metadata: ArticleMetadata,
-    assets: Vec<Asset>,
+for article in parsed_source.articles
+  .filter(|article| build_plan.needs_ogp(article.slug)) {
+  let png = OgpGenerator::generate(article, parsed_source.site)
+  OgpWriter::write(article.slug, png, generated)
+  cache_writer.record_ogp_success(article.slug)
 }
+
+MetadataWriter::write(parsed_source, generated)
+
+ArticleWriter::remove_obsolete(parsed_source.slugs, generated)
+MetadataWriter::remove_obsolete(parsed_source, generated)
+OgpWriter::remove_obsolete(parsed_source.slugs, generated)
+cache_writer.remove_obsolete(parsed_source.slugs)
 ```
-一旦typstコンパイルまで実装．その後はまた考えよう
+
+BlogCacheLoaderは現在の入力指紋、既存成果物の検証結果、前回成功した指紋を返す。BuildCacheは受け取った値だけから再生成対象を決める。Manifestの読み込みと形式の検証はLoaderに隠蔽される。
+
+HTML、OGP、メタデータは独立した出力パイプラインである。ArticleWriterは`articles/<slug>/body.html`、OgpWriterは`public-root/ogp/articles/<slug>.png`、MetadataWriterは`site.json`・`article-index.json`・記事ごとの`meta.json`をそれぞれ生成先へ書く。MetadataWriterの入力はParsedSourceだけであり、OGP画像の公開パスはSlugから決定する。
+
+各成果物Writerはファイル単位で一時ファイルを置き換える。HTMLまたはOGPの指紋は、対応するWriterの成功後にBuildCacheWriterが単一の`manifest.json`へ個別に保存する。逐次実行のためManifest更新にプロセス内ロックは設けない。
+
+記事削除時はArticleWriterが`body.html`、MetadataWriterが`meta.json`、OgpWriterがOGP画像を削除し、BuildCacheWriterが不要なManifest項目を削除する。
 
 ## 新規記事作成
 ```

@@ -217,19 +217,16 @@ fn fetch_metadata(client: &Client, requested_url: &Url) -> Result<CardMetadata, 
     let mut resolved_url = requested_url.clone();
     for redirect_count in 0..=MAX_REDIRECTS {
         validate_public_url(&resolved_url)?;
-        let response = client
-            .get(resolved_url.clone())
-            .send()
-            .map_err(|error| {
-                tracing::warn!(
-                    method = "GET",
-                    url = %resolved_url,
-                    redirect_count,
-                    error = %error,
-                    "OGPメタデータ取得のHTTPアクセスに失敗"
-                );
-                error.to_string()
-            })?;
+        let response = client.get(resolved_url.clone()).send().map_err(|error| {
+            tracing::warn!(
+                method = "GET",
+                url = %resolved_url,
+                redirect_count,
+                error = %error,
+                "OGPメタデータ取得のHTTPアクセスに失敗"
+            );
+            error.to_string()
+        })?;
         tracing::info!(
             method = "GET",
             url = %resolved_url,

@@ -126,7 +126,7 @@ generated/
 ├── public-root/
 │   └── ogp/
 │       └── articles/
-│           └── *.png
+│           └── <slug>.png
 ├── site.json
 └── article-index.json
 ```
@@ -151,6 +151,8 @@ generated/
 
 Manifestにはコンパイル結果そのものを保存しない．ハッシュとキャッシュ管理に必要な情報のみを記録する．
 
+`htmlHash`と`ogpHash`は独立して更新する。どちらかの生成に失敗した場合、未成功側のハッシュはManifestに記録しない。
+
 コンパイル成果物は既存の `generated/` 内のファイルを再利用する．
 
 ## 6. 再ビルド判定
@@ -173,28 +175,29 @@ SourceLoader
     ↓
 SourceParser
     ↓
-BuildPlanner
-    ├── HTMLの変更判定
-    │   ├── 変更あり → HTMLコンパイル
-    │   └── 変更なし → スキップ
-    │
-    └── OGPの変更判定
-        ├── 変更あり → OGP生成
-        └── 変更なし → スキップ
-    ↓
-成果物の書き込み
-    ├── HTML → article_write
-    ├── OGP → ogp_write
-    └── メタデータ → metadata_write
-    ↓
-削除済み記事の成果物を除去
-    ↓
-全処理の成功を確認
-    ↓
-manifest.json更新
+BlogCacheLoader
+    │ 現在の入力指紋・既存成果物の利用可否・前回成功した指紋
+    ▼
+BuildCache
+    ├── HTMLの要否を判定
+    └── OGPの要否を判定
+
+SourceParserの出力から三系統へ分岐し、各系統は他系統の生成物に依存しない
+    ├── HTML系
+    │   └── filter → ArticleTransformer → ArticleWriter
+    │                                  └→ BuildCacheWriterがHTML指紋を保存
+    ├── OGP系
+    │   └── filter → OgpGenerator → OgpWriter
+    │                            └→ BuildCacheWriterがOGP指紋を保存
+    └── メタデータ系
+        └── MetadataWriter → site.json / article-index.json / meta.json
+
+全Writerの成功後に各成果物Writerが削除済み記事の成果物を削除し、BuildCacheWriterがManifest項目を除去
 ```
 
-変更のない記事は，最初からコンパイル対象に含めない．
+HTMLとOGPの変更判定は別々である。キャッシュ済み記事は対応するパイプラインの`filter`で除外し、変換器やOGP生成器へ渡さない。MetadataWriterは`ParsedSource`だけを入力とし、記事メタデータを毎回生成する。
+
+各Writerは生成先へ直接書き込む。BuildCacheはBlogCacheLoaderが返す値から再生成要否だけを判定する。HTML・OGPの指紋と削除済み記事の記録は、BuildCacheWriterが単一の`manifest.json`へ反映する。現在は逐次実行であるため、Manifest更新に排他ロックは設けない。
 
 ## 8. メタデータの扱い
 
@@ -212,15 +215,15 @@ manifest.json更新
 
 ### キャッシュが存在しない場合
 
-初回ビルドとして扱い，全記事をコンパイルする．
+初回ビルドとして扱い，全記事のHTMLとOGP画像を生成する．
 
 ### キャッシュが破損している場合
 
 キャッシュを無効として扱い，必要な成果物を再生成する．
 
-### コンパイルに失敗した場合
+### HTML・OGPの生成または成果物の書き込みに失敗した場合
 
-Manifestを更新しない．既存の正常な成果物を保持する．
+失敗した成果物の指紋は更新しない。各ファイルは一時ファイルから置き換えるため、書き込み途中の内容で既存ファイルを破損させない。
 
 ### 記事が削除された場合
 
@@ -228,7 +231,7 @@ Manifestから対象記事の記録を削除し，対応するHTML・メタデ�
 
 ### ビルド途中で失敗した場合
 
-公開済み成果物とManifestの整合性が崩れないよう，ステージング領域で変更を準備し，全処理成功後に確定する．
+成功済みのパイプラインは成果物と対応する指紋を保持し、失敗したパイプラインは次回に再生成する。処理全体のロールバックは行わない。メタデータもファイル単位で置き換え、失敗時は次回の実行で全件を再生成する。削除済み成果物の掃除は各Writerがすべて成功した後に行う。ArticleWriterは`body.html`、MetadataWriterは`meta.json`を削除する。
 
 ### 外部依存が変更された場合
 
@@ -240,7 +243,8 @@ Webリンクカードの取得先やフォントなどの変更は，ローカ�
 - HTMLとOGPは独立して変更を判定する．
 - 変更のない成果物はコンパイル対象から除外する．
 - コンパイル済み成果物を重複してキャッシュに保存しない．
-- 書き込みFeatureをHTML・OGP・メタデータに分離する．
-- ビルド全体の整合性とManifestの更新は `compile` UseCaseが統括する．
+- 書き込みFeatureをHTML・OGP・メタデータに分離し、各Writerが生成先へ直接書き込む。
+- 各成果物Writerの成功後にBuildCacheWriterが該当する指紋だけをManifestへ保存する。
+- Manifestは単一ファイルを保ち、一時ファイルから原子的に置き換える。
 
 **最終方針：全記事の入力を検証し，変更された成果物だけを再生成する増分ビルドを実装する．**

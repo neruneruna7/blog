@@ -1,10 +1,16 @@
-use std::path::Path;
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+};
 
 use crate::{
     commons::app_config::{ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT},
     features::{
-        article_transform::ArticleTransformer, artifact::ArtifactAssembler,
-        load_source::loader::SourceLoader, ogp_generate::OgpGenerator, source_parse::SourceParser,
+        article_transform::ArticleTransformer, article_write::ArticleWriter,
+        blog_cache_loader::BlogCacheLoader, build_cache::BuildCache,
+        build_cache_writer::BuildCacheWriter, load_source::loader::SourceLoader,
+        metadata_write::MetadataWriter, ogp_generate::OgpGenerator, ogp_write::OgpWriter,
+        source_parse::SourceParser,
     },
 };
 use tracing::info;
@@ -13,6 +19,19 @@ pub mod error;
 
 use error::Error;
 
+/// 記事とサイト設定を読み込み、HTML・OGP・メタデータを独立して更新する。
+///
+/// HTMLとOGPは個別にキャッシュ判定し、各成果物の書き込み成功後にBuildCacheWriterが指紋を保存する。
+///
+/// # Examples
+///
+/// ```sh
+/// cargo make build-content
+/// ```
+///
+/// # Errors
+///
+/// 入力の読み込み・解析、HTML・OGPの生成、各成果物の書き込み、またはキャッシュ更新に失敗した場合に返す。
 #[tracing::instrument(err)]
 pub(crate) fn article_compile() -> Result<usize, Error> {
     let typst_project_root = Path::new(TYP_COMPILE_ROOT);
@@ -31,18 +50,68 @@ pub(crate) fn article_compile() -> Result<usize, Error> {
         "記事とサイト設定を解析完了"
     );
 
-    let ogp = OgpGenerator::generate_all(&parsed_source, typst_project_root, ogp_main_file)?;
-    info!(image_count = ogp.len(), "OGP画像を生成完了");
+    let cache_input = BlogCacheLoader::load(&parsed_source, typst_project_root, artifact_root)?;
+    let build_plan = BuildCache::new(&cache_input);
+    let mut build_cache_writer = BuildCacheWriter::new(cache_input, artifact_root);
+    let total_count = parsed_source.articles.len();
+    let html_cache_hit_count = total_count - build_plan.html_count();
+    let ogp_cache_hit_count = total_count - build_plan.ogp_count();
 
-    let transformed = ArticleTransformer::transform_all(parsed_source.articles, ogp)?;
-    let article_count = transformed.len();
-    info!(article_count, "記事HTMLを変換完了");
+    let html_articles = parsed_source
+        .articles
+        .iter()
+        .filter(|(slug, _)| build_plan.needs_html(slug))
+        .map(|(slug, article)| (slug.clone(), article.clone()))
+        .collect::<HashMap<_, _>>();
+    let compiled_html = ArticleTransformer::transform_all(html_articles)?;
+    let mut html_written_count = 0;
+    for (slug, html) in compiled_html {
+        ArticleWriter::write(&slug, &html, artifact_root)?;
+        html_written_count += 1;
+        build_cache_writer.record_html_success(&slug)?;
+    }
+    info!(
+        cache_hit_count = html_cache_hit_count,
+        total_count,
+        written_count = html_written_count,
+        "記事HTMLのキャッシュ・書き込み結果"
+    );
 
-    let artifact = ArtifactAssembler::assemble(transformed, &parsed_source.site)?;
+    let mut ogp_written_count = 0;
+    for (slug, article) in &parsed_source.articles {
+        if !build_plan.needs_ogp(slug) {
+            continue;
+        }
+        let png = OgpGenerator::generate_png(
+            article,
+            &parsed_source.site,
+            typst_project_root,
+            ogp_main_file,
+        )?;
+        OgpWriter::write(slug, &png, artifact_root)?;
+        ogp_written_count += 1;
+        build_cache_writer.record_ogp_success(slug)?;
+    }
+    info!(
+        cache_hit_count = ogp_cache_hit_count,
+        total_count,
+        written_count = ogp_written_count,
+        "OGP画像のキャッシュ・書き込み結果"
+    );
 
-    info!("Artifactの書き込みを開始");
-    artifact.write(artifact_root)?;
-    info!(article_count, "Artifactの書き込み完了");
+    MetadataWriter::write(&parsed_source, artifact_root)?;
+    info!("メタデータの書き込み完了");
 
-    Ok(article_count)
+    let current_slugs = parsed_source
+        .articles
+        .keys()
+        .cloned()
+        .collect::<HashSet<_>>();
+    ArticleWriter::remove_obsolete(&current_slugs, artifact_root)?;
+    MetadataWriter::remove_obsolete(&parsed_source, artifact_root)?;
+    OgpWriter::remove_obsolete(&current_slugs, artifact_root)?;
+    build_cache_writer.remove_obsolete(&current_slugs)?;
+    info!(article_count = total_count, "コンパイル成果物の更新完了");
+
+    Ok(total_count)
 }

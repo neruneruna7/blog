@@ -10,8 +10,10 @@ actor "執筆者" as User
 component "テキストエディタ\nZed / VS Code / etc." as Editor
 
 package "typst-src/ (Input)" as Source {
-  folder "commons/" as Commons
-  folder "ogp/" as OgpTemplate
+  folder "commons/" as Commons {
+    folder "components/" as Components
+    folder "ogp/" as OgpTemplate
+  }
   folder "templates/" as Templates
 
   folder "articles/<foldername>/" as ArticleSource {
@@ -23,19 +25,21 @@ package "typst-src/ (Input)" as Source {
 
 component "Content Compiler" as Compiler
 
-package "generated/ (Artifacts)" as Generated {
+package "generated/ (Build outputs)" as Generated {
+  file "site.json" as SiteJson
   file "article-index.json" as ArticleIndex
 
-  folder "article/<slug>/" as ArticleOutput {
+  folder "articles/<slug>/" as ArticleOutput {
     file "body.html" as BodyHtml
     file "meta.json" as MetaJson
   }
 
-  folder "public/<slug>/" as PublicOutput {
-    folder "assets/" as PublicAssets
-    folder "ogp/" as PublicOgp {
-      file "<OGP画像ファイル>" as OgpImage
-    }
+  folder "public-root/ogp/articles/" as PublicOgp {
+    file "<slug>.png" as OgpImage
+  }
+
+  folder ".cache/" as CacheDirectory {
+    file "manifest.json" as CacheManifest
   }
 }
 
@@ -84,48 +88,60 @@ folder "typst-src/" as Source
 
 package "Content Compiler" {
 
-  component "Source Loader\n入力の発見・設定の解析・検証" as Loader
+  component "SourceLoader\n入力を発見" as SourceLoader
+  component "SourceParser\nArticle・Siteを検証" as SourceParser
+  component "BlogCacheLoader\n現在指紋・既存成果物・前回指紋" as CacheLoader
+  component "BuildCache\nHTML・OGP変更判定" as BuildCache
+  component "BuildCacheWriter\nManifest更新" as BuildCacheWriter
 
-  component "Article Model\n正規化された記事情報" as Model
-
-  package "Compilation" {
-    component "Typst CLI\n(HTML)" as HTMLCompiler
-    component "Typst CLI\n(PNG)" as PNGCompiler
+  package "HTML Pipeline" {
+    component "ArticleTransformer\nHTML変換・後処理" as ArticleTransformer
+    component "ArticleWriter\nbody.html書き込み" as ArticleWriter
   }
 
-  package "Post Processing" {
-    component "HTML Postprocessor\n本文抽出・HTML補完" as HTMLPost
-    component "Asset Processor\nアセット処理・参照解決" as Assets
+  package "OGP Pipeline" {
+    component "OgpGenerator\nOGP画像生成" as OgpGenerator
+    component "OgpWriter\n<slug>.png書き込み" as OgpWriter
   }
 
-  component "Artifact Generator\nJSON生成・出力の統合" as Generator
+  component "MetadataWriter\nJSON生成・書き込み" as MetadataWriter
 
-  Loader --> Model
+  SourceLoader --> SourceParser
+  SourceParser --> CacheLoader : ParsedSource
+  CacheLoader --> BuildCache : BlogCacheInput
+  CacheLoader --> BuildCacheWriter : BlogCacheInput
 
-  Model --> HTMLCompiler : main.typ
-  HTMLCompiler --> HTMLPost : HTML
+  SourceParser --> ArticleTransformer : HTML再生成対象
+  BuildCache --> ArticleTransformer : HTML cache判定 / filter
+  ArticleTransformer --> ArticleWriter : HTML
+  ArticleWriter --> Generated : body.html
+  ArticleWriter --> BuildCacheWriter : HTML書き込み成功
 
-  Model --> PNGCompiler : OGP入力
-  Model --> Assets : 記事アセット
+  SourceParser --> OgpGenerator : OGP再生成対象
+  BuildCache --> OgpGenerator : OGP cache判定 / filter
+  OgpGenerator --> OgpWriter : PNG
+  OgpWriter --> Generated : <slug>.png
+  OgpWriter --> BuildCacheWriter : OGP書き込み成功
 
-  HTMLPost --> Generator : body.html
-  PNGCompiler --> Generator : OGP画像
-  Assets --> Generator : 公開アセット
-  Model --> Generator : メタデータ
+  SourceParser --> MetadataWriter : ParsedSource
+  MetadataWriter --> Generated : site.json / article-index.json / meta.json
+  BuildCacheWriter --> CacheManifest : 原子的に更新
 }
 
-folder "generated/" as Generated
+folder "generated/" as Generated {
+  folder ".cache/" as CacheDirectory {
+    file "manifest.json" as CacheManifest
+  }
+}
 
-Source --> Loader
-Generator --> Generated
+Source --> SourceLoader
 
-note right of HTMLCompiler
-  Typst CLIをHTML出力用に実行
+note right of ArticleTransformer
+  Typst HTML出力を変換・後処理する
 end note
 
-note right of PNGCompiler
-  同じTypst CLIを
-  PNG出力用に実行
+note right of OgpGenerator
+  記事とSiteのメタデータからPNGを生成する
 end note
 
 @enduml
@@ -139,8 +155,8 @@ start
 :main.typ を取得;
 
 partition "Typst Compilation" {
-  :Typst CLIでHTMLへコンパイル;
-  :Typstが生成したHTMLを取得;
+  :TypstコンパイラでHTMLへ変換;
+  :生成したHTMLを取得;
 }
 
 partition "HTML Post Processing" {
@@ -150,7 +166,7 @@ partition "HTML Post Processing" {
   :HTML断片の整合性を検証;
 }
 
-partition "Artifact Generation" {
+partition "Article Write" {
   :body.html を出力;
 }
 

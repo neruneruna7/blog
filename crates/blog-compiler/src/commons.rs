@@ -3,6 +3,8 @@ use thiserror::Error;
 
 pub mod app_config;
 pub mod article;
+pub(crate) mod atomic_file;
+pub(crate) mod build_cache_manifest;
 pub mod site;
 
 #[derive(Debug, Error)]
