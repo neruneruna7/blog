@@ -58,10 +58,14 @@ command = "pnpm"
 args = ["run", "test"]
 
 [tasks.run-frontend]
-description = "Astro開発サーバーを起動"
-cwd = "frontend"
+description = "Astro開発サーバーを起動する"
 command = "pnpm"
-args = ["run", "dev"]
+args = ["--dir", "frontend", "run", "dev"]
+
+[tasks.dev-blog]
+description = "Typst監視とAstro開発サーバーを並行して起動する"
+dependencies = ["build-blog"]
+run_task = { name = ["watch-blog", "run-frontend"], fork = true, parallel = true }
 
 [tasks.build]
 description = "ブログ成果物を生成してフロントエンドをビルドする"
