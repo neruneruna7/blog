@@ -1,6 +1,0 @@
-slug = "Hello_Typst"
-title = "Hello Typst"
-description = "Typstでブログ記事を書く最小例"
-published_at = "2026-07-09T00:00:00+09:00"
-updated_at = ""
-tags = ["typst", "rust"]
