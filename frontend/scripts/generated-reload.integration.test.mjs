@@ -164,9 +164,15 @@ test(
         }
       }, `新規記事 alpha のルートを取得できない\n${logs.join("")}`);
 
-      const imageResponse = await fetch(`${baseUrl}/ogp/articles/alpha.png`);
-      assert.equal(imageResponse.status, 200);
-      assert.deepEqual(Buffer.from(await imageResponse.arrayBuffer()), Buffer.from([1, 2, 3]));
+      await waitFor(async () => {
+        try {
+          const response = await fetch(`${baseUrl}/ogp/articles/alpha.png`);
+          return response.status === 200 &&
+            Buffer.from(await response.arrayBuffer()).equals(Buffer.from([1, 2, 3]));
+        } catch {
+          return false;
+        }
+      }, `新規記事 alpha のOGP画像を取得できない\n${logs.join("")}`);
 
       const updatedAlpha = createArticle(
         "alpha",
