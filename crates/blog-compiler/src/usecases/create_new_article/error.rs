@@ -5,11 +5,11 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("failed to load existing article inputs: {0}")]
-    Input(#[from] crate::features::load_source::error::Error),
+    Input(#[from] crate::features::source_input::error::Error),
     #[error("article template loading failed: {0}")]
-    LoadTemplate(#[from] crate::features::load_template::error::Error),
+    LoadTemplate(#[from] crate::features::template_input::error::Error),
     #[error("article template artifact creation failed: {0}")]
-    TemplateArtifact(#[from] crate::features::template_artifact::error::Error),
+    TemplateArtifact(#[from] crate::features::new_article_output::error::Error),
     #[error("article metadata is invalid: {0}")]
     Value(#[from] crate::commons::ValueError),
     #[error("failed to inspect article path '{path}': {source}")]

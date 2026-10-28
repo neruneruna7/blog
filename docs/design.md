@@ -96,7 +96,7 @@ HTML、OGP、メタデータは独立した出力パイプラインである。A
 
 ## 新規記事作成
 ```
-let selected_template = CLIによって選択されたテンプレート. load_template
+let selected_template = CLIによって選択されたテンプレート. template_input
 
 let articles = 現在ある記事一覧を取得する．slugの重複防止のため．
 

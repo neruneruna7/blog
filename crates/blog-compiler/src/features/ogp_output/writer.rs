@@ -25,7 +25,7 @@ impl OgpWriter {
     /// ```
     /// use blog_compiler::{
     ///     commons::article::Slug,
-    ///     features::ogp_write::OgpWriter,
+    ///     features::ogp_output::OgpWriter,
     /// };
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -55,7 +55,7 @@ impl OgpWriter {
     /// ```
     /// use std::collections::HashSet;
     ///
-    /// use blog_compiler::features::ogp_write::OgpWriter;
+    /// use blog_compiler::features::ogp_output::OgpWriter;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let output_root = tempfile::tempdir()?;

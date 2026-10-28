@@ -9,7 +9,7 @@ use crate::{
         atomic_file::write_atomic,
         build_cache_manifest::{BuildCacheManifest, MANIFEST_SCHEMA_VERSION, ManifestArticle},
     },
-    features::blog_cache_loader::BlogCacheInput,
+    features::blog_cache_input::BlogCacheInput,
 };
 
 use super::error::Error;
@@ -45,8 +45,8 @@ impl BuildCacheWriter {
     /// use blog_compiler::{
     ///     commons::site::SiteTitle,
     ///     features::{
-    ///         blog_cache_loader::BlogCacheLoader,
-    ///         build_cache_writer::BuildCacheWriter,
+    ///         blog_cache_input::BlogCacheLoader,
+    ///         build_cache_output::BuildCacheWriter,
     ///         source_parse::{ParsedSource, site::Site},
     ///     },
     /// };
@@ -124,8 +124,8 @@ impl BuildCacheWriter {
     /// use blog_compiler::{
     ///     commons::{article::Slug, site::SiteTitle},
     ///     features::{
-    ///         blog_cache_loader::BlogCacheLoader,
-    ///         build_cache_writer::BuildCacheWriter,
+    ///         blog_cache_input::BlogCacheLoader,
+    ///         build_cache_output::BuildCacheWriter,
     ///         source_parse::{ParsedSource, site::Site},
     ///     },
     /// };
@@ -177,8 +177,8 @@ impl BuildCacheWriter {
     /// use blog_compiler::{
     ///     commons::{article::Slug, site::SiteTitle},
     ///     features::{
-    ///         blog_cache_loader::BlogCacheLoader,
-    ///         build_cache_writer::BuildCacheWriter,
+    ///         blog_cache_input::BlogCacheLoader,
+    ///         build_cache_output::BuildCacheWriter,
     ///         source_parse::{ParsedSource, site::Site},
     ///     },
     /// };
@@ -230,8 +230,8 @@ impl BuildCacheWriter {
     /// use blog_compiler::{
     ///     commons::site::SiteTitle,
     ///     features::{
-    ///         blog_cache_loader::BlogCacheLoader,
-    ///         build_cache_writer::BuildCacheWriter,
+    ///         blog_cache_input::BlogCacheLoader,
+    ///         build_cache_output::BuildCacheWriter,
     ///         source_parse::{ParsedSource, site::Site},
     ///     },
     /// };

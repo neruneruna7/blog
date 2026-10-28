@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{commons::article::Slug, features::blog_cache_loader::BlogCacheInput};
+use crate::{commons::article::Slug, features::blog_cache_input::BlogCacheInput};
 
 /// 現在の入力と前回の指紋を比較し、HTML・OGPそれぞれの再生成要否を示す。
 #[derive(Debug, Clone)]
@@ -23,8 +23,8 @@ impl BuildCache {
     /// use blog_compiler::{
     ///     commons::site::SiteTitle,
     ///     features::{
-    ///         blog_cache_loader::BlogCacheLoader,
-    ///         build_cache::BuildCache,
+    ///         blog_cache_input::BlogCacheLoader,
+    ///         build_cache_plan::BuildCache,
     ///         source_parse::{ParsedSource, site::Site},
     ///     },
     /// };

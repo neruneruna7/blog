@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use crate::{
     commons::article::{ArticleTitle, Description, PublishedAt, Slug, Tag, UpdatedAt},
-    features::load_source::article::RawArticle,
+    features::source_input::article::RawArticle,
 };
 
 use super::error::Error;

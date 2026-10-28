@@ -1,4 +1,4 @@
-use crate::features::load_source::source::RawSource;
+use crate::features::source_input::source::RawSource;
 
 use super::{article::Article, error::Error, site::Site, source::ParsedSource};
 

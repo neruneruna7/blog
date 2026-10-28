@@ -6,10 +6,10 @@ use std::{
 use crate::{
     commons::app_config::{ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT},
     features::{
-        article_transform::ArticleTransformer, article_write::ArticleWriter,
-        blog_cache_loader::BlogCacheLoader, build_cache::BuildCache,
-        build_cache_writer::BuildCacheWriter, load_source::loader::SourceLoader,
-        metadata_write::MetadataWriter, ogp_generate::OgpGenerator, ogp_write::OgpWriter,
+        article_transform::ArticleTransformer, article_output::ArticleWriter,
+        blog_cache_input::BlogCacheLoader, build_cache_plan::BuildCache,
+        build_cache_output::BuildCacheWriter, source_input::loader::SourceLoader,
+        metadata_output::MetadataWriter, ogp_generate::OgpGenerator, ogp_output::OgpWriter,
         publication_filter::PublicationFilter, source_parse::SourceParser,
     },
 };
@@ -72,7 +72,7 @@ pub(crate) fn article_compile(release: bool) -> Result<usize, Error> {
         artifact_root,
     )?;
     let build_plan = BuildCache::new(&cache_input);
-    let mut build_cache_writer = BuildCacheWriter::new(cache_input, artifact_root);
+    let mut build_cache_output = BuildCacheWriter::new(cache_input, artifact_root);
     let total_count = current_slugs.len();
     let html_cache_hit_count = total_count - build_plan.html_count();
     let ogp_cache_hit_count = total_count - build_plan.ogp_count();
@@ -89,7 +89,7 @@ pub(crate) fn article_compile(release: bool) -> Result<usize, Error> {
     for (slug, html) in compiled_html {
         ArticleWriter::write(&slug, &html, artifact_root)?;
         html_written_count += 1;
-        build_cache_writer.record_html_success(&slug)?;
+        build_cache_output.record_html_success(&slug)?;
     }
     info!(
         cache_hit_count = html_cache_hit_count,
@@ -111,7 +111,7 @@ pub(crate) fn article_compile(release: bool) -> Result<usize, Error> {
         )?;
         OgpWriter::write(slug, &png, artifact_root)?;
         ogp_written_count += 1;
-        build_cache_writer.record_ogp_success(slug)?;
+        build_cache_output.record_ogp_success(slug)?;
     }
     info!(
         cache_hit_count = ogp_cache_hit_count,
@@ -126,7 +126,7 @@ pub(crate) fn article_compile(release: bool) -> Result<usize, Error> {
     ArticleWriter::remove_obsolete(&current_slugs, artifact_root)?;
     MetadataWriter::remove_obsolete(&current_slugs, artifact_root)?;
     OgpWriter::remove_obsolete(&current_slugs, artifact_root)?;
-    build_cache_writer.remove_obsolete(&current_slugs)?;
+    build_cache_output.remove_obsolete(&current_slugs)?;
     info!(article_count = total_count, "コンパイル成果物の更新完了");
 
     Ok(total_count)

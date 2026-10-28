@@ -11,9 +11,9 @@ use crate::{
         article::{ArticleTitle, Description, Slug, Tag},
     },
     features::{
-        load_source::loader::SourceLoader,
-        load_template::loader::TemplateLoader,
-        template_artifact::{article::NewArticle, config::ArticleConfig},
+        source_input::loader::SourceLoader,
+        template_input::loader::TemplateLoader,
+        new_article_output::{article::NewArticle, config::ArticleConfig},
     },
 };
 

@@ -73,7 +73,7 @@ impl MetadataWriter {
     ///
     /// use blog_compiler::{
     ///     commons::site::SiteTitle,
-    ///     features::{metadata_write::MetadataWriter, source_parse::{ParsedSource, site::Site}},
+    ///     features::{metadata_output::MetadataWriter, source_parse::{ParsedSource, site::Site}},
     /// };
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -139,7 +139,7 @@ impl MetadataWriter {
     /// ```
     /// use std::collections::HashSet;
     ///
-    /// use blog_compiler::{commons::article::Slug, features::metadata_write::MetadataWriter};
+    /// use blog_compiler::{commons::article::Slug, features::metadata_output::MetadataWriter};
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let output_root = tempfile::tempdir()?;

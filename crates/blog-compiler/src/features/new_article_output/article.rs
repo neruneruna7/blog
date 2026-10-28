@@ -6,7 +6,7 @@ use std::{
 use crate::commons::app_config::ARTICLE_ENTRY_POINT;
 
 use super::{config::ArticleConfig, error::Error};
-use crate::features::load_template::template::ArticleTemplate;
+use crate::features::template_input::template::ArticleTemplate;
 
 const MAX_STAGING_ATTEMPTS: usize = 16;
 

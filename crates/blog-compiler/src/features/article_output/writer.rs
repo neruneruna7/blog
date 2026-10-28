@@ -24,7 +24,7 @@ impl ArticleWriter {
     /// ```
     /// use blog_compiler::{
     ///     commons::article::Slug,
-    ///     features::article_write::ArticleWriter,
+    ///     features::article_output::ArticleWriter,
     /// };
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -56,7 +56,7 @@ impl ArticleWriter {
     /// ```
     /// use std::collections::HashSet;
     ///
-    /// use blog_compiler::features::article_write::ArticleWriter;
+    /// use blog_compiler::features::article_output::ArticleWriter;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let output_root = tempfile::tempdir()?;
