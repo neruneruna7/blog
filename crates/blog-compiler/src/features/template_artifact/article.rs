@@ -44,8 +44,8 @@ impl NewArticle {
 
     fn write_and_commit(self, temporary_dir: &Path) -> Result<(), Error> {
         let config_path = temporary_dir.join("ArticleConfig.toml");
-        let config_contents =
-            toml::to_string_pretty(&self.config).map_err(Error::SerializeArticleConfig)?;
+        let config_contents = shiguredo_toml::to_string_pretty(&self.config.to_toml_value())
+            .map_err(Error::SerializeArticleConfig)?;
         write_file(&config_path, config_contents.as_bytes())?;
 
         let main_typ_path = temporary_dir.join(ARTICLE_ENTRY_POINT);

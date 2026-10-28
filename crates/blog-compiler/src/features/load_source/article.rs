@@ -4,9 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use serde::Deserialize;
-
-use super::error::Error;
+use super::{error::Error, toml_config};
 
 const ARTICLES_FOLDER: &str = "articles";
 const ARTICLE_CONFIG_NAME: &str = "ArticleConfig.toml";
@@ -66,7 +64,7 @@ impl RawArticle {
                         source,
                     }
                 })?;
-                let config = toml::from_str(&config_contents).map_err(|source| {
+                let config = RawArticleConfig::parse(&config_contents).map_err(|source| {
                     Error::ParseArticleConfig {
                         path: config_path,
                         source,
@@ -89,16 +87,31 @@ fn article_entry_point_path(article_directory: &OsStr, entry_point_file: &Path) 
         .join(entry_point_file)
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct RawArticleConfig {
     pub slug: String,
-    #[serde(default)]
     pub publish: bool,
     pub title: String,
     pub description: String,
     pub tags: Vec<String>,
     pub published_at: String,
     pub updated_at: String,
+}
+
+impl RawArticleConfig {
+    fn parse(contents: &str) -> Result<Self, toml_config::ConfigError> {
+        let table = toml_config::parse(contents)?;
+
+        Ok(Self {
+            slug: toml_config::required_string(&table, "slug")?,
+            publish: toml_config::optional_bool(&table, "publish", false)?,
+            title: toml_config::required_string(&table, "title")?,
+            description: toml_config::required_string(&table, "description")?,
+            tags: toml_config::required_string_array(&table, "tags")?,
+            published_at: toml_config::required_string(&table, "published_at")?,
+            updated_at: toml_config::required_string(&table, "updated_at")?,
+        })
+    }
 }
 
 #[cfg(test)]

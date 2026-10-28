@@ -1,12 +1,10 @@
 use std::{fs, path::Path};
 
-use serde::Deserialize;
-
-use super::error::Error;
+use super::{error::Error, toml_config};
 
 const SITE_CONFIG_NAME: &str = "site.toml";
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct RawSiteConfig {
     pub title: String,
     pub description: String,
@@ -21,6 +19,16 @@ impl RawSiteConfig {
             source,
         })?;
 
-        toml::from_str(&contents).map_err(|source| Error::ParseSiteConfig { path, source })
+        Self::parse(&contents).map_err(|source| Error::ParseSiteConfig { path, source })
+    }
+
+    fn parse(contents: &str) -> Result<Self, toml_config::ConfigError> {
+        let table = toml_config::parse(contents)?;
+
+        Ok(Self {
+            title: toml_config::required_string(&table, "title")?,
+            description: toml_config::required_string(&table, "description")?,
+            language: toml_config::required_string(&table, "language")?,
+        })
     }
 }

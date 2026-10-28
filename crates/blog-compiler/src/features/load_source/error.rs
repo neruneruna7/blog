@@ -32,7 +32,7 @@ pub enum Error {
     ParseArticleConfig {
         path: PathBuf,
         #[source]
-        source: toml::de::Error,
+        source: super::toml_config::ConfigError,
     },
     #[error("failed to read site configuration '{path}': {source}")]
     ReadSiteConfig {
@@ -44,6 +44,6 @@ pub enum Error {
     ParseSiteConfig {
         path: PathBuf,
         #[source]
-        source: toml::de::Error,
+        source: super::toml_config::ConfigError,
     },
 }

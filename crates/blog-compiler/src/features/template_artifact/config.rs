@@ -1,9 +1,9 @@
 use chrono::{FixedOffset, SecondsFormat, Utc};
-use serde::Serialize;
+use shiguredo_toml::{Table, Value};
 
 const DEFAULT_TITLE: &str = "新規記事";
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub(crate) struct ArticleConfig {
     pub(crate) slug: String,
     publish: bool,
@@ -34,6 +34,26 @@ impl ArticleConfig {
             slug,
             ..Self::default()
         }
+    }
+
+    pub(crate) fn to_toml_value(&self) -> Value {
+        let table: Table = [
+            ("slug", Value::String(self.slug.clone())),
+            ("publish", Value::Boolean(self.publish)),
+            ("title", Value::String(self.title.clone())),
+            ("description", Value::String(self.description.clone())),
+            ("published_at", Value::String(self.published_at.clone())),
+            ("updated_at", Value::String(self.updated_at.clone())),
+            (
+                "tags",
+                Value::Array(self.tags.iter().cloned().map(Value::String).collect()),
+            ),
+        ]
+        .into_iter()
+        .map(|(key, value)| (key.to_owned(), value))
+        .collect();
+
+        Value::Table(table)
     }
 }
 

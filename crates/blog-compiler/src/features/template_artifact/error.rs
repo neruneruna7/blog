@@ -11,7 +11,7 @@ pub enum Error {
         source: io::Error,
     },
     #[error("failed to serialize article configuration: {0}")]
-    SerializeArticleConfig(#[source] toml::ser::Error),
+    SerializeArticleConfig(#[source] shiguredo_toml::Error),
     #[error("failed to create directory '{path}': {source}")]
     CreateDirectory {
         path: PathBuf,
