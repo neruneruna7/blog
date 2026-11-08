@@ -7,17 +7,19 @@ Current milestone:
 - Typst HTML export is experimental and intentionally accepted for this prototype.
 
 Commands:
-- cargo make build-content
+- cargo make build-blog
 - cd frontend && npm install
-- cargo make build-site
+- cargo make build-frontend
 - cargo make build
 - cargo make test
-- cargo make test-content
+- cargo make test-blog
 - cargo make check
 - cargo make clean
 
-Content generation:
-- `cargo make build-content` runs `blog-compiler build` to generate `body.html`, article metadata, and OGP assets.
+Blog generation:
+- `cargo make build-blog` runs `blog-compiler build` to generate `body.html`, article metadata, and OGP assets.
+- `cargo make build-blog-release` generates artifacts only for articles with `publish = true` in `ArticleConfig.toml`.
+- New articles default to `publish = false`; the regular `build-blog` task includes all articles for development.
 - OGP images are written under `generated/public-root/ogp/articles`.
 - Generated article metadata keeps site-root-relative paths; Astro resolves the deployment origin from `BASE_URL` when it writes OGP tags.
 - `body.html` is an HTML fragment embedded by Astro. It is not a final page.
@@ -29,9 +31,10 @@ Article source layout:
 - New article creation uses the generated slug as the default directory name.
 
 Astro:
-- `cargo make build-site` generates content, merges `frontend/public` into `generated/public-root`, and builds `frontend/dist/`.
-- `cargo make build` runs content generation first, then builds the Astro static site.
-- `cargo make test` runs Rust content tests and frontend build-level assertions.
+- `cargo make build-frontend` generates blog artifacts, merges `frontend/public` into `generated/public-root`, and builds `frontend/dist/`.
+- `cargo make build` runs blog generation first, then builds the Astro frontend.
+- `cargo make dev-blog` builds the initial artifacts, then starts `watch-blog` and `run-frontend` concurrently. The two long-running jobs remain separate process trees under one cargo-make command.
+- `cargo make test` runs blog compiler tests and frontend build-level assertions.
 - Set `BASE_URL` in the repository-root `.env` for local Astro builds; CI reads it from the GitHub Actions variable `BASE_URL`.
 - Run `cd frontend && npm install` before the first Astro build. Dependency installation is intentionally not hidden inside cargo-make.
 

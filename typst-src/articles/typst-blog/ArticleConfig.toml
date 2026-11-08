@@ -1,4 +1,5 @@
 slug = "68a2bwttrkg2"
+publish = true
 title = "Typstで書くブログを作った"
 description = "Not markdown, Yes typst."
 published_at = "2026-07-17T15:44:13+09:00"

@@ -14,10 +14,6 @@ pub enum Error {
         processor: &'static str,
         reason: String,
     },
-    #[error("OGP image is missing for article '{0}'")]
-    MissingOgpImage(String),
-    #[error("OGP image was provided for unknown article '{0}'")]
-    OgpImageWithoutArticle(String),
     #[error("article map key '{key_slug}' does not match its slug '{article_slug}'")]
     ArticleSlugMismatch {
         key_slug: String,

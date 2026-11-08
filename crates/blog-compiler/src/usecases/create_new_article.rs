@@ -11,9 +11,9 @@ use crate::{
         article::{ArticleTitle, Description, Slug, Tag},
     },
     features::{
-        load_source::loader::SourceLoader,
-        load_template::loader::TemplateLoader,
-        template_artifact::{article::NewArticle, config::ArticleConfig},
+        source_input::loader::SourceLoader,
+        template_input::loader::TemplateLoader,
+        new_article_output::{article::NewArticle, config::ArticleConfig},
     },
 };
 
@@ -23,6 +23,7 @@ use error::Error;
 
 const ARTICLE_FOLDER: &str = "articles";
 const TEMPLATE_FOLDER: &str = "commons/template";
+const SLUG_LENGTH: usize = 8;
 const MAX_SLUG_ATTEMPTS: usize = 16;
 
 #[derive(Debug, Clone, Default)]
@@ -80,8 +81,8 @@ fn select_unique_slug(
     existing_slugs: &HashSet<String>,
 ) -> Result<Slug, Error> {
     for _ in 0..MAX_SLUG_ATTEMPTS {
-        let uuid = Uuid::now_v7();
-        let slug = Slug::new(uuid.simple().to_string())?;
+        let raw_slug = Uuid::now_v7().simple().to_string();
+        let slug = Slug::new(raw_slug[raw_slug.len() - SLUG_LENGTH..].to_owned())?;
         let article_path = articles_root.join(slug.as_str());
         let path_exists =
             article_path

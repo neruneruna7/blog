@@ -5,5 +5,6 @@ pub mod error;
 mod postprocess;
 pub mod transformer;
 
-pub use article::{ArticleCompileWarning, TransformedArticle};
+pub(crate) use article::ArticleCompileWarning;
+
 pub use transformer::ArticleTransformer;

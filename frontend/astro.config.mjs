@@ -4,6 +4,7 @@ import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
+import generatedReload from "./plugins/generated-reload.mjs";
 
 // Astro configでは.envが自動読込されず、対象ファイルもfrontendの外にあるため明示的に読む。
 const envFile = fileURLToPath(new URL("../.env", import.meta.url));
@@ -34,7 +35,7 @@ export default defineConfig({
   },
   integrations: [react()],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), generatedReload()],
   },
 });
 
