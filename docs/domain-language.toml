@@ -1,0 +1,36 @@
+#:schema ./domain-language.schema.json
+
+[[terms]]
+domain = "記事"
+naming = "Article"
+description = "個別の記事を表す。記事だけを対象にするデータや処理に使う。"
+
+[[terms]]
+domain = "記事の公開状態"
+naming = "Publication"
+description = "記事を公開対象に含めるかを表す。公開対象の記事を選別する処理に使う。"
+
+[[terms]]
+domain = "OGP"
+naming = "OGP"
+description = "OGP に関するデータや処理を表す。"
+
+[[terms]]
+domain = "サイト"
+naming = "Site"
+description = "サイト設定やサイト固有の情報を表す。"
+
+[[terms]]
+domain = "記事＋OGP＋Site"
+naming = "blog"
+description = "記事・OGP・サイト設定にまたがるデータや処理を表す。"
+
+[[terms]]
+domain = "テンプレート"
+naming = "Template"
+description = "新しい記事を書くときのテンプレート"
+
+[[terms]]
+domain = "コンパイル対象の原資料"
+naming = "Source"
+description = "記事一覧とサイト設定をまとめたコンパイル対象を表す。"

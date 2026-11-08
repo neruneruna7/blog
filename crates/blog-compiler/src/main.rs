@@ -27,9 +27,16 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Command {
     /// 記事をコンパイルしてサイト用の成果物を生成する。
-    Build,
+    Build(BuildArgs),
     /// 記事テンプレートから新しい記事を作成する。
     New(NewArticleArgs),
+}
+
+#[derive(Debug, Args)]
+struct BuildArgs {
+    /// 公開設定が有効な記事だけをコンパイルする。
+    #[arg(short, long)]
+    release: bool,
 }
 
 #[derive(Debug, Args)]
@@ -70,8 +77,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 article.article_dir.display()
             );
         }
-        Command::Build => {
-            let article_count = article_compile()?;
+        Command::Build(args) => {
+            let article_count = article_compile(args.release)?;
             println!("記事変換・成果物書き込み完了: {article_count} 件");
         }
     }

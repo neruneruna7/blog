@@ -96,16 +96,16 @@ jobs:
       - name: Check Rust code
         run: cargo make check
 
-      # cargo make testはbuild-contentに依存していないため，
+      # cargo make testはbuild-blogに依存していないため，
       # frontendのテストより先に生成物を作る．
-      - name: Generate content
-        run: cargo make build-content
+      - name: Generate blog artifacts
+        run: cargo make build-blog-release
 
       # frontend/package.jsonのtestはAstroビルドと成果物検証を行う．
       - name: Test and build frontend
         env:
           BASE_URL: ${{ vars.BASE_URL }}
-        run: cargo make test-site
+        run: cargo make test-frontend
 
       - name: Verify deployment output
         run: |

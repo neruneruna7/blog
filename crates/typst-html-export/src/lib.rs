@@ -36,10 +36,16 @@ pub struct OgpInput {
 /// `main_file` が相対パスの場合は `project_root` から解決する。
 /// Typstの相対importも同じプロジェクトルートを基準に解決される。
 /// ```
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let project_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+///     .join("../../typst-src");
 /// let html_string = typst_html_export::compile_html(
-///    "typst-src",
+///    project_root,
 ///    "articles/typst-blog/main.typ",
 /// )?;
+/// assert!(!html_string.is_empty());
+/// # Ok(())
+/// # }
 /// ```
 pub fn compile_html(
     project_root: impl AsRef<Path>,

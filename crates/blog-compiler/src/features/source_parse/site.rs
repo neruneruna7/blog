@@ -1,4 +1,4 @@
-use crate::{commons::site::SiteTitle, features::load_source::site::RawSiteConfig};
+use crate::{commons::site::SiteTitle, features::source_input::site::RawSiteConfig};
 
 use super::error::Error;
 

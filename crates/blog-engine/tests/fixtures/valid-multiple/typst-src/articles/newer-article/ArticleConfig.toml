@@ -1,6 +1,0 @@
-slug = "newer-article"
-title = "Newer Article"
-description = "新しい記事"
-published_at = "2026-07-10T00:00:00+09:00"
-updated_at = "2026-07-11T00:00:00+09:00"
-tags = ["rust"]
