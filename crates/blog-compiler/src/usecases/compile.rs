@@ -6,11 +6,11 @@ use std::{
 use crate::{
     commons::app_config::{ARTICLE_ENTRY_POINT, ARTIFACT_ROOT, OGP_MAIN_FILE, TYP_COMPILE_ROOT},
     features::{
-        article_transform::ArticleTransformer, article_output::ArticleWriter,
-        blog_cache_input::BlogCacheLoader, build_cache_plan::BuildCache,
-        build_cache_output::BuildCacheWriter, source_input::loader::SourceLoader,
-        metadata_output::MetadataWriter, ogp_generate::OgpGenerator, ogp_output::OgpWriter,
-        publication_filter::PublicationFilter, source_parse::SourceParser,
+        article_output::ArticleWriter, article_transform::ArticleTransformer,
+        blog_cache_input::BlogCacheLoader, build_cache_output::BuildCacheWriter,
+        build_cache_plan::BuildCache, metadata_output::MetadataWriter, ogp_generate::OgpGenerator,
+        ogp_output::OgpWriter, publication_filter::PublicationFilter,
+        source_input::loader::SourceLoader, source_parse::SourceParser,
     },
 };
 use tracing::info;
@@ -22,6 +22,7 @@ use error::Error;
 /// 記事とサイト設定を読み込み、HTML・OGP・メタデータを独立して更新する。
 ///
 /// HTMLとOGPは個別にキャッシュ判定し、各成果物の書き込み成功後にBuildCacheWriterが指紋を保存する。
+/// 開発ビルドではリンクカードのOGP情報も`generated/.cache/web-link-card`に保存して再利用し、公開用ビルドでは使用しない。
 /// `release`が有効な場合は、`publish = true`の記事だけをコンパイル対象にする。
 ///
 /// # Examples
@@ -84,7 +85,8 @@ pub(crate) fn article_compile(release: bool) -> Result<usize, Error> {
         .filter(|(slug, _)| build_plan.needs_html(slug))
         .map(|(slug, article)| (slug.clone(), article.clone()))
         .collect::<HashMap<_, _>>();
-    let compiled_html = ArticleTransformer::transform_all(html_articles)?;
+    let compiled_html =
+        ArticleTransformer::transform_all(html_articles, (!release).then_some(artifact_root))?;
     let mut html_written_count = 0;
     for (slug, html) in compiled_html {
         ArticleWriter::write(&slug, &html, artifact_root)?;

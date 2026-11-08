@@ -12,3 +12,4 @@ pub mod publication_filter;
 pub mod source_input;
 pub mod source_parse;
 pub mod template_input;
+pub mod web_link_card_ogp_input;
